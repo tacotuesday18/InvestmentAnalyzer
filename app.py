@@ -258,63 +258,190 @@ def display_header():
 # ログインページ
 def show_login_page():
     """ログインページを表示"""
-    st.markdown("<div class='form-container'>", unsafe_allow_html=True)
-    st.markdown("<h2 style='text-align: center;'>ログイン</h2>", unsafe_allow_html=True)
+    col1, col2 = st.columns([3, 2])
     
-    username = st.text_input("ユーザー名またはメールアドレス")
-    password = st.text_input("パスワード", type="password")
+    with col1:
+        # 左側に価値提案を表示
+        st.markdown("<h2 style='color: #0066cc;'>投資の意思決定を強化する</h2>", unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div style="margin-bottom: 2rem;">
+            <p style="font-size: 1.1rem; margin-bottom: 1.5rem;">
+                企業価値分析プロは、投資家が企業の本質的価値を正確に評価し、データに基づいた投資判断を行うためのツールです。
+            </p>
+            
+            <h3 style="color: #0066cc; font-size: 1.3rem;">私たちの提供する価値</h3>
+            
+            <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                <div style="background-color: #e6f7ff; border-radius: 50%; width: 40px; height: 40px; display: flex; justify-content: center; align-items: center; margin-right: 15px;">
+                    <span style="color: #0066cc; font-size: 1.2rem;">🔍</span>
+                </div>
+                <div>
+                    <h4 style="margin: 0; color: #333;">正確な企業価値の算出</h4>
+                    <p style="margin: 0; color: #666;">DCF法を用いた本質的価値の計算により、株価の割安度を評価します。</p>
+                </div>
+            </div>
+            
+            <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                <div style="background-color: #e6f7ff; border-radius: 50%; width: 40px; height: 40px; display: flex; justify-content: center; align-items: center; margin-right: 15px;">
+                    <span style="color: #0066cc; font-size: 1.2rem;">📊</span>
+                </div>
+                <div>
+                    <h4 style="margin: 0; color: #333;">包括的な企業分析</h4>
+                    <p style="margin: 0; color: #666;">財務指標、SWOT分析、競争優位性の評価を一つのダッシュボードで確認できます。</p>
+                </div>
+            </div>
+            
+            <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                <div style="background-color: #e6f7ff; border-radius: 50%; width: 40px; height: 40px; display: flex; justify-content: center; align-items: center; margin-right: 15px;">
+                    <span style="color: #0066cc; font-size: 1.2rem;">📈</span>
+                </div>
+                <div>
+                    <h4 style="margin: 0; color: #333;">感度分析機能</h4>
+                    <p style="margin: 0; color: #666;">成長率や割引率の変動が企業価値に与える影響を視覚的に確認できます。</p>
+                </div>
+            </div>
+            
+            <div style="display: flex; align-items: center;">
+                <div style="background-color: #e6f7ff; border-radius: 50%; width: 40px; height: 40px; display: flex; justify-content: center; align-items: center; margin-right: 15px;">
+                    <span style="color: #0066cc; font-size: 1.2rem;">⏱️</span>
+                </div>
+                <div>
+                    <h4 style="margin: 0; color: #333;">時間の節約</h4>
+                    <p style="margin: 0; color: #666;">複雑な財務モデリングを数分で完了し、投資判断に集中できます。</p>
+                </div>
+            </div>
+        </div>
+        
+        <div style="background-color: #f0f9ff; padding: 15px; border-radius: 10px; border-left: 4px solid #0066cc;">
+            <p style="margin: 0; color: #333; font-style: italic;">
+                「企業価値分析プロを使い始めてから、投資判断の精度が格段に向上しました。特に感度分析機能は、様々なシナリオを検討するのに非常に役立っています。」
+            </p>
+            <p style="margin: 5px 0 0; text-align: right; color: #666;">
+                - 山田太郎, 個人投資家
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
     
-    if st.button("ログイン", key="login_form_btn", use_container_width=True):
-        if username and password:
-            success, message = login_user(username, password)
-            if success:
-                st.success(message)
-                st.rerun()
-            else:
-                st.error(message)
-        else:
-            st.warning("ユーザー名とパスワードを入力してください。")
-    
-    st.markdown("<p style='text-align: center; margin-top: 1rem;'>アカウントをお持ちでない場合は<a href='javascript:void(0);' onclick='document.querySelector(\"[data-testid=root] button:last-child\").click();'>こちら</a>から登録できます。</p>", unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
-    
-    if st.button("新規登録ページへ", key="to_signup"):
-        switch_page('signup')
-
-# サインアップページ
-def show_signup_page():
-    """サインアップページを表示"""
-    st.markdown("<div class='form-container'>", unsafe_allow_html=True)
-    st.markdown("<h2 style='text-align: center;'>新規アカウント登録</h2>", unsafe_allow_html=True)
-    
-    username = st.text_input("ユーザー名（半角英数）")
-    email = st.text_input("メールアドレス")
-    password = st.text_input("パスワード", type="password")
-    confirm_password = st.text_input("パスワード（確認）", type="password")
-    
-    terms_agreed = st.checkbox("利用規約とプライバシーポリシーに同意します")
-    
-    if st.button("登録する", key="signup_form_btn", use_container_width=True):
-        if username and email and password and confirm_password:
-            if terms_agreed:
-                success, message = signup_user(username, email, password, confirm_password)
+    with col2:
+        # 右側にログインフォームを表示
+        st.markdown("<div class='form-container'>", unsafe_allow_html=True)
+        st.markdown("<h2 style='text-align: center;'>ログイン</h2>", unsafe_allow_html=True)
+        
+        username = st.text_input("ユーザー名またはメールアドレス")
+        password = st.text_input("パスワード", type="password")
+        
+        if st.button("ログイン", key="login_form_btn", use_container_width=True):
+            if username and password:
+                success, message = login_user(username, password)
                 if success:
                     st.success(message)
-                    st.info("登録が完了しました。ログインしてください。")
-                    switch_page('login')
                     st.rerun()
                 else:
                     st.error(message)
             else:
-                st.warning("利用規約とプライバシーポリシーに同意する必要があります。")
-        else:
-            st.warning("すべての項目を入力してください。")
+                st.warning("ユーザー名とパスワードを入力してください。")
+        
+        st.markdown("<p style='text-align: center; margin-top: 1rem;'>アカウントをお持ちでない場合は<a href='javascript:void(0);' onclick='document.querySelector(\"[data-testid=root] button:last-child\").click();'>こちら</a>から登録できます。</p>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+        if st.button("新規登録ページへ", key="to_signup"):
+            switch_page('signup')
+
+# サインアップページ
+def show_signup_page():
+    """サインアップページを表示"""
+    col1, col2 = st.columns([3, 2])
     
-    st.markdown("<p style='text-align: center; margin-top: 1rem;'>すでにアカウントをお持ちの場合は<a href='javascript:void(0);' onclick='document.querySelector(\"[data-testid=root] button:last-child\").click();'>こちら</a>からログインできます。</p>", unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
+    with col1:
+        # 左側に価値提案を表示
+        st.markdown("<h2 style='color: #0066cc;'>データに基づく投資判断を始めましょう</h2>", unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div style="margin-bottom: 2rem;">
+            <p style="font-size: 1.1rem; margin-bottom: 1.5rem;">
+                企業価値分析プロは、複雑な財務分析を簡単に行い、データに基づいた投資判断をサポートします。
+            </p>
+            
+            <h3 style="color: #0066cc; font-size: 1.3rem;">無料プランでできること</h3>
+            
+            <ul style="list-style-type: none; padding-left: 0;">
+                <li style="display: flex; align-items: center; margin-bottom: 0.8rem;">
+                    <div style="color: #0066cc; margin-right: 10px;">✓</div>
+                    <div>月3社まで企業の本質的価値を分析</div>
+                </li>
+                <li style="display: flex; align-items: center; margin-bottom: 0.8rem;">
+                    <div style="color: #0066cc; margin-right: 10px;">✓</div>
+                    <div>DCF法による株価評価</div>
+                </li>
+                <li style="display: flex; align-items: center; margin-bottom: 0.8rem;">
+                    <div style="color: #0066cc; margin-right: 10px;">✓</div>
+                    <div>シンプルなSWOT分析で企業の強みと弱みを把握</div>
+                </li>
+            </ul>
+            
+            <h3 style="color: #0066cc; font-size: 1.3rem; margin-top: 1.5rem;">有料プランの特典</h3>
+            
+            <ul style="list-style-type: none; padding-left: 0;">
+                <li style="display: flex; align-items: center; margin-bottom: 0.8rem;">
+                    <div style="color: #0066cc; margin-right: 10px;">✓</div>
+                    <div>より多くの企業を分析可能（ベーシック：月20社、プレミアム：無制限）</div>
+                </li>
+                <li style="display: flex; align-items: center; margin-bottom: 0.8rem;">
+                    <div style="color: #0066cc; margin-right: 10px;">✓</div>
+                    <div>感度分析機能で様々なシナリオを検討</div>
+                </li>
+                <li style="display: flex; align-items: center; margin-bottom: 0.8rem;">
+                    <div style="color: #0066cc; margin-right: 10px;">✓</div>
+                    <div>最新の決算情報の詳細な分析（プレミアムプラン）</div>
+                </li>
+            </ul>
+        </div>
+        
+        <div style="background-color: #f0f9ff; padding: 15px; border-radius: 10px; border-left: 4px solid #0066cc;">
+            <p style="margin: 0; color: #333; font-style: italic;">
+                「投資に関する重要な判断を下す際の根拠として、この分析ツールは非常に信頼性があります。DCF法の詳細な計算が自動化されているため、手作業での計算ミスを心配する必要がありません。」
+            </p>
+            <p style="margin: 5px 0 0; text-align: right; color: #666;">
+                - 佐藤次郎, 証券アナリスト
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
     
-    if st.button("ログインページへ", key="to_login"):
-        switch_page('login')
+    with col2:
+        # 右側に登録フォームを表示
+        st.markdown("<div class='form-container'>", unsafe_allow_html=True)
+        st.markdown("<h2 style='text-align: center;'>新規アカウント登録</h2>", unsafe_allow_html=True)
+        
+        username = st.text_input("ユーザー名（半角英数）")
+        email = st.text_input("メールアドレス")
+        password = st.text_input("パスワード", type="password")
+        confirm_password = st.text_input("パスワード（確認）", type="password")
+        
+        terms_agreed = st.checkbox("利用規約とプライバシーポリシーに同意します")
+        
+        if st.button("登録する", key="signup_form_btn", use_container_width=True):
+            if username and email and password and confirm_password:
+                if terms_agreed:
+                    success, message = signup_user(username, email, password, confirm_password)
+                    if success:
+                        st.success(message)
+                        st.info("登録が完了しました。ログインしてください。")
+                        switch_page('login')
+                        st.rerun()
+                    else:
+                        st.error(message)
+                else:
+                    st.warning("利用規約とプライバシーポリシーに同意する必要があります。")
+            else:
+                st.warning("すべての項目を入力してください。")
+        
+        st.markdown("<p style='text-align: center; margin-top: 1rem;'>すでにアカウントをお持ちの場合は<a href='javascript:void(0);' onclick='document.querySelector(\"[data-testid=root] button:last-child\").click();'>こちら</a>からログインできます。</p>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+        if st.button("ログインページへ", key="to_login"):
+            switch_page('login')
 
 # プランの紹介・選択ページ
 def show_plans():
