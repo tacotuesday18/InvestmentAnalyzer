@@ -19,7 +19,7 @@ def calculate_intrinsic_value(forecasted_data, discount_rate, terminal_multiple,
     Returns:
     --------
     dict
-        本質的価値の計算結果を含む辞書
+        本質的価値の計算結果を含む辞書（米ドル）
     """
     # 割引率をパーセンテージから小数に変換
     discount_rate_decimal = discount_rate / 100
@@ -31,7 +31,7 @@ def calculate_intrinsic_value(forecasted_data, discount_rate, terminal_multiple,
         if i == 0:  # 初年度（現在）はスキップ
             continue
             
-        future_value = forecasted_data['純利益（百万円）'].iloc[i]
+        future_value = forecasted_data['純利益（百万USD）'].iloc[i]
         present_value = future_value / ((1 + discount_rate_decimal) ** i)
         present_values.append(present_value)
     
@@ -39,7 +39,7 @@ def calculate_intrinsic_value(forecasted_data, discount_rate, terminal_multiple,
     total_pv_forecast_period = sum(present_values)
     
     # 終末価値の計算（最終年の純利益 × ターミナル倍率）
-    terminal_profit = forecasted_data['純利益（百万円）'].iloc[-1]
+    terminal_profit = forecasted_data['純利益（百万USD）'].iloc[-1]
     terminal_value = terminal_profit * terminal_multiple
     
     # 終末価値の現在価値
@@ -67,13 +67,13 @@ def calculate_financial_ratios(market_cap, revenue, net_income, book_value, shar
     Parameters:
     -----------
     market_cap : float
-        時価総額（百万円）
+        時価総額（百万USD）
     revenue : float
-        売上高（百万円）
+        売上高（百万USD）
     net_income : float
-        純利益（百万円）
+        純利益（百万USD）
     book_value : float
-        純資産（百万円）
+        純資産（百万USD）
     shares_outstanding : float
         発行済株式数（百万株）
         

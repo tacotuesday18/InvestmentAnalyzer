@@ -5,8 +5,10 @@ import plotly.express as px
 import plotly.graph_objects as go
 import trafilatura
 import requests
+import os
 from utils import generate_swot_analysis, generate_moat_analysis
 from financial_models import calculate_intrinsic_value, calculate_financial_ratios
+from database import get_companies, get_company_financial_data, save_analysis, update_user_subscription
 
 # ページ設定
 st.set_page_config(
@@ -70,34 +72,75 @@ with st.sidebar:
     # サブスクリプションプランの表示
     show_subscription_plans()
     
-    # 企業の基本情報
-    company_name = st.text_input("企業名", "")
-    industry = st.selectbox(
-        "業界",
-        ["テクノロジー", "金融", "ヘルスケア", "消費財", "工業", "通信", "エネルギー", "素材", "公共事業", "不動産", "その他"]
-    )
+    # データベースから企業一覧を取得
+    companies = get_companies()
+    company_options = [""] + [f"{company['name']} ({company['symbol']})" for company in companies]
+    selected_company = st.selectbox("企業を選択", options=company_options, index=0)
     
-    # 証券コードまたはティッカーシンボル（プロおよびエンタープライズプラン用）
-    if st.session_state.subscription in ["professional", "enterprise"]:
-        company_symbol = st.text_input("証券コード/ティッカーシンボル（例: 7203.T, AAPL）", "")
+    company_name = ""
+    company_id = None
+    company_symbol = ""
+    current_revenue = 10000
+    current_net_income = 1000
+    shares_outstanding = 100.0
+    current_stock_price = 1000.0
+    book_value_per_share = 500.0
+    industry = "テクノロジー"
     
-    # 現在の財務情報
+    # 企業を選択した場合はデータベースからデータを取得
+    if selected_company and selected_company != "":
+        selected_company_name, selected_company_symbol = selected_company.rsplit(" (", 1)
+        company_symbol = selected_company_symbol[:-1]  # 閉じ括弧を削除
+        company_name = selected_company_name
+        
+        # 企業IDを取得
+        for company in companies:
+            if company['symbol'] == company_symbol:
+                company_id = company['id']
+                industry = company['industry']
+                break
+        
+        # 財務データを取得
+        if company_id:
+            financial_data = get_company_financial_data(company_id)
+            if financial_data:
+                current_revenue = financial_data.revenue
+                current_net_income = financial_data.net_income
+                shares_outstanding = financial_data.shares_outstanding
+                current_stock_price = financial_data.current_stock_price
+                book_value_per_share = financial_data.book_value_per_share
+    
+    # 手動入力のオプション
+    if not selected_company or selected_company == "":
+        # 企業の基本情報
+        company_name = st.text_input("企業名", company_name)
+        industry = st.selectbox(
+            "業界",
+            ["テクノロジー", "金融", "ヘルスケア", "消費財", "工業", "通信", "エネルギー", "素材", "公共事業", "不動産", "その他"],
+            index=["テクノロジー", "金融", "ヘルスケア", "消費財", "工業", "通信", "エネルギー", "素材", "公共事業", "不動産", "その他"].index(industry)
+        )
+        
+        # 証券コードまたはティッカーシンボル（プロおよびエンタープライズプラン用）
+        if st.session_state.subscription in ["professional", "enterprise"]:
+            company_symbol = st.text_input("証券コード/ティッカーシンボル（例: 7203.T, AAPL）", company_symbol)
+    
+    # 現在の財務情報（企業選択/手動入力に関わらず表示）
     st.subheader("現在の財務情報")
-    current_revenue = st.number_input("現在の年間売上高（百万円）", min_value=0, value=10000)
-    current_net_income = st.number_input("現在の純利益（百万円）", min_value=-10000, value=1000)
+    current_revenue = st.number_input("現在の年間売上高（百万USD）", min_value=0, value=int(current_revenue))
+    current_net_income = st.number_input("現在の純利益（百万USD）", min_value=-100000, value=int(current_net_income))
     current_net_margin = (current_net_income / current_revenue) * 100 if current_revenue > 0 else 0
     st.info(f"現在の純利益率: {current_net_margin:.2f}%")
     
     # 株式関連情報
-    shares_outstanding = st.number_input("発行済株式数（百万株）", min_value=0.1, value=100.0, step=0.1)
-    current_stock_price = st.number_input("現在の株価（円）", min_value=0.0, value=1000.0, step=0.1)
-    book_value_per_share = st.number_input("1株あたり純資産（円）", min_value=0.0, value=500.0, step=0.1)
+    shares_outstanding = st.number_input("発行済株式数（百万株）", min_value=0.1, value=float(shares_outstanding), step=0.1)
+    current_stock_price = st.number_input("現在の株価（USD）", min_value=0.0, value=float(current_stock_price), step=0.1)
+    book_value_per_share = st.number_input("1株あたり純資産（USD）", min_value=0.0, value=float(book_value_per_share), step=0.1)
     
     # 予測パラメータ
     st.subheader("成長予測パラメータ")
     revenue_growth_rate = st.slider("年間売上高成長率 (%)", min_value=-20, max_value=100, value=10)
-    target_net_margin = st.slider("目標純利益率 (%)", min_value=-20, max_value=50, value=int(current_net_margin))
-    forecast_years = st.slider("予測期間（年）", min_value=1, max_value=10, value=5)
+    target_net_margin = current_net_margin  # 簡素化のため、現在の利益率を目標にする
+    forecast_years = 5  # 簡素化のため、予測期間を5年に固定
     discount_rate = st.slider("割引率 (%)", min_value=5, max_value=25, value=10)
     
     # 業界平均値
