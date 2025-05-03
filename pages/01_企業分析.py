@@ -111,6 +111,9 @@ with st.sidebar:
     st.markdown("### ナビゲーション")
     if st.button("ホームに戻る", key="home_btn"):
         st.switch_page("app.py")
+    
+    if st.button("銘柄比較", key="compare_btn"):
+        st.switch_page("pages/02_銘柄比較.py")
 
 # 入力フォーム
 st.markdown("<div class='form-section'>", unsafe_allow_html=True)

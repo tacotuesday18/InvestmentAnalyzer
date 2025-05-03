@@ -634,10 +634,10 @@ def show_home():
     
     with col2:
         st.markdown("<div class='card'>", unsafe_allow_html=True)
-        st.markdown("<h3 class='card-title'>🔍 銘柄検索</h3>", unsafe_allow_html=True)
-        st.markdown("業界や成長率、利益率などの条件に基づいて投資対象の銘柄を検索します。")
-        if st.button("銘柄検索へ", use_container_width=True):
-            st.switch_page("pages/02_銘柄検索.py")
+        st.markdown("<h3 class='card-title'>🔍 銘柄比較</h3>", unsafe_allow_html=True)
+        st.markdown("複数の銘柄を選択して様々な評価方法（PER、PBR、PSR、DCF法）で比較分析します。")
+        if st.button("銘柄比較へ", use_container_width=True):
+            st.switch_page("pages/02_銘柄比較.py")
         st.markdown("</div>", unsafe_allow_html=True)
     
     with col3:

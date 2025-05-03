@@ -1,0 +1,322 @@
+{
+    "AAPL": {
+        "name": "Apple Inc.",
+        "industry": "テクノロジー",
+        "current_price": 175.04,
+        "revenue": 365817.0,
+        "net_income": 94680.0,
+        "eps": 5.96,
+        "book_value_per_share": 15.5,
+        "shares_outstanding": 15634.0,
+        "pe_ratio": 29.37,
+        "pb_ratio": 11.29,
+        "ps_ratio": 7.51,
+        "roe": 38.44,
+        "historical_growth": 15.2,
+        "historical_data": {
+            "revenue": [
+                260174.0,
+                274515.0,
+                365817.0
+            ],
+            "net_income": [
+                57411.0,
+                74196.0,
+                94680.0
+            ],
+            "years": [
+                2020,
+                2021,
+                2022
+            ]
+        }
+    },
+    "MSFT": {
+        "name": "Microsoft Corporation",
+        "industry": "テクノロジー",
+        "current_price": 386.77,
+        "revenue": 198270.0,
+        "net_income": 72361.0,
+        "eps": 9.68,
+        "book_value_per_share": 34.2,
+        "shares_outstanding": 7470.0,
+        "pe_ratio": 39.96,
+        "pb_ratio": 11.31,
+        "ps_ratio": 14.59,
+        "roe": 28.33,
+        "historical_growth": 17.5,
+        "historical_data": {
+            "revenue": [
+                143015.0,
+                168088.0,
+                198270.0
+            ],
+            "net_income": [
+                44281.0,
+                61271.0,
+                72361.0
+            ],
+            "years": [
+                2020,
+                2021,
+                2022
+            ]
+        }
+    },
+    "GOOGL": {
+        "name": "Alphabet Inc.",
+        "industry": "テクノロジー",
+        "current_price": 156.56,
+        "revenue": 282836.0,
+        "net_income": 59972.0,
+        "eps": 4.8,
+        "book_value_per_share": 27.8,
+        "shares_outstanding": 12500.0,
+        "pe_ratio": 32.62,
+        "pb_ratio": 5.63,
+        "ps_ratio": 6.91,
+        "roe": 17.27,
+        "historical_growth": 16.8,
+        "historical_data": {
+            "revenue": [
+                182527.0,
+                257637.0,
+                282836.0
+            ],
+            "net_income": [
+                40269.0,
+                76033.0,
+                59972.0
+            ],
+            "years": [
+                2020,
+                2021,
+                2022
+            ]
+        }
+    },
+    "AMZN": {
+        "name": "Amazon.com, Inc.",
+        "industry": "テクノロジー",
+        "current_price": 181.28,
+        "revenue": 513983.0,
+        "net_income": 12245.0,
+        "eps": 1.18,
+        "book_value_per_share": 38.4,
+        "shares_outstanding": 10350.0,
+        "pe_ratio": 153.63,
+        "pb_ratio": 4.72,
+        "ps_ratio": 3.66,
+        "roe": 3.08,
+        "historical_growth": 22.1,
+        "historical_data": {
+            "revenue": [
+                386064.0,
+                469822.0,
+                513983.0
+            ],
+            "net_income": [
+                21331.0,
+                33364.0,
+                12245.0
+            ],
+            "years": [
+                2020,
+                2021,
+                2022
+            ]
+        }
+    },
+    "TSLA": {
+        "name": "Tesla, Inc.",
+        "industry": "自動車",
+        "current_price": 235.87,
+        "revenue": 81462.0,
+        "net_income": 12583.0,
+        "eps": 3.98,
+        "book_value_per_share": 19.6,
+        "shares_outstanding": 3160.0,
+        "pe_ratio": 59.26,
+        "pb_ratio": 12.03,
+        "ps_ratio": 9.15,
+        "roe": 20.3,
+        "historical_growth": 37.2,
+        "historical_data": {
+            "revenue": [
+                31536.0,
+                53823.0,
+                81462.0
+            ],
+            "net_income": [
+                721.0,
+                5519.0,
+                12583.0
+            ],
+            "years": [
+                2020,
+                2021,
+                2022
+            ]
+        }
+    },
+    "JPM": {
+        "name": "JPMorgan Chase & Co.",
+        "industry": "金融",
+        "current_price": 199.95,
+        "revenue": 128287.0,
+        "net_income": 37676.0,
+        "eps": 12.62,
+        "book_value_per_share": 111.1,
+        "shares_outstanding": 2940.0,
+        "pe_ratio": 15.84,
+        "pb_ratio": 1.8,
+        "ps_ratio": 4.59,
+        "roe": 11.36,
+        "historical_growth": 3.5,
+        "historical_data": {
+            "revenue": [
+                119543.0,
+                127202.0,
+                128287.0
+            ],
+            "net_income": [
+                29131.0,
+                48334.0,
+                37676.0
+            ],
+            "years": [
+                2020,
+                2021,
+                2022
+            ]
+        }
+    },
+    "JNJ": {
+        "name": "Johnson & Johnson",
+        "industry": "ヘルスケア",
+        "current_price": 149.12,
+        "revenue": 94943.0,
+        "net_income": 17941.0,
+        "eps": 6.81,
+        "book_value_per_share": 37.3,
+        "shares_outstanding": 2600.0,
+        "pe_ratio": 21.9,
+        "pb_ratio": 4.0,
+        "ps_ratio": 4.09,
+        "roe": 18.26,
+        "historical_growth": 5.1,
+        "historical_data": {
+            "revenue": [
+                82584.0,
+                93775.0,
+                94943.0
+            ],
+            "net_income": [
+                14714.0,
+                20878.0,
+                17941.0
+            ],
+            "years": [
+                2020,
+                2021,
+                2022
+            ]
+        }
+    },
+    "PG": {
+        "name": "The Procter & Gamble Company",
+        "industry": "消費財",
+        "current_price": 165.52,
+        "revenue": 80187.0,
+        "net_income": 14742.0,
+        "eps": 5.81,
+        "book_value_per_share": 30.8,
+        "shares_outstanding": 2520.0,
+        "pe_ratio": 28.49,
+        "pb_ratio": 5.37,
+        "ps_ratio": 5.21,
+        "roe": 18.86,
+        "historical_growth": 5.8,
+        "historical_data": {
+            "revenue": [
+                70950.0,
+                76118.0,
+                80187.0
+            ],
+            "net_income": [
+                13027.0,
+                14306.0,
+                14742.0
+            ],
+            "years": [
+                2020,
+                2021,
+                2022
+            ]
+        }
+    },
+    "XOM": {
+        "name": "Exxon Mobil Corporation",
+        "industry": "エネルギー",
+        "current_price": 120.37,
+        "revenue": 413680.0,
+        "net_income": 55740.0,
+        "eps": 13.26,
+        "book_value_per_share": 80.9,
+        "shares_outstanding": 4180.0,
+        "pe_ratio": 9.08,
+        "pb_ratio": 1.49,
+        "ps_ratio": 1.22,
+        "roe": 16.39,
+        "historical_growth": 7.3,
+        "historical_data": {
+            "revenue": [
+                178574.0,
+                285640.0,
+                413680.0
+            ],
+            "net_income": [
+                -22440.0,
+                23040.0,
+                55740.0
+            ],
+            "years": [
+                2020,
+                2021,
+                2022
+            ]
+        }
+    },
+    "BAC": {
+        "name": "Bank of America Corporation",
+        "industry": "金融",
+        "current_price": 38.85,
+        "revenue": 94950.0,
+        "net_income": 27528.0,
+        "eps": 3.41,
+        "book_value_per_share": 34.7,
+        "shares_outstanding": 8030.0,
+        "pe_ratio": 11.39,
+        "pb_ratio": 1.12,
+        "ps_ratio": 3.28,
+        "roe": 9.82,
+        "historical_growth": 2.9,
+        "historical_data": {
+            "revenue": [
+                85528.0,
+                93771.0,
+                94950.0
+            ],
+            "net_income": [
+                17894.0,
+                31978.0,
+                27528.0
+            ],
+            "years": [
+                2020,
+                2021,
+                2022
+            ]
+        }
+    }
+}

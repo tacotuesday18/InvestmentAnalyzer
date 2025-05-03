@@ -1,0 +1,86 @@
+{
+    "テクノロジー": {
+        "pe_ratio": 32.0,
+        "pb_ratio": 9.0,
+        "ps_ratio": 8.0,
+        "roe": 22.0,
+        "growth_rate": 15.0
+    },
+    "金融": {
+        "pe_ratio": 13.0,
+        "pb_ratio": 1.5,
+        "ps_ratio": 3.5,
+        "roe": 11.0,
+        "growth_rate": 5.0
+    },
+    "ヘルスケア": {
+        "pe_ratio": 20.0,
+        "pb_ratio": 4.5,
+        "ps_ratio": 4.0,
+        "roe": 17.0,
+        "growth_rate": 7.0
+    },
+    "消費財": {
+        "pe_ratio": 25.0,
+        "pb_ratio": 6.0,
+        "ps_ratio": 3.0,
+        "roe": 18.0,
+        "growth_rate": 5.0
+    },
+    "エネルギー": {
+        "pe_ratio": 10.0,
+        "pb_ratio": 1.5,
+        "ps_ratio": 1.0,
+        "roe": 12.0,
+        "growth_rate": 3.0
+    },
+    "自動車": {
+        "pe_ratio": 18.0,
+        "pb_ratio": 3.0,
+        "ps_ratio": 2.0,
+        "roe": 15.0,
+        "growth_rate": 8.0
+    },
+    "工業": {
+        "pe_ratio": 22.0,
+        "pb_ratio": 3.5,
+        "ps_ratio": 2.5,
+        "roe": 16.0,
+        "growth_rate": 6.0
+    },
+    "通信": {
+        "pe_ratio": 15.0,
+        "pb_ratio": 2.5,
+        "ps_ratio": 2.0,
+        "roe": 14.0,
+        "growth_rate": 4.0
+    },
+    "素材": {
+        "pe_ratio": 17.0,
+        "pb_ratio": 2.8,
+        "ps_ratio": 1.8,
+        "roe": 13.0,
+        "growth_rate": 5.0
+    },
+    "公共事業": {
+        "pe_ratio": 19.0,
+        "pb_ratio": 2.0,
+        "ps_ratio": 1.5,
+        "roe": 10.0,
+        "growth_rate": 3.0
+    },
+    "不動産": {
+        "pe_ratio": 21.0,
+        "pb_ratio": 2.2,
+        "ps_ratio": 7.0,
+        "roe": 11.0,
+        "growth_rate": 4.0
+    },
+    "その他": {
+        "pe_ratio": 20.0,
+        "pb_ratio": 3.0,
+        "ps_ratio": 2.5,
+        "roe": 15.0,
+        "growth_rate": 5.0
+    }
+}
