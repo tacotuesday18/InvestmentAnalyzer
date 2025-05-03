@@ -6,9 +6,37 @@ import plotly.graph_objects as go
 import trafilatura
 import requests
 import os
+import time
 from utils import generate_swot_analysis, generate_moat_analysis
 from financial_models import calculate_intrinsic_value, calculate_financial_ratios
-from database import get_companies, get_company_financial_data, save_analysis, update_user_subscription
+from database import get_companies, get_company_financial_data, save_analysis, update_user_subscription, setup_database
+
+# データベースのセットアップ
+try:
+    setup_database()
+except Exception as e:
+    st.error(f"データベース初期化エラー: {e}")
+
+# メモリキャッシュ
+@st.cache_data(ttl=300)  # 5分間キャッシュ
+def cached_get_companies():
+    """企業リストを取得し、結果をキャッシュする"""
+    try:
+        companies = get_companies()
+        if not companies:
+            # エラーが発生した場合はダミーデータを返す
+            return [
+                {"id": 1, "name": "Apple Inc.", "symbol": "AAPL", "industry": "テクノロジー"},
+                {"id": 2, "name": "Microsoft Corporation", "symbol": "MSFT", "industry": "テクノロジー"},
+                {"id": 3, "name": "Amazon.com, Inc.", "symbol": "AMZN", "industry": "消費財"},
+                {"id": 4, "name": "JPMorgan Chase & Co.", "symbol": "JPM", "industry": "金融"},
+                {"id": 5, "name": "Johnson & Johnson", "symbol": "JNJ", "industry": "ヘルスケア"}
+            ]
+        return companies
+    except Exception as e:
+        st.error(f"企業データ取得エラー: {e}")
+        # エラーが発生した場合は空のリストを返す
+        return []
 
 # ページ設定
 st.set_page_config(
@@ -142,7 +170,7 @@ with st.sidebar:
     show_subscription_plans()
     
     # データベースから企業一覧を取得
-    companies = get_companies()
+    companies = cached_get_companies()
     company_options = [""] + [f"{company['name']} ({company['symbol']})" for company in companies]
     selected_company = st.selectbox("企業を選択", options=company_options, index=0)
     

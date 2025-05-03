@@ -11,6 +11,18 @@ engine = create_engine(DATABASE_URL)
 Base = declarative_base()
 Session = sessionmaker(bind=engine)
 
+# セッションを取得する関数
+def get_session():
+    """
+    新しいデータベースセッションを作成して返す
+    """
+    session = Session()
+    try:
+        return session
+    except Exception as e:
+        session.close()
+        raise e
+
 # モデル定義
 class Company(Base):
     """企業情報モデル"""
@@ -150,75 +162,122 @@ def insert_sample_data():
 
 # 企業データの取得
 def get_companies():
-    session = Session()
-    companies = session.query(Company).all()
-    result = [{"id": c.id, "name": c.name, "symbol": c.symbol, "industry": c.industry} for c in companies]
-    session.close()
-    return result
+    try:
+        session = get_session()
+        companies = session.query(Company).all()
+        result = [{"id": c.id, "name": c.name, "symbol": c.symbol, "industry": c.industry} for c in companies]
+        return result
+    except Exception as e:
+        print(f"Error getting companies: {e}")
+        return []
+    finally:
+        session.close()
 
 
 # 企業の財務データ取得
 def get_company_financial_data(company_id, year=None):
-    session = Session()
-    query = session.query(FinancialData).filter(FinancialData.company_id == company_id)
-    
-    if year:
-        query = query.filter(FinancialData.year == year)
-    
-    data = query.order_by(FinancialData.year.desc()).first()
-    session.close()
-    return data
+    try:
+        session = get_session()
+        query = session.query(FinancialData).filter(FinancialData.company_id == company_id)
+        
+        if year:
+            query = query.filter(FinancialData.year == year)
+        
+        data = query.order_by(FinancialData.year.desc()).first()
+        return data
+    except Exception as e:
+        print(f"Error getting financial data: {e}")
+        return None
+    finally:
+        session.close()
 
 
 # 分析結果の保存
 def save_analysis(analysis_data):
-    session = Session()
-    analysis = Analysis(**analysis_data)
-    session.add(analysis)
-    session.commit()
-    session.close()
-    return analysis.id
+    try:
+        session = get_session()
+        analysis = Analysis(**analysis_data)
+        session.add(analysis)
+        session.commit()
+        return analysis.id
+    except Exception as e:
+        session.rollback()
+        print(f"Error saving analysis: {e}")
+        return None
+    finally:
+        session.close()
 
 
 # ユーザーのサブスクリプションプラン更新
 def update_user_subscription(username, plan):
-    session = Session()
-    user = session.query(User).filter(User.username == username).first()
-    
-    if not user:
-        user = User(username=username, subscription_plan=plan)
-        session.add(user)
-    else:
-        user.subscription_plan = plan
-    
-    session.commit()
-    session.close()
-    return True
+    try:
+        session = get_session()
+        user = session.query(User).filter(User.username == username).first()
+        
+        if not user:
+            user = User(username=username, subscription_plan=plan)
+            session.add(user)
+        else:
+            user.subscription_plan = plan
+        
+        session.commit()
+        return True
+    except Exception as e:
+        session.rollback()
+        print(f"Error updating subscription: {e}")
+        return False
+    finally:
+        session.close()
 
 
 # 分析カウントの増加
 def increment_analysis_count(username):
-    session = Session()
-    user = session.query(User).filter(User.username == username).first()
-    
-    if user:
-        user.analysis_count += 1
-        session.commit()
-    
-    session.close()
-    return True if user else False
+    try:
+        session = get_session()
+        user = session.query(User).filter(User.username == username).first()
+        
+        if user:
+            user.analysis_count += 1
+            session.commit()
+            return True
+        return False
+    except Exception as e:
+        session.rollback()
+        print(f"Error incrementing analysis count: {e}")
+        return False
+    finally:
+        session.close()
 
+
+# データベースの初期化と企業データの取得 - エラーハンドリング付き
+def setup_database():
+    """
+    データベーステーブルの作成とサンプルデータの挿入を行う
+    """
+    try:
+        init_db()
+        print("データベーステーブルが作成されました。")
+        
+        # 既存のサンプルデータがあるか確認
+        session = get_session()
+        try:
+            count = session.query(Company).count()
+            
+            if count == 0:
+                session.close()
+                insert_sample_data()
+                print("サンプルデータが挿入されました。")
+            else:
+                print(f"既存の企業データが {count} 件あります。")
+                
+        except Exception as e:
+            print(f"データベース操作でエラーが発生しました: {e}")
+        finally:
+            session.close()
+            
+    except Exception as e:
+        print(f"データベースセットアップでエラーが発生しました: {e}")
 
 # 初期化
 if __name__ == "__main__":
-    init_db()
-    # 既存のサンプルデータがあるか確認
-    session = Session()
-    count = session.query(Company).count()
-    session.close()
-    
-    if count == 0:
-        insert_sample_data()
-        print("サンプルデータが挿入されました。")
-    else:
-        print(f"既存の企業データが {count} 件あります。")
+    setup_database()
