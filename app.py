@@ -1,52 +1,31 @@
 import streamlit as st
-import pandas as pd
-import numpy as np
-import plotly.express as px
-import plotly.graph_objects as go
-import trafilatura
-import requests
+import datetime
 import os
-import time
-from utils import generate_swot_analysis, generate_moat_analysis
-from financial_models import calculate_intrinsic_value, calculate_financial_ratios
-from database import get_companies, get_company_financial_data, save_analysis, update_user_subscription, setup_database
-
-# データベースのセットアップは完全に分離して実行
-# app.pyではデータベースセットアップを行わずに、
-# 必要に応じてデータベースから読み込むだけにする
-
-# メモリキャッシュ
-@st.cache_data(ttl=300)  # 5分間キャッシュ
-def cached_get_companies():
-    """企業リストを取得し、結果をキャッシュする"""
-    try:
-        companies = get_companies()
-        if not companies:
-            # エラーが発生した場合はダミーデータを返す
-            return [
-                {"id": 1, "name": "Apple Inc.", "symbol": "AAPL", "industry": "テクノロジー"},
-                {"id": 2, "name": "Microsoft Corporation", "symbol": "MSFT", "industry": "テクノロジー"},
-                {"id": 3, "name": "Amazon.com, Inc.", "symbol": "AMZN", "industry": "消費財"},
-                {"id": 4, "name": "JPMorgan Chase & Co.", "symbol": "JPM", "industry": "金融"},
-                {"id": 5, "name": "Johnson & Johnson", "symbol": "JNJ", "industry": "ヘルスケア"}
-            ]
-        return companies
-    except Exception as e:
-        st.error(f"企業データ取得エラー: {e}")
-        # エラーが発生した場合は空のリストを返す
-        return []
+import json
+from auth import authenticate_user, create_user
+from payment import PaymentProcessor
 
 # ページ設定
 st.set_page_config(
-    page_title="企業価値分析ツール",
-    page_icon="📊",
+    page_title="企業価値分析プロ - 株式分析とDCF法による本質的価値計算",
+    page_icon="💹",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
+    menu_items={
+        'About': "# 企業価値分析プロ\n企業の本質的価値を計算し、投資判断をサポートする分析ツールです。",
+    }
 )
 
 # カスタムCSS
 st.markdown("""
 <style>
+    /* 全体のフォントとカラー */
+    body {
+        font-family: 'Noto Sans JP', sans-serif;
+        color: #333;
+    }
+    
+    /* メインタイトル */
     .main-title {
         font-size: 3.5rem !important;
         color: #0066cc;
@@ -55,6 +34,7 @@ st.markdown("""
         font-weight: bold;
     }
     
+    /* サブタイトル */
     .subtitle {
         font-size: 1.2rem !important;
         color: #555;
@@ -62,14 +42,16 @@ st.markdown("""
         margin-bottom: 2rem;
     }
     
+    /* カード要素 */
     .card {
         border-radius: 10px;
         padding: 1.5rem;
-        margin-bottom: 1rem;
+        margin-bottom: 1.5rem;
         background-color: #f8f9fa;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
     
+    /* カードタイトル */
     .card-title {
         font-size: 1.4rem !important;
         font-weight: bold;
@@ -77,552 +59,747 @@ st.markdown("""
         color: #0066cc;
     }
     
-    .metric-container {
-        background-color: white;
-        border-radius: 8px;
-        padding: 1rem;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    /* プランカード（ハイライト用） */
+    .plan-card {
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin: 0.5rem;
+        background-color: #f8f9fa;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        height: 100%;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
     
-    .footer {
-        text-align: center;
-        color: #888;
-        font-size: 0.8rem;
-        margin-top: 2rem;
+    .plan-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
     }
     
-    /* プラン選択ボタンのスタイル */
+    .plan-card-highlight {
+        background-color: #e6f7ff;
+        border: 2px solid #0066cc;
+    }
+    
+    /* フォーム要素 */
+    .form-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 2rem;
+        background-color: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* ボタン要素 */
     .stButton>button {
-        width: 100%;
-        border-radius: 20px;
-        font-weight: bold;
+        font-weight: bold !important;
+        border-radius: 5px !important;
+        padding: 0.5rem 1rem !important;
+    }
+    
+    /* フィーチャーセクション */
+    .feature-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .feature-icon {
+        color: #0066cc;
+        font-size: 1.5rem;
+        margin-right: 1rem;
+    }
+    
+    /* ユーザーメニュー */
+    .user-menu {
+        text-align: right;
+        margin-bottom: 1rem;
     }
     
     /* ダークモードサポート */
     @media (prefers-color-scheme: dark) {
-        .card {
+        .card, .form-container, .plan-card {
             background-color: #262730;
         }
         
-        .metric-container {
-            background-color: #1e1e1e;
+        .plan-card-highlight {
+            background-color: #0e3450;
+            border: 2px solid #4d94ff;
+        }
+    }
+    
+    /* テーブルスタイル */
+    .styled-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1.5rem 0;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .styled-table thead tr {
+        background-color: #0066cc;
+        color: white;
+        text-align: left;
+    }
+    
+    .styled-table th,
+    .styled-table td {
+        padding: 12px 15px;
+    }
+    
+    .styled-table tbody tr {
+        border-bottom: 1px solid #dddddd;
+    }
+
+    .styled-table tbody tr:nth-of-type(even) {
+        background-color: #f3f3f3;
+    }
+    
+    .styled-table tbody tr.active-row {
+        font-weight: bold;
+        color: #0066cc;
+    }
+    
+    /* 区切り線 */
+    hr {
+        margin: 2rem 0;
+        border: 0;
+        height: 1px;
+        background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0));
+    }
+    
+    /* フッター */
+    .footer {
+        text-align: center;
+        padding: 2rem 0;
+        color: #777;
+        font-size: 0.9rem;
+    }
+    
+    /* モバイル対応 */
+    @media (max-width: 768px) {
+        .main-title {
+            font-size: 2.5rem !important;
+        }
+        
+        .subtitle {
+            font-size: 1rem !important;
         }
     }
 </style>
 """, unsafe_allow_html=True)
 
-# アプリケーションタイトル
-st.markdown("<h1 class='main-title'>💰 企業価値分析プロ</h1>", unsafe_allow_html=True)
-st.markdown("<p class='subtitle'>収益成長率と割引率から企業の本質的価値を計算し、投資判断をサポートする高度な分析ツール</p>", unsafe_allow_html=True)
-
-# サブスクリプションプラン機能
-def show_subscription_plans():
-    st.sidebar.markdown("---")
-    st.sidebar.markdown("<h3 style='text-align: center; color: #0066cc;'>📊 サブスクリプションプラン</h3>", unsafe_allow_html=True)
-    
-    # プランのカード表示スタイル
-    plan_style = """
-    <div style="padding: 15px; margin-bottom: 15px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-        <h4 style="text-align: center; margin-bottom: 10px;">%s</h4>
-        <p style="text-align: center; font-weight: bold; font-size: 1.2rem; margin-bottom: 12px; color: #0066cc;">%s</p>
-        <ul style="list-style-type: none; padding-left: 5px;">
-            %s
-        </ul>
-    </div>
-    """
-    
-    # Free プラン
-    free_features = "<li>✓ 基本的な企業分析</li><li>✓ 月3社まで分析可能</li><li>✓ シンプルなレポート</li>"
-    st.sidebar.markdown(plan_style % ("🆓 無料プラン", "¥0", free_features), unsafe_allow_html=True)
-    if st.sidebar.button("選択", key="free_plan", help="無料プランを選択"):
-        st.session_state.subscription = "free"
-        st.sidebar.success("✅ 無料プランが選択されました")
-    
-    st.sidebar.markdown("<hr style='margin: 20px 0'>", unsafe_allow_html=True)
-    
-    # Basic プラン
-    basic_features = "<li>✓ 全ての無料機能</li><li>✓ 月20社まで分析可能</li><li>✓ 詳細SWOT分析</li><li>✓ 財務指標の比較</li>"
-    st.sidebar.markdown(plan_style % ("🔹 ベーシックプラン", "¥2,500/月", basic_features), unsafe_allow_html=True)
-    if st.sidebar.button("選択", key="basic_plan", help="ベーシックプランを選択"):
-        st.session_state.subscription = "basic"
-        st.sidebar.success("✅ ベーシックプランが選択されました")
-    
-    st.sidebar.markdown("<hr style='margin: 20px 0'>", unsafe_allow_html=True)
-    
-    # Premium プラン
-    premium_features = "<li>✓ 全てのベーシック機能</li><li>✓ 無制限の企業分析</li><li>✓ 決算情報の詳細分析</li><li>✓ 業界詳細レポート</li><li>✓ カスタマーサポート</li>"
-    st.sidebar.markdown(plan_style % ("💎 プレミアムプラン", "¥4,900/月", premium_features), unsafe_allow_html=True)
-    if st.sidebar.button("選択", key="premium_plan", help="プレミアムプランを選択"):
-        st.session_state.subscription = "premium"
-        st.sidebar.success("✅ プレミアムプランが選択されました")
-
 # セッション状態の初期化
-if 'subscription' not in st.session_state:
-    st.session_state.subscription = "free"  # デフォルトは無料プラン
+if 'logged_in' not in st.session_state:
+    st.session_state.logged_in = False
 
-# サイドバー - 基本パラメータ入力
-with st.sidebar:
-    st.header("企業情報と予測パラメータ")
-    
-    # サブスクリプションプランの表示
-    show_subscription_plans()
-    
-    # データベースから企業一覧を取得
-    companies = cached_get_companies()
-    company_options = [""] + [f"{company['name']} ({company['symbol']})" for company in companies]
-    selected_company = st.selectbox("企業を選択", options=company_options, index=0)
-    
-    company_name = ""
-    company_id = None
-    company_symbol = ""
-    current_revenue = 10000
-    current_net_income = 1000
-    shares_outstanding = 100.0
-    current_stock_price = 1000.0
-    book_value_per_share = 500.0
-    industry = "テクノロジー"
-    
-    # 企業を選択した場合はデータベースからデータを取得
-    if selected_company and selected_company != "":
-        selected_company_name, selected_company_symbol = selected_company.rsplit(" (", 1)
-        company_symbol = selected_company_symbol[:-1]  # 閉じ括弧を削除
-        company_name = selected_company_name
-        
-        # 企業IDを取得
-        for company in companies:
-            if company['symbol'] == company_symbol:
-                company_id = company['id']
-                industry = company['industry']
-                break
-        
-        # 財務データを取得
-        if company_id:
-            financial_data = get_company_financial_data(company_id)
-            if financial_data:
-                current_revenue = financial_data.revenue
-                current_net_income = financial_data.net_income
-                shares_outstanding = financial_data.shares_outstanding
-                current_stock_price = financial_data.current_stock_price
-                book_value_per_share = financial_data.book_value_per_share
-    
-    # 手動入力のオプション
-    if not selected_company or selected_company == "":
-        # 企業の基本情報
-        company_name = st.text_input("企業名", company_name)
-        industry = st.selectbox(
-            "業界",
-            ["テクノロジー", "金融", "ヘルスケア", "消費財", "工業", "通信", "エネルギー", "素材", "公共事業", "不動産", "その他"],
-            index=["テクノロジー", "金融", "ヘルスケア", "消費財", "工業", "通信", "エネルギー", "素材", "公共事業", "不動産", "その他"].index(industry)
-        )
-        
-        # 証券コードまたはティッカーシンボル（ベーシックおよびプレミアムプラン用）
-        if st.session_state.subscription in ["basic", "premium"]:
-            company_symbol = st.text_input("証券コード/ティッカーシンボル（例: 7203.T, AAPL）", company_symbol)
-    
-    # 現在の財務情報（企業選択/手動入力に関わらず表示）
-    st.subheader("現在の財務情報")
-    current_revenue = st.number_input("現在の年間売上高（百万USD）", min_value=0, value=int(current_revenue))
-    current_net_income = st.number_input("現在の純利益（百万USD）", min_value=-100000, value=int(current_net_income))
-    current_net_margin = (current_net_income / current_revenue) * 100 if current_revenue > 0 else 0
-    st.info(f"現在の純利益率: {current_net_margin:.2f}%")
-    
-    # 株式関連情報
-    shares_outstanding = st.number_input("発行済株式数（百万株）", min_value=0.1, value=float(shares_outstanding), step=0.1)
-    current_stock_price = st.number_input("現在の株価（USD）", min_value=0.0, value=float(current_stock_price), step=0.1)
-    book_value_per_share = st.number_input("1株あたり純資産（USD）", min_value=0.0, value=float(book_value_per_share), step=0.1)
-    
-    # 予測パラメータ
-    st.subheader("成長予測パラメータ")
-    revenue_growth_rate = st.slider("年間売上高成長率 (%)", min_value=-20, max_value=100, value=10)
-    target_net_margin = current_net_margin  # 簡素化のため、現在の利益率を目標にする
-    forecast_years = 5  # 簡素化のため、予測期間を5年に固定
-    discount_rate = st.slider("割引率 (%)", min_value=5, max_value=25, value=10)
-    
-    # 業界平均値
-    st.subheader("業界平均指標")
-    industry_pe = st.number_input("業界平均PER", min_value=1.0, value=15.0, step=0.1)
-    industry_pb = st.number_input("業界平均PBR", min_value=0.1, value=1.5, step=0.1)
-    industry_ps = st.number_input("業界平均PSR", min_value=0.1, value=2.0, step=0.1)
+if 'user' not in st.session_state:
+    st.session_state.user = None
 
-# メインコンテンツ
-if company_name:
-    # プロおよびエンタープライズプランでは、最新の決算情報も表示
-    company_symbol = ""
-    if 'company_symbol' in locals():
-        company_symbol = company_symbol
-        
-    if st.session_state.subscription in ["basic", "premium"] and company_symbol:
-        from earnings_scraper import get_earnings_highlights
-        
-        st.markdown("<div class='card'><h3 class='card-title'>🔍 最新の決算ハイライト</h3>", unsafe_allow_html=True)
-        with st.expander("決算情報の詳細を表示", expanded=True):
-            earnings_data = get_earnings_highlights(company_symbol)
-            
-            col_earnings1, col_earnings2 = st.columns(2)
-            with col_earnings1:
-                st.markdown("##### 📈 業績ハイライト")
-                st.markdown(f"**売上成長率**: {earnings_data['revenue_growth']}")
-                st.markdown(f"**営業利益率**: {earnings_data['operating_margin']}")
-                st.markdown(f"**純利益**: {earnings_data['net_income']}")
-            
-            with col_earnings2:
-                st.markdown("##### 🔮 今後の見通しと戦略")
-                st.markdown(f"**今後の見通し**: {earnings_data['future_outlook']}")
-                st.markdown(f"**戦略的施策**: {earnings_data['strategic_initiatives']}")
-                st.markdown(f"**主要リスク要因**: {earnings_data['risk_factors']}")
-        st.markdown("</div>", unsafe_allow_html=True)
+if 'current_page' not in st.session_state:
+    st.session_state.current_page = 'login'
+
+# ログイン状態管理
+def login_user(username, password):
+    """ユーザーをログインする"""
+    result = authenticate_user(username, password)
+    if result['success']:
+        st.session_state.logged_in = True
+        st.session_state.user = result['user']
+        return True, result['message']
+    else:
+        return False, result['message']
+
+def logout_user():
+    """ユーザーをログアウトする"""
+    st.session_state.logged_in = False
+    st.session_state.user = None
+    st.session_state.current_page = 'login'
+
+def signup_user(username, email, password, confirm_password):
+    """新しいユーザーを登録する"""
+    if password != confirm_password:
+        return False, "パスワードが一致しません。"
     
-    # プレミアムプランのみ、業界の詳細分析も表示
-    if st.session_state.subscription == "premium":
-        st.subheader("🏢 業界詳細分析")
-        with st.expander("業界のトレンドと競合状況", expanded=False):
-            st.markdown("""
-            ##### 業界トレンド
-            1. **デジタルトランスフォーメーション**: 業界全体でデジタル化が加速しています
-            2. **サステナビリティ**: ESG投資の増加に伴い、持続可能な事業モデルへの移行が進んでいます
-            3. **規制環境**: 各国での規制強化が事業に影響を与えています
-            
-            ##### 競合状況
-            - 主要競合他社とのシェア比較
-            - 価格競争と差別化戦略の比較
-            - 市場への新規参入状況と参入障壁の分析
-            """)
-    
-    col1, col2 = st.columns([2, 1])
+    result = create_user(username, email, password)
+    if result['success']:
+        return True, result['message']
+    else:
+        return False, result['message']
+
+def switch_page(page_name):
+    """表示するページを切り替える"""
+    st.session_state.current_page = page_name
+
+# ページヘッダー・ナビゲーション
+def display_header():
+    """ヘッダーとナビゲーションを表示"""
+    col1, col2 = st.columns([3, 1])
     
     with col1:
-        st.header(f"{company_name}の企業価値分析")
-        
-        # 財務予測の計算
-        forecasted_data = pd.DataFrame()
-        years = list(range(0, forecast_years + 1))
-        forecasted_data['年'] = years
-        
-        # 売上高の予測
-        forecasted_data['売上高（百万USD）'] = [current_revenue * ((1 + revenue_growth_rate/100) ** year) for year in years]
-        
-        # 純利益率の予測（現在から目標まで線形に変化すると仮定）
-        forecasted_data['純利益率 (%)'] = [current_net_margin + (target_net_margin - current_net_margin) * (year / forecast_years) for year in years]
-        
-        # 純利益の予測
-        forecasted_data['純利益（百万USD）'] = forecasted_data['売上高（百万USD）'] * forecasted_data['純利益率 (%)'] / 100
-        
-        # 1株あたり利益（EPS）の予測
-        forecasted_data['EPS（USD）'] = forecasted_data['純利益（百万USD）'] * 1000000 / shares_outstanding / 1000000
-        
-        # 予測データを表示
-        st.subheader("財務予測")
-        st.dataframe(forecasted_data.round(2))
-        
-        # 売上高と純利益のグラフ
-        fig1 = go.Figure()
-        fig1.add_trace(go.Bar(
-            x=forecasted_data['年'],
-            y=forecasted_data['売上高（百万USD）'],
-            name='売上高（百万USD）'
-        ))
-        fig1.add_trace(go.Line(
-            x=forecasted_data['年'],
-            y=forecasted_data['純利益（百万USD）'],
-            name='純利益（百万USD）',
-            yaxis='y2'
-        ))
-        fig1.update_layout(
-            title='売上高と純利益の予測',
-            xaxis_title='年',
-            yaxis=dict(title='売上高（百万USD）'),
-            yaxis2=dict(title='純利益（百万USD）', overlaying='y', side='right'),
-            legend=dict(x=0.01, y=0.99),
-            height=400
-        )
-        st.plotly_chart(fig1, use_container_width=True)
-        
-        # 本質的価値の計算
-        terminal_value_multiple = industry_pe
-        intrinsic_values = calculate_intrinsic_value(
-            forecasted_data, 
-            discount_rate, 
-            terminal_value_multiple, 
-            shares_outstanding
-        )
-        
-        # 現在の財務指標の計算
-        current_market_cap = current_stock_price * shares_outstanding
-        financial_ratios = calculate_financial_ratios(
-            current_market_cap,
-            current_revenue,
-            current_net_income,
-            book_value_per_share * shares_outstanding,
-            shares_outstanding
-        )
-        
-        # DCF法による株価計算
-        dcf_price = intrinsic_values['dcf_per_share']
-        upside_potential = ((dcf_price / current_stock_price) - 1) * 100
-        
-        # 本質的価値の表示
-        st.subheader("本質的価値分析結果")
-        col_a, col_b, col_c = st.columns(3)
-        with col_a:
-            st.metric("DCF法による株価（USD）", f"{dcf_price:.2f}")
-        with col_b:
-            st.metric("現在の株価（USD）", f"{current_stock_price:.2f}")
-        with col_c:
-            st.metric("上昇余地", f"{upside_potential:.2f}%", delta=f"{upside_potential:.2f}%")
-        
-        # 財務指標の比較
-        st.subheader("財務指標の比較")
-        comparison_data = {
-            '指標': ['PER（株価収益率）', 'PBR（株価純資産倍率）', 'PSR（株価売上高倍率）'],
-            '現在値': [financial_ratios['pe_ratio'], financial_ratios['pb_ratio'], financial_ratios['ps_ratio']],
-            '業界平均': [industry_pe, industry_pb, industry_ps],
-            '差異 (%)': [
-                ((financial_ratios['pe_ratio'] / industry_pe) - 1) * 100,
-                ((financial_ratios['pb_ratio'] / industry_pb) - 1) * 100,
-                ((financial_ratios['ps_ratio'] / industry_ps) - 1) * 100
-            ]
-        }
-        comparison_df = pd.DataFrame(comparison_data)
-        
-        # 財務指標の視覚化
-        fig2 = go.Figure()
-        for i, metric in enumerate(['PER（株価収益率）', 'PBR（株価純資産倍率）', 'PSR（株価売上高倍率）']):
-            fig2.add_trace(go.Bar(
-                x=[metric],
-                y=[comparison_df['現在値'][i]],
-                name='現在値'
-            ))
-            fig2.add_trace(go.Bar(
-                x=[metric],
-                y=[comparison_df['業界平均'][i]],
-                name='業界平均'
-            ))
-        
-        fig2.update_layout(
-            title='財務指標の比較',
-            yaxis_title='倍率',
-            barmode='group',
-            height=400
-        )
-        st.plotly_chart(fig2, use_container_width=True)
-        
-        # 評価結果の詳細
-        st.subheader("投資判断の根拠")
-        
-        # 割安度の分析
-        valuation_status = "割安" if upside_potential > 10 else "適正" if -10 <= upside_potential <= 10 else "割高"
-        
-        st.write(f"**株価評価**: 現在の{company_name}の株価は**{valuation_status}**と判断されます。DCF法による本質的価値は現在の株価に対して{upside_potential:.2f}%の{valuation_status}度を示しています。")
-        
-        # 成長性の分析
-        growth_evaluation = "高い" if revenue_growth_rate > 15 else "平均的" if 5 <= revenue_growth_rate <= 15 else "低い"
-        st.write(f"**成長性**: {forecast_years}年間の予想年間成長率は{revenue_growth_rate}%で、これは**{growth_evaluation}**成長率です。この成長率が達成されれば、{forecast_years}年後の売上高は{forecasted_data['売上高（百万円）'].iloc[-1]:.2f}百万円に達します。")
-        
-        # 収益性の分析
-        profitability_trend = "改善" if target_net_margin > current_net_margin else "維持" if target_net_margin == current_net_margin else "悪化"
-        st.write(f"**収益性**: 純利益率は現在の{current_net_margin:.2f}%から{target_net_margin:.2f}%へと**{profitability_trend}**する見込みです。これにより{forecast_years}年後の純利益は{forecasted_data['純利益（百万円）'].iloc[-1]:.2f}百万円に達すると予測されます。")
+        st.markdown("<h1 class='main-title'>💹 企業価値分析プロ</h1>", unsafe_allow_html=True)
+        st.markdown("<p class='subtitle'>収益成長率と割引率から企業の本質的価値を計算し、投資判断をサポートする高度な分析ツール</p>", unsafe_allow_html=True)
     
     with col2:
-        # SWOT分析
-        st.subheader("SWOT分析")
-        swot = generate_swot_analysis(industry, revenue_growth_rate, current_net_margin, target_net_margin)
-        
-        st.markdown("##### 強み (Strengths)")
-        st.write(swot['strengths'])
-        
-        st.markdown("##### 弱み (Weaknesses)")
-        st.write(swot['weaknesses'])
-        
-        st.markdown("##### 機会 (Opportunities)")
-        st.write(swot['opportunities'])
-        
-        st.markdown("##### 脅威 (Threats)")
-        st.write(swot['threats'])
-        
-        # 競争優位性（モート）分析
-        st.subheader("競争優位性（モート）分析")
-        moat = generate_moat_analysis(industry, revenue_growth_rate, current_net_margin)
-        
-        st.markdown("##### 競争優位性の評価")
-        st.write(moat['evaluation'])
-        
-        st.markdown("##### 持続可能な競争優位の源泉")
-        st.write(moat['sources'])
-        
-        # 総合評価と投資推奨
-        st.subheader("総合評価")
-        
-        # 投資推奨度を計算（例として、上昇余地、成長率、純利益率の改善度から計算）
-        recommendation_score = (
-            (upside_potential / 10) +  # 上昇余地の貢献
-            (revenue_growth_rate / 10) +  # 成長率の貢献
-            ((target_net_margin - current_net_margin) * 2)  # 純利益率改善の貢献
+        if st.session_state.logged_in:
+            st.markdown(f"<div class='user-menu'><p>👤 {st.session_state.user['username']} さん</p></div>", unsafe_allow_html=True)
+            if st.button("ログアウト"):
+                logout_user()
+        else:
+            col2_1, col2_2 = st.columns(2)
+            with col2_1:
+                if st.button("ログイン", use_container_width=True):
+                    switch_page('login')
+            with col2_2:
+                if st.button("登録", use_container_width=True):
+                    switch_page('signup')
+
+# ログインページ
+def show_login_page():
+    """ログインページを表示"""
+    st.markdown("<div class='form-container'>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center;'>ログイン</h2>", unsafe_allow_html=True)
+    
+    username = st.text_input("ユーザー名またはメールアドレス")
+    password = st.text_input("パスワード", type="password")
+    
+    if st.button("ログイン", use_container_width=True):
+        if username and password:
+            success, message = login_user(username, password)
+            if success:
+                st.success(message)
+                st.rerun()
+            else:
+                st.error(message)
+        else:
+            st.warning("ユーザー名とパスワードを入力してください。")
+    
+    st.markdown("<p style='text-align: center; margin-top: 1rem;'>アカウントをお持ちでない場合は<a href='javascript:void(0);' onclick='document.querySelector(\"[data-testid=root] button:last-child\").click();'>こちら</a>から登録できます。</p>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+    
+    if st.button("新規登録ページへ", key="to_signup"):
+        switch_page('signup')
+
+# サインアップページ
+def show_signup_page():
+    """サインアップページを表示"""
+    st.markdown("<div class='form-container'>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center;'>新規アカウント登録</h2>", unsafe_allow_html=True)
+    
+    username = st.text_input("ユーザー名（半角英数）")
+    email = st.text_input("メールアドレス")
+    password = st.text_input("パスワード", type="password")
+    confirm_password = st.text_input("パスワード（確認）", type="password")
+    
+    terms_agreed = st.checkbox("利用規約とプライバシーポリシーに同意します")
+    
+    if st.button("登録する", use_container_width=True):
+        if username and email and password and confirm_password:
+            if terms_agreed:
+                success, message = signup_user(username, email, password, confirm_password)
+                if success:
+                    st.success(message)
+                    st.info("登録が完了しました。ログインしてください。")
+                    switch_page('login')
+                    st.rerun()
+                else:
+                    st.error(message)
+            else:
+                st.warning("利用規約とプライバシーポリシーに同意する必要があります。")
+        else:
+            st.warning("すべての項目を入力してください。")
+    
+    st.markdown("<p style='text-align: center; margin-top: 1rem;'>すでにアカウントをお持ちの場合は<a href='javascript:void(0);' onclick='document.querySelector(\"[data-testid=root] button:last-child\").click();'>こちら</a>からログインできます。</p>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+    
+    if st.button("ログインページへ", key="to_login"):
+        switch_page('login')
+
+# プランの紹介・選択ページ
+def show_plans():
+    """サブスクリプションプランの紹介と選択画面を表示"""
+    st.markdown("<h2 style='text-align: center;'>サブスクリプションプラン</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center;'>あなたのニーズに合ったプランをお選びください。</p>", unsafe_allow_html=True)
+    
+    col1, col2, col3 = st.columns(3)
+    
+    # 無料プラン
+    with col1:
+        st.markdown("""
+        <div class='plan-card'>
+            <h3 style='text-align: center;'>🆓 無料プラン</h3>
+            <h2 style='text-align: center; color: #0066cc;'>¥0</h2>
+            <p style='text-align: center; color: #666;'>月額</p>
+            <hr>
+            <ul>
+                <li>基本的な企業分析</li>
+                <li>DCF法による株価評価</li>
+                <li>シンプルなSWOT分析</li>
+                <li>月3社まで分析可能</li>
+            </ul>
+            <div style='height: 50px;'></div>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("現在のプラン" if st.session_state.logged_in and st.session_state.user['subscription_plan'] == 'free' else "選択する", key="free_plan", use_container_width=True, disabled=not st.session_state.logged_in or st.session_state.user['subscription_plan'] == 'free'):
+            st.success("無料プランが選択されました。")
+    
+    # ベーシックプラン
+    with col2:
+        st.markdown("""
+        <div class='plan-card plan-card-highlight'>
+            <h3 style='text-align: center;'>🔹 ベーシックプラン</h3>
+            <h2 style='text-align: center; color: #0066cc;'>¥2,500</h2>
+            <p style='text-align: center; color: #666;'>月額</p>
+            <hr>
+            <ul>
+                <li>基本的な企業分析</li>
+                <li>DCF法による株価評価</li>
+                <li>詳細なSWOT分析</li>
+                <li>決算情報の詳細分析</li>
+                <li>財務指標の詳細比較</li>
+                <li>月20社まで分析可能</li>
+            </ul>
+            <div style='height: 10px;'></div>
+        </div>
+        """, unsafe_allow_html=True)
+        button_text = "現在のプラン" if st.session_state.logged_in and st.session_state.user['subscription_plan'] == 'basic' else "アップグレード"
+        button_disabled = not st.session_state.logged_in or st.session_state.user['subscription_plan'] == 'basic'
+        if st.button(button_text, key="basic_plan", use_container_width=True, disabled=button_disabled):
+            switch_page('payment')
+            st.session_state.selected_plan = 'basic'
+            st.rerun()
+    
+    # プレミアムプラン
+    with col3:
+        st.markdown("""
+        <div class='plan-card'>
+            <h3 style='text-align: center;'>💎 プレミアムプラン</h3>
+            <h2 style='text-align: center; color: #0066cc;'>¥4,900</h2>
+            <p style='text-align: center; color: #666;'>月額</p>
+            <hr>
+            <ul>
+                <li>基本的な企業分析</li>
+                <li>DCF法による株価評価</li>
+                <li>詳細なSWOT分析</li>
+                <li>決算情報の詳細分析</li>
+                <li>財務指標の詳細比較</li>
+                <li>業界詳細レポート</li>
+                <li>感度分析機能</li>
+                <li>DCF価値の感度分析</li>
+                <li>優先カスタマーサポート</li>
+                <li>無制限の企業分析</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
+        button_text = "現在のプラン" if st.session_state.logged_in and st.session_state.user['subscription_plan'] == 'premium' else "アップグレード"
+        button_disabled = not st.session_state.logged_in or st.session_state.user['subscription_plan'] == 'premium'
+        if st.button(button_text, key="premium_plan", use_container_width=True, disabled=button_disabled):
+            switch_page('payment')
+            st.session_state.selected_plan = 'premium'
+            st.rerun()
+
+# 支払い画面
+def show_payment_page():
+    """支払い情報入力画面を表示"""
+    if not st.session_state.logged_in:
+        st.warning("支払い処理を行うにはログインが必要です。")
+        if st.button("ログインページへ"):
+            switch_page('login')
+        return
+    
+    if 'selected_plan' not in st.session_state:
+        st.session_state.selected_plan = 'basic'
+    
+    plan_details = PaymentProcessor.get_plan_details(st.session_state.selected_plan)
+    
+    st.markdown("<h2 style='text-align: center;'>お支払い情報の入力</h2>", unsafe_allow_html=True)
+    st.markdown(f"<p style='text-align: center;'>選択されたプラン: <strong>{plan_details['name']}</strong> (¥{plan_details['price']:,}/月)</p>", unsafe_allow_html=True)
+    
+    st.markdown("<div class='form-container'>", unsafe_allow_html=True)
+    
+    payment_method = st.radio(
+        "お支払い方法を選択してください:",
+        options=["クレジットカード", "銀行振込", "コンビニ決済"],
+        index=0
+    )
+    
+    if payment_method == "クレジットカード":
+        st.markdown("### クレジットカード情報")
+        card_number = st.text_input("カード番号", placeholder="1234 5678 9012 3456")
+        col1, col2 = st.columns(2)
+        with col1:
+            expiry = st.text_input("有効期限 (MM/YY)", placeholder="12/25")
+        with col2:
+            cvc = st.text_input("セキュリティコード", type="password", placeholder="123")
+        cardholder = st.text_input("カード名義人", placeholder="TARO YAMADA")
+    elif payment_method == "銀行振込":
+        st.markdown("### 銀行振込情報")
+        st.info("以下の口座にお振込みください。お振込み後、確認ボタンを押してください。")
+        st.markdown("""
+        銀行名: サンプル銀行<br>
+        支店名: 本店<br>
+        口座種類: 普通<br>
+        口座番号: 1234567<br>
+        口座名義: カブシキガイシャサンプル<br>
+        振込金額: ¥{:,}<br>
+        """.format(plan_details['price']), unsafe_allow_html=True)
+    else:  # コンビニ決済
+        st.markdown("### コンビニ決済情報")
+        st.info("以下の情報を入力すると、コンビニ決済用の払込票が発行されます。")
+        st.selectbox("コンビニエンスストア", ["セブンイレブン", "ローソン", "ファミリーマート", "ミニストップ", "セイコーマート"])
+        st.text_input("電話番号", placeholder="090-1234-5678")
+    
+    st.markdown("### お客様情報")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.text_input("氏名", value=st.session_state.user['username'])
+    with col2:
+        st.text_input("メールアドレス", value=st.session_state.user['email'])
+    
+    st.markdown("### 利用規約")
+    terms_agreed = st.checkbox("利用規約・キャンセルポリシーに同意する")
+    
+    if st.button("支払いを完了する", use_container_width=True, disabled=not terms_agreed):
+        # 支払い処理（サンプル）
+        payment_result = PaymentProcessor.process_payment(
+            st.session_state.user['id'],
+            st.session_state.selected_plan,
+            payment_method.lower().replace(" ", "_"),
+            {}  # 実際の実装では、カード情報などを安全に処理
         )
         
-        recommendation = ""
-        if recommendation_score > 10:
-            recommendation = "強く買い推奨"
-        elif recommendation_score > 5:
-            recommendation = "買い推奨"
-        elif recommendation_score > 0:
-            recommendation = "弱気な買い"
-        elif recommendation_score > -5:
-            recommendation = "様子見"
+        if payment_result['success']:
+            st.success(payment_result['message'])
+            st.success("お支払いが完了しました。ありがとうございます！")
+            st.session_state.user['subscription_plan'] = st.session_state.selected_plan
+            if st.button("ホームに戻る"):
+                switch_page('home')
+                st.rerun()
         else:
-            recommendation = "売り推奨"
-        
-        # 投資推奨度を表示
-        st.info(f"**投資推奨度**: {recommendation}")
-        
-        # 主要リスク要因
-        st.markdown("##### 主要リスク要因")
-        st.write("1. 予想成長率を達成できない可能性")
-        st.write("2. 純利益率の目標達成に失敗する可能性")
-        st.write(f"3. 業界平均を下回る財務パフォーマンス")
-        st.write("4. 市場環境や競争状況の急激な変化")
-
-# 使用方法のガイド（企業名が入力されていない場合に表示）
-else:
-    # サブスクリプションプランの説明を表示
-    st.markdown("<div class='card'><h2 class='card-title' style='text-align: center;'>💰 企業価値分析ツールへようこそ</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; font-size: 1.1rem;'>サイドバーから企業情報を入力して分析を開始しましょう</p>", unsafe_allow_html=True)
+            st.error(payment_result['message'])
     
-    # 3つのカードを横に並べる
+    st.markdown("</div>", unsafe_allow_html=True)
+    
+    if st.button("プラン選択に戻る"):
+        switch_page('plans')
+        st.rerun()
+
+# ホームページ（ダッシュボード）
+def show_home():
+    """ホームページ/ダッシュボードを表示"""
+    if not st.session_state.logged_in:
+        st.warning("この機能を利用するにはログインが必要です。")
+        st.button("ログインページへ", on_click=lambda: switch_page('login'))
+        return
+    
+    st.markdown("<h2>ダッシュボード</h2>", unsafe_allow_html=True)
+    
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        st.markdown("""
-        <div style="background-color: #f0f5ff; padding: 1.5rem; border-radius: 10px; height: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.1); color: #000000;">
-            <h3 style="text-align: center; color: #0066cc;">🧮 財務分析</h3>
-            <p>収益成長率と割引率に基づいた企業の本質的価値を計算します。DCF法による株価評価と上昇余地の分析が可能です。</p>
-            <ul>
-                <li>売上高と純利益の予測</li>
-                <li>本質的価値の計算</li>
-                <li>財務指標の比較・分析</li>
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown("<div class='card'>", unsafe_allow_html=True)
+        st.markdown("<h3 class='card-title'>📊 企業分析</h3>", unsafe_allow_html=True)
+        st.markdown("DCF法による株価評価や詳細なSWOT分析など、企業の本質的価値を分析します。")
+        if st.button("企業分析へ", use_container_width=True):
+            st.switch_page("pages/01_企業分析.py")
+        st.markdown("</div>", unsafe_allow_html=True)
     
     with col2:
-        st.markdown("""
-        <div style="background-color: #f5fff0; padding: 1.5rem; border-radius: 10px; height: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.1); color: #000000;">
-            <h3 style="text-align: center; color: #00aa44;">📊 SWOT分析</h3>
-            <p>業界特性と成長性に基づいた包括的なSWOT分析を提供します。企業の強み、弱み、機会、脅威を明確に把握できます。</p>
-            <ul>
-                <li>強み・弱みの分析</li>
-                <li>機会・脅威の特定</li>
-                <li>競争優位性の評価</li>
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown("<div class='card'>", unsafe_allow_html=True)
+        st.markdown("<h3 class='card-title'>🔍 銘柄検索</h3>", unsafe_allow_html=True)
+        st.markdown("業界や成長率、利益率などの条件に基づいて投資対象の銘柄を検索します。")
+        if st.button("銘柄検索へ", use_container_width=True):
+            st.switch_page("pages/02_銘柄検索.py")
+        st.markdown("</div>", unsafe_allow_html=True)
     
     with col3:
-        st.markdown("""
-        <div style="background-color: #fff0f5; padding: 1.5rem; border-radius: 10px; height: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.1); color: #000000;">
-            <h3 style="text-align: center; color: #cc0066;">🔮 投資判断サポート</h3>
-            <p>様々な財務指標と分析結果を総合的に判断して、投資推奨度を算出します。投資判断の根拠を明確に理解できます。</p>
-            <ul>
-                <li>投資推奨度の算出</li>
-                <li>主要リスク要因の特定</li>
-                <li>投資判断の根拠の説明</li>
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown("<div class='card'>", unsafe_allow_html=True)
+        st.markdown("<h3 class='card-title'>📝 分析履歴</h3>", unsafe_allow_html=True)
+        st.markdown("過去に行った企業分析の履歴を確認し、最新情報で更新することができます。")
+        if st.button("分析履歴へ", use_container_width=True):
+            st.switch_page("pages/03_分析履歴.py")
+        st.markdown("</div>", unsafe_allow_html=True)
+    
+    # アカウント情報
+    st.markdown("<div class='card'>", unsafe_allow_html=True)
+    st.markdown("<h3 class='card-title'>👤 アカウント情報</h3>", unsafe_allow_html=True)
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown(f"**ユーザー名**: {st.session_state.user['username']}")
+        st.markdown(f"**メールアドレス**: {st.session_state.user['email']}")
+        st.markdown(f"**プラン**: {PaymentProcessor.get_plan_details(st.session_state.user['subscription_plan'])['name']}")
+    
+    with col2:
+        st.markdown(f"**分析回数**: {st.session_state.user['analysis_count']} / {PaymentProcessor.get_plan_details(st.session_state.user['subscription_plan'])['analysis_limit']} 回")
+        if st.session_state.user['subscription_plan'] != 'free':
+            # サブスクリプション情報の取得（サンプル）
+            subscription = PaymentProcessor.check_subscription_status(st.session_state.user['id'])
+            if subscription['success'] and 'end_date' in subscription:
+                st.markdown(f"**サブスクリプション終了日**: {subscription['end_date']}")
+        
+        if st.session_state.user['subscription_plan'] == 'free':
+            if st.button("プランをアップグレード"):
+                switch_page('plans')
+                st.rerun()
     
     st.markdown("</div>", unsafe_allow_html=True)
     
-    # 使い方ガイド
-    st.markdown("<div class='card' style='margin-top: 2rem;'><h3 class='card-title'>🚀 使い方ガイド</h3>", unsafe_allow_html=True)
+    # 最近の分析
+    st.markdown("<div class='card'>", unsafe_allow_html=True)
+    st.markdown("<h3 class='card-title'>🕒 最近の分析</h3>", unsafe_allow_html=True)
     
-    # ステップを示す
-    steps = [
-        {"icon": "🔍", "title": "企業を選択", "desc": "サイドバーから企業を選択するか、財務情報を手動で入力します。"},
-        {"icon": "📈", "title": "成長率を設定", "desc": "予想される売上高成長率を設定します。"},
-        {"icon": "💰", "title": "割引率を設定", "desc": "将来キャッシュフローの現在価値計算に使用する割引率を設定します。"},
-        {"icon": "📊", "title": "結果を確認", "desc": "本質的価値分析、財務指標比較、SWOT分析などの結果を確認します。"}
+    # サンプルデータ（実際の実装ではデータベースから取得）
+    recent_analyses = [
+        {"id": 1, "company": "Apple Inc.", "date": "2023-05-01", "dcf_price": 178.42, "current_price": 175.04, "potential": 1.93},
+        {"id": 2, "company": "Microsoft Corporation", "date": "2023-05-02", "dcf_price": 410.25, "current_price": 386.77, "potential": 6.07},
+        {"id": 3, "company": "Tesla, Inc.", "date": "2023-05-03", "dcf_price": 224.50, "current_price": 235.87, "potential": -4.82}
     ]
     
-    steps_html = ""
-    for i, step in enumerate(steps):
-        steps_html += f"""
-        <div style="display: flex; align-items: center; margin-bottom: 1rem;">
-            <div style="background-color: #0066cc; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 1.2rem;">
-                {step["icon"]}
-            </div>
-            <div>
-                <h4 style="margin: 0; color: #0066cc;">ステップ {i+1}: {step["title"]}</h4>
-                <p style="margin: 0;">{step["desc"]}</p>
-            </div>
-        </div>
+    if recent_analyses:
+        # テーブルのHTMLを作成
+        table_html = """
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>企業名</th>
+                    <th>分析日</th>
+                    <th>DCF価値 (USD)</th>
+                    <th>現在価格 (USD)</th>
+                    <th>上昇余地 (%)</th>
+                </tr>
+            </thead>
+            <tbody>
         """
+        
+        for analysis in recent_analyses:
+            # 上昇余地の表示形式（正/負）
+            potential_class = "positive" if analysis["potential"] > 0 else "negative"
+            potential_sign = "+" if analysis["potential"] > 0 else ""
+            
+            table_html += f"""
+            <tr>
+                <td>{analysis["company"]}</td>
+                <td>{analysis["date"]}</td>
+                <td>${analysis["dcf_price"]:.2f}</td>
+                <td>${analysis["current_price"]:.2f}</td>
+                <td class="{potential_class}">{potential_sign}{analysis["potential"]:.2f}%</td>
+            </tr>
+            """
+        
+        table_html += """
+            </tbody>
+        </table>
+        """
+        
+        st.markdown(table_html, unsafe_allow_html=True)
+        
+        if st.button("すべての分析履歴を見る"):
+            st.switch_page("pages/03_分析履歴.py")
+    else:
+        st.info("まだ分析履歴がありません。企業分析を行って本質的価値を計算しましょう。")
+        if st.button("分析を始める"):
+            st.switch_page("pages/01_企業分析.py")
     
-    st.markdown(steps_html, unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
-    
-    # プラン比較表
-    st.markdown("<div class='card' style='margin-top: 2rem;'><h3 class='card-title'>💎 プラン比較</h3>", unsafe_allow_html=True)
-    
-    # 表形式でプラン比較
-    plan_table = """
-    <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
-        <thead>
-            <tr style="background-color: #f0f0f0;">
-                <th style="padding: 10px; text-align: left; border-bottom: 1px solid #ddd;">機能</th>
-                <th style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">無料</th>
-                <th style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">ベーシック</th>
-                <th style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">プレミアム</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td style="padding: 10px; border-bottom: 1px solid #ddd;">月額料金</td>
-                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">¥0</td>
-                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">¥2,500</td>
-                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">¥4,900</td>
-            </tr>
-            <tr>
-                <td style="padding: 10px; border-bottom: 1px solid #ddd;">分析可能企業数</td>
-                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">月3社</td>
-                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">月20社</td>
-                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">無制限</td>
-            </tr>
-            <tr>
-                <td style="padding: 10px; border-bottom: 1px solid #ddd;">基本価値分析</td>
-                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">✓</td>
-                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">✓</td>
-                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">✓</td>
-            </tr>
-            <tr>
-                <td style="padding: 10px; border-bottom: 1px solid #ddd;">SWOT分析</td>
-                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">基本のみ</td>
-                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">詳細</td>
-                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">詳細</td>
-            </tr>
-            <tr>
-                <td style="padding: 10px; border-bottom: 1px solid #ddd;">決算情報分析</td>
-                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">×</td>
-                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">✓</td>
-                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">✓</td>
-            </tr>
-            <tr>
-                <td style="padding: 10px; border-bottom: 1px solid #ddd;">業界詳細分析</td>
-                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">×</td>
-                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">×</td>
-                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">✓</td>
-            </tr>
-            <tr>
-                <td style="padding: 10px; border-bottom: 1px solid #ddd;">カスタマーサポート</td>
-                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">×</td>
-                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">Eメールのみ</td>
-                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">優先サポート</td>
-            </tr>
-        </tbody>
-    </table>
-    """
-    
-    st.markdown(plan_table, unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
 # フッター
-st.markdown("---")
-st.markdown("このツールは投資判断のための参考情報を提供するものであり、投資の成果を保証するものではありません。実際の投資判断はご自身の責任で行ってください。")
+def show_footer():
+    """フッターを表示"""
+    st.markdown("<div class='footer'>", unsafe_allow_html=True)
+    st.markdown("© 2023 企業価値分析プロ. All rights reserved.", unsafe_allow_html=True)
+    
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.markdown("[企業情報](#)")
+    with col2:
+        st.markdown("[利用規約](#)")
+    with col3:
+        st.markdown("[プライバシーポリシー](#)")
+    with col4:
+        st.markdown("[お問い合わせ](#)")
+    
+    st.markdown("</div>", unsafe_allow_html=True)
+
+# メイン処理
+display_header()
+
+if st.session_state.current_page == 'login':
+    show_login_page()
+elif st.session_state.current_page == 'signup':
+    show_signup_page()
+elif st.session_state.current_page == 'plans':
+    show_plans()
+elif st.session_state.current_page == 'payment':
+    show_payment_page()
+else:  # ホーム/ダッシュボード
+    if st.session_state.logged_in:
+        show_home()
+    else:
+        # ログインしていない場合はランディングページを表示
+        # ランディングページの内容
+        st.markdown("<h2 style='text-align: center;'>企業の本質的価値を計算し、スマートな投資判断をサポート</h2>", unsafe_allow_html=True)
+        
+        # 3つの特徴
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.markdown("<div class='card'>", unsafe_allow_html=True)
+            st.markdown("<h3 style='text-align: center;'>🧮 高度な財務分析</h3>", unsafe_allow_html=True)
+            st.markdown("<p>DCF法による本質的価値計算、成長率と割引率の感度分析、財務指標の業界比較など、プロレベルの分析ツールを提供します。</p>", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown("<div class='card'>", unsafe_allow_html=True)
+            st.markdown("<h3 style='text-align: center;'>📊 包括的なデータ可視化</h3>", unsafe_allow_html=True)
+            st.markdown("<p>財務予測、SWOT分析、モート（競争優位性）分析、リスク要因など、投資判断に必要な情報を直感的なチャートで表示します。</p>", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown("<div class='card'>", unsafe_allow_html=True)
+            st.markdown("<h3 style='text-align: center;'>🤝 使いやすさを追求</h3>", unsafe_allow_html=True)
+            st.markdown("<p>複雑な財務モデリングの知識がなくても、必要なパラメータを入力するだけで、プロフェッショナルな分析結果を得られます。</p>", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+        
+        # 主要な機能紹介
+        st.markdown("<h2 style='text-align: center; margin-top: 2rem;'>主要機能</h2>", unsafe_allow_html=True)
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("<div class='card'>", unsafe_allow_html=True)
+            st.markdown("<h3 class='card-title'>DCF法による本質的価値計算</h3>", unsafe_allow_html=True)
+            st.image("https://via.placeholder.com/600x300?text=DCF+Value+Calculation", use_column_width=True)
+            st.markdown("<p>収益成長率と割引率に基づいて企業の本質的価値を計算し、現在の株価と比較することで投資判断をサポートします。</p>", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown("<div class='card'>", unsafe_allow_html=True)
+            st.markdown("<h3 class='card-title'>感度分析マトリックス</h3>", unsafe_allow_html=True)
+            st.image("https://via.placeholder.com/600x300?text=Sensitivity+Analysis+Matrix", use_column_width=True)
+            st.markdown("<p>成長率と割引率の変動が企業価値に与える影響を視覚化し、リスク要因の分析を支援します。</p>", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("<div class='card'>", unsafe_allow_html=True)
+            st.markdown("<h3 class='card-title'>包括的なSWOT分析</h3>", unsafe_allow_html=True)
+            st.image("https://via.placeholder.com/600x300?text=SWOT+Analysis", use_column_width=True)
+            st.markdown("<p>企業の強み、弱み、機会、脅威を業界特性と成長性に基づいて自動的に分析し、投資リスクと機会を評価します。</p>", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown("<div class='card'>", unsafe_allow_html=True)
+            st.markdown("<h3 class='card-title'>財務指標の業界比較</h3>", unsafe_allow_html=True)
+            st.image("https://via.placeholder.com/600x300?text=Financial+Ratios+Comparison", use_column_width=True)
+            st.markdown("<p>PER, PBR, PSRなどの主要な財務指標を業界平均と比較し、企業の相対的な割安度と投資適正を評価します。</p>", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+        
+        # プラン紹介（簡易版）
+        st.markdown("<h2 style='text-align: center; margin-top: 2rem;'>料金プラン</h2>", unsafe_allow_html=True)
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.markdown("""
+            <div class='plan-card'>
+                <h3 style='text-align: center;'>🆓 無料プラン</h3>
+                <h2 style='text-align: center; color: #0066cc;'>¥0</h2>
+                <p style='text-align: center;'>月額</p>
+                <ul>
+                    <li>基本的な企業分析</li>
+                    <li>DCF法による株価評価</li>
+                    <li>月3社まで分析可能</li>
+                </ul>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown("""
+            <div class='plan-card plan-card-highlight'>
+                <h3 style='text-align: center;'>🔹 ベーシックプラン</h3>
+                <h2 style='text-align: center; color: #0066cc;'>¥2,500</h2>
+                <p style='text-align: center;'>月額</p>
+                <ul>
+                    <li>基本的な企業分析</li>
+                    <li>DCF法による株価評価</li>
+                    <li>詳細なSWOT分析</li>
+                    <li>決算情報の詳細分析</li>
+                    <li>月20社まで分析可能</li>
+                </ul>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown("""
+            <div class='plan-card'>
+                <h3 style='text-align: center;'>💎 プレミアムプラン</h3>
+                <h2 style='text-align: center; color: #0066cc;'>¥4,900</h2>
+                <p style='text-align: center;'>月額</p>
+                <ul>
+                    <li>基本的な企業分析</li>
+                    <li>DCF法による株価評価</li>
+                    <li>詳細なSWOT分析</li>
+                    <li>決算情報の詳細分析</li>
+                    <li>感度分析機能</li>
+                    <li>無制限の企業分析</li>
+                </ul>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # CTAボタン
+        st.markdown("<div style='text-align: center; margin-top: 2rem; margin-bottom: 3rem;'>", unsafe_allow_html=True)
+        if st.button("無料で始める", use_container_width=True):
+            switch_page('signup')
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+        # お客様の声
+        st.markdown("<h2 style='text-align: center;'>お客様の声</h2>", unsafe_allow_html=True)
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.markdown("""
+            <div class='card'>
+                <p style='font-style: italic;'>"この分析ツールを使い始めてから、投資判断の精度が格段に向上しました。特に感度分析機能は、様々なシナリオを検討するのに非常に役立っています。"</p>
+                <p style='text-align: right;'>- 山田太郎, 個人投資家</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown("""
+            <div class='card'>
+                <p style='font-style: italic;'>"複雑な財務モデリングの知識がなくても、直感的な操作で高度な分析ができる点が素晴らしいです。投資初心者にもプロにもおすすめできるツールです。"</p>
+                <p style='text-align: right;'>- 鈴木花子, ファイナンシャルアドバイザー</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown("""
+            <div class='card'>
+                <p style='font-style: italic;'>"SWOT分析と競争優位性の評価機能が非常に優れています。企業の定性的な側面も含めた総合的な分析ができるのが、他のツールにはない魅力です。"</p>
+                <p style='text-align: right;'>- 佐藤次郎, 証券アナリスト</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # 最終CTA
+        st.markdown("""
+        <div style='text-align: center; margin-top: 3rem; margin-bottom: 3rem;'>
+            <h2>あなたの投資判断をサポートする分析ツールを今すぐ体験</h2>
+            <p>登録は無料。クレジットカード情報も必要ありません。</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        col1, col2 = st.columns([1, 1])
+        with col1:
+            if st.button("無料アカウントを作成", use_container_width=True):
+                switch_page('signup')
+        with col2:
+            if st.button("詳細を見る", use_container_width=True):
+                switch_page('plans')
+
+# フッターの表示
+show_footer()

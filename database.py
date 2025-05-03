@@ -70,6 +70,7 @@ class Analysis(Base):
     
     id = Column(Integer, primary_key=True)
     company_id = Column(Integer, ForeignKey("companies.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"))  # 分析を行ったユーザー
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     
     # 分析パラメータ
@@ -96,8 +97,15 @@ class Analysis(Base):
     moat_evaluation = Column(Text)
     moat_sources = Column(Text)
     
+    # SEO最適化のためのメタデータ
+    seo_title = Column(String(100))  # 検索エンジン用タイトル
+    seo_description = Column(String(200))  # 検索エンジン用説明
+    seo_keywords = Column(String(200))  # 検索エンジン用キーワード
+    
     # リレーションシップ
     company = relationship("Company", back_populates="analyses")
+    sensitivity_analyses = relationship("SensitivityAnalysis", back_populates="analysis", cascade="all, delete-orphan")
+    user = relationship("User", backref="analyses")
     
     def __repr__(self):
         return f"<Analysis(company_id={self.company_id}, dcf_price={self.dcf_price}, recommendation='{self.recommendation}')>"
@@ -110,12 +118,44 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     username = Column(String(50), unique=True, nullable=False)
     email = Column(String(100), unique=True)
-    subscription_plan = Column(String(20), default="basic")  # basic, professional, enterprise
+    password_hash = Column(String(256))  # ハッシュ化されたパスワード
+    password_salt = Column(String(256))  # パスワードソルト
+    subscription_plan = Column(String(20), default="free")  # free, basic, premium
+    subscription_end_date = Column(DateTime)  # サブスクリプション終了日
+    payment_status = Column(String(20), default="none")  # none, active, failed, cancelled
     analysis_count = Column(Integer, default=0)  # 分析実行回数
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    last_login = Column(DateTime)  # 最終ログイン日時
     
     def __repr__(self):
         return f"<User(username='{self.username}', subscription='{self.subscription_plan}')>"
+
+
+class SensitivityAnalysis(Base):
+    """感度分析モデル"""
+    __tablename__ = "sensitivity_analyses"
+    
+    id = Column(Integer, primary_key=True)
+    analysis_id = Column(Integer, ForeignKey("analyses.id"), nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    
+    # 変動パラメータ
+    growth_range_min = Column(Float)  # 成長率の最小値
+    growth_range_max = Column(Float)  # 成長率の最大値
+    growth_step = Column(Float)  # 成長率のステップ
+    
+    discount_range_min = Column(Float)  # 割引率の最小値
+    discount_range_max = Column(Float)  # 割引率の最大値
+    discount_step = Column(Float)  # 割引率のステップ
+    
+    # 感度分析の結果（JSON形式で保存）
+    matrix_data = Column(Text)  # 感度分析の結果マトリックスデータ
+    
+    # リレーションシップ
+    analysis = relationship("Analysis", back_populates="sensitivity_analyses")
+    
+    def __repr__(self):
+        return f"<SensitivityAnalysis(analysis_id={self.analysis_id})>"
 
 
 # データベーステーブル作成
