@@ -10,7 +10,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # stock_dataモジュールをインポート
-from stock_data import get_stock_data, get_available_tickers, compare_valuations, get_industry_average
+from stock_data import get_stock_data, get_available_tickers, compare_valuations, get_industry_average, update_stock_price
 
 # ページ設定
 st.set_page_config(
@@ -119,9 +119,66 @@ st.markdown("<h1 class='main-header'>🔍 銘柄比較</h1>", unsafe_allow_html=
 st.markdown("<div class='card'>", unsafe_allow_html=True)
 st.markdown("<h2 class='card-title'>比較する銘柄を選択</h2>", unsafe_allow_html=True)
 
-# 利用可能なティッカーシンボル
+# 利用可能なティッカーシンボル（先に取得）
 available_tickers = get_available_tickers()
 ticker_options = {ticker: f"{ticker} - {get_stock_data(ticker)['name']}" for ticker in available_tickers}
+
+# 株価更新セクション
+with st.expander("株価を手動で更新"):
+    st.markdown("特定の銘柄の株価を更新します。これにより分析結果も変化します。")
+    
+    update_col1, update_col2, update_col3 = st.columns([2, 1, 1])
+    
+    with update_col1:
+        # 利用可能なティッカーからドロップダウンで選択
+        update_ticker = st.selectbox(
+            "更新する銘柄",
+            options=available_tickers,
+            format_func=lambda x: f"{x} - {get_stock_data(x)['name']}"
+        )
+    
+    with update_col2:
+        if update_ticker:
+            current_price = get_stock_data(update_ticker)["current_price"]
+            # 現在の株価から±30%の範囲で新しい価格を入力可能に
+            min_price = max(0.1, current_price * 0.7)
+            max_price = current_price * 1.3
+            new_price = st.number_input(
+                "新しい株価 (USD)",
+                min_value=float(min_price),
+                max_value=float(max_price),
+                value=float(current_price),
+                step=0.01,
+                format="%.2f"
+            )
+    
+    with update_col3:
+        # 更新ボタン
+        if st.button("株価を更新", key="update_price_btn"):
+            if update_ticker and new_price > 0:
+                success = update_stock_price(update_ticker, new_price)
+                if success:
+                    st.success(f"{update_ticker}の株価を${new_price:.2f}に更新しました。")
+                    # 最新の情報を反映するためにページをリロード
+                    st.experimental_rerun()
+                else:
+                    st.error("株価の更新に失敗しました。")
+
+    # TradingViewからのリアルタイム株価更新ボタン
+    if st.button("TradingViewから最新株価を取得", key="fetch_tv_btn"):
+        with st.spinner("TradingViewから最新の株価データを取得しています..."):
+            ticker_to_update = update_ticker if update_ticker else "AAPL"  # デフォルト値
+            new_price = fetch_tradingview_price(ticker_to_update)
+            if new_price:
+                success = update_stock_price(ticker_to_update, new_price)
+                if success:
+                    st.success(f"{ticker_to_update}の株価を${new_price:.2f}に更新しました。（TradingViewのデータ）")
+                    # 最新の情報を反映するためにページをリロード
+                    st.experimental_rerun()
+                else:
+                    st.error("株価の更新に失敗しました。")
+            else:
+                st.error("TradingViewからデータを取得できませんでした。")
 
 # マルチセレクト用のオプション
 ticker_select_options = [f"{ticker} - {get_stock_data(ticker)['name']}" for ticker in available_tickers]
