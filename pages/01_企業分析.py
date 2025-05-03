@@ -139,41 +139,30 @@ with col1:
     ])
     ticker = st.text_input("ティッカーシンボル（例: AAPL）", value="AAPL")
     
-    # ティッカーが入力されている場合、TradingViewからの株価取得ボタンを表示
+    # ティッカーが入力されている場合、価格を手動で入力するオプションを表示
     if ticker:
-        # 横に並べる2つのボタンを作成
-        fetch_col1, fetch_col2 = st.columns([1, 1])
+        st.info("株価はユーザー入力に基づいて計算されます。下の「現在の株価（USD）」欄に最新の株価を入力してください。")
         
-        with fetch_col1:
-            if st.button("TradingViewから最新株価を取得", key="fetch_price_btn"):
-                with st.spinner("株価を取得中..."):
-                    new_price = fetch_tradingview_price(ticker)
-                    if new_price:
-                        # 取得した株価を表示し、フォームの値を更新
-                        st.success(f"{ticker}の最新株価: ${new_price:.2f}")
-                        # セッション状態に価格を保存して、下のフィールドで使用できるようにする
-                        st.session_state.current_price = new_price
-                        # データを更新
-                        update_stock_price(ticker, new_price)
-                        # 自動的に更新するため再読み込み
-                        st.rerun()
-                    else:
-                        st.error("株価の取得に失敗しました。")
+        # 既存データがある場合は表示
+        existing_data = get_stock_data(ticker)
+        if existing_data and 'name' in existing_data:
+            st.success(f"{ticker} ({existing_data['name']})の基本情報を読み込みました。")
+            
+            # もし既存の株価データがあればセッションに保存
+            if 'current_stock_price' in existing_data:
+                st.session_state.current_price = existing_data['current_stock_price']
         
-        with fetch_col2:
-            if st.button("全銘柄の最新株価を取得", key="fetch_all_prices_btn"):
-                with st.spinner("全銘柄の最新株価データを取得しています..."):
-                    # 全銘柄の価格を更新
-                    updated_prices = refresh_stock_prices()
-                    if updated_prices:
-                        tickers_updated = len(updated_prices)
-                        st.success(f"{tickers_updated}銘柄の株価を更新しました。")
-                        if ticker in updated_prices:
-                            st.session_state.current_price = updated_prices[ticker]
-                        # 最新の情報を反映するためにページをリロード
-                        st.rerun()
-                    else:
-                        st.error("株価の更新に失敗しました。")
+        # 手動で株価を更新するためのボタン
+        if st.button("入力した株価でデータを更新", key="update_price_btn"):
+            if 'current_price' in st.session_state:
+                with st.spinner("株価データを更新中..."):
+                    # データを更新
+                    update_stock_price(ticker, st.session_state.current_price)
+                    st.success(f"{ticker}の株価を${st.session_state.current_price:.2f}に更新しました。")
+                    # 最新の情報を反映するためにページをリロード
+                    st.rerun()
+            else:
+                st.error("更新する株価がありません。先に「現在の株価（USD）」を入力してください。")
 
 with col2:
     revenue = st.number_input("直近の売上高（百万USD）", value=365817.0, step=1000.0)

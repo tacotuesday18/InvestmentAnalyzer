@@ -164,18 +164,8 @@ with st.expander("株価を手動で更新"):
                 else:
                     st.error("株価の更新に失敗しました。")
 
-    # TradingViewからのリアルタイム株価更新ボタン
-    if st.button("TradingViewから全銘柄の最新株価を取得", key="fetch_tv_btn"):
-        with st.spinner("TradingViewから全銘柄の最新株価データを取得しています..."):
-            # 全銘柄の価格を更新
-            updated_prices = refresh_stock_prices()
-            if updated_prices:
-                tickers_updated = len(updated_prices)
-                st.success(f"{tickers_updated}銘柄の株価を更新しました。")
-                # 最新の情報を反映するためにページをリロード
-                st.rerun()
-            else:
-                st.error("株価の更新に失敗しました。")
+    # 注意書き - ユーザー入力ベースの価格更新
+    st.info("注意: 株価はユーザー入力に基づいています。正確な企業価値評価のために最新の株価を手動で入力してください。")
 
 # マルチセレクト用のオプション
 ticker_select_options = [f"{ticker} - {get_stock_data(ticker)['name']}" for ticker in available_tickers]
@@ -222,27 +212,13 @@ st.markdown("<div class='mobile-card'>", unsafe_allow_html=True)
 st.markdown("<h3>評価方法</h3>", unsafe_allow_html=True)
 
 # レスポンシブなレイアウト
-if st.session_state.get('is_mobile', False) or len(st.session_state) < 5:  # モバイル判定の簡易実装
-    # モバイル向けレイアウト（縦に並べる）
-    use_pe = st.checkbox("PER (株価収益率)", value=True)
-    use_pb = st.checkbox("PBR (株価純資産倍率)", value=True)
-    use_ps = st.checkbox("PSR (株価売上高倍率)", value=True)
-    use_dcf = st.checkbox("DCF (割引キャッシュフロー法)", value=True)
-else:
-    # デスクトップ向けレイアウト（横に並べる）
-    col1, col2, col3, col4 = st.columns(4)
+# モバイル向けレイアウト（縦に並べる）
+use_pe = st.checkbox("PER (株価収益率)", value=True)
+use_pb = st.checkbox("PBR (株価純資産倍率)", value=True)
+use_ps = st.checkbox("PSR (株価売上高倍率)", value=True)
+use_dcf = st.checkbox("DCF (割引キャッシュフロー法)", value=True)
 
-with col1:
-    use_pe = st.checkbox("PER (株価収益率)", value=True)
 
-with col2:
-    use_pb = st.checkbox("PBR (株価純資産倍率)", value=True)
-
-with col3:
-    use_ps = st.checkbox("PSR (株価売上高倍率)", value=True)
-
-with col4:
-    use_dcf = st.checkbox("DCF (割引キャッシュフロー法)", value=True)
 
 # 評価方法を配列に格納
 valuation_methods = []
