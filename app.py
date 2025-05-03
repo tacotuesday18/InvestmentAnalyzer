@@ -11,11 +11,9 @@ from utils import generate_swot_analysis, generate_moat_analysis
 from financial_models import calculate_intrinsic_value, calculate_financial_ratios
 from database import get_companies, get_company_financial_data, save_analysis, update_user_subscription, setup_database
 
-# データベースのセットアップ
-try:
-    setup_database()
-except Exception as e:
-    st.error(f"データベース初期化エラー: {e}")
+# データベースのセットアップは完全に分離して実行
+# app.pyではデータベースセットアップを行わずに、
+# 必要に応じてデータベースから読み込むだけにする
 
 # メモリキャッシュ
 @st.cache_data(ttl=300)  # 5分間キャッシュ
@@ -494,7 +492,7 @@ else:
     
     with col1:
         st.markdown("""
-        <div style="background-color: #f0f5ff; padding: 1.5rem; border-radius: 10px; height: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <div style="background-color: #f0f5ff; padding: 1.5rem; border-radius: 10px; height: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.1); color: #000000;">
             <h3 style="text-align: center; color: #0066cc;">🧮 財務分析</h3>
             <p>収益成長率と割引率に基づいた企業の本質的価値を計算します。DCF法による株価評価と上昇余地の分析が可能です。</p>
             <ul>
@@ -507,7 +505,7 @@ else:
     
     with col2:
         st.markdown("""
-        <div style="background-color: #f5fff0; padding: 1.5rem; border-radius: 10px; height: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <div style="background-color: #f5fff0; padding: 1.5rem; border-radius: 10px; height: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.1); color: #000000;">
             <h3 style="text-align: center; color: #00aa44;">📊 SWOT分析</h3>
             <p>業界特性と成長性に基づいた包括的なSWOT分析を提供します。企業の強み、弱み、機会、脅威を明確に把握できます。</p>
             <ul>
@@ -520,7 +518,7 @@ else:
     
     with col3:
         st.markdown("""
-        <div style="background-color: #fff0f5; padding: 1.5rem; border-radius: 10px; height: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <div style="background-color: #fff0f5; padding: 1.5rem; border-radius: 10px; height: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.1); color: #000000;">
             <h3 style="text-align: center; color: #cc0066;">🔮 投資判断サポート</h3>
             <p>様々な財務指標と分析結果を総合的に判断して、投資推奨度を算出します。投資判断の根拠を明確に理解できます。</p>
             <ul>
