@@ -10,7 +10,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # stock_dataモジュールをインポート
-from stock_data import get_stock_data, get_available_tickers, compare_valuations, get_industry_average, update_stock_price
+from stock_data import get_stock_data, get_available_tickers, compare_valuations, get_industry_average, update_stock_price, fetch_tradingview_price, refresh_stock_prices
 
 # ページ設定
 st.set_page_config(
@@ -160,25 +160,22 @@ with st.expander("株価を手動で更新"):
                 if success:
                     st.success(f"{update_ticker}の株価を${new_price:.2f}に更新しました。")
                     # 最新の情報を反映するためにページをリロード
-                    st.experimental_rerun()
+                    st.rerun()
                 else:
                     st.error("株価の更新に失敗しました。")
 
     # TradingViewからのリアルタイム株価更新ボタン
-    if st.button("TradingViewから最新株価を取得", key="fetch_tv_btn"):
-        with st.spinner("TradingViewから最新の株価データを取得しています..."):
-            ticker_to_update = update_ticker if update_ticker else "AAPL"  # デフォルト値
-            new_price = fetch_tradingview_price(ticker_to_update)
-            if new_price:
-                success = update_stock_price(ticker_to_update, new_price)
-                if success:
-                    st.success(f"{ticker_to_update}の株価を${new_price:.2f}に更新しました。（TradingViewのデータ）")
-                    # 最新の情報を反映するためにページをリロード
-                    st.experimental_rerun()
-                else:
-                    st.error("株価の更新に失敗しました。")
+    if st.button("TradingViewから全銘柄の最新株価を取得", key="fetch_tv_btn"):
+        with st.spinner("TradingViewから全銘柄の最新株価データを取得しています..."):
+            # 全銘柄の価格を更新
+            updated_prices = refresh_stock_prices()
+            if updated_prices:
+                tickers_updated = len(updated_prices)
+                st.success(f"{tickers_updated}銘柄の株価を更新しました。")
+                # 最新の情報を反映するためにページをリロード
+                st.rerun()
             else:
-                st.error("TradingViewからデータを取得できませんでした。")
+                st.error("株価の更新に失敗しました。")
 
 # マルチセレクト用のオプション
 ticker_select_options = [f"{ticker} - {get_stock_data(ticker)['name']}" for ticker in available_tickers]

@@ -136,6 +136,7 @@ with col1:
     if ticker:
         # 横に並べる2つのボタンを作成
         fetch_col1, fetch_col2 = st.columns([1, 1])
+        
         with fetch_col1:
             if st.button("TradingViewから最新株価を取得", key="fetch_price_btn"):
                 with st.spinner("株価を取得中..."):
@@ -145,10 +146,27 @@ with col1:
                         st.success(f"{ticker}の最新株価: ${new_price:.2f}")
                         # セッション状態に価格を保存して、下のフィールドで使用できるようにする
                         st.session_state.current_price = new_price
+                        # データを更新
+                        update_stock_price(ticker, new_price)
                         # 自動的に更新するため再読み込み
-                        st.experimental_rerun()
+                        st.rerun()
                     else:
                         st.error("株価の取得に失敗しました。")
+        
+        with fetch_col2:
+            if st.button("全銘柄の最新株価を取得", key="fetch_all_prices_btn"):
+                with st.spinner("全銘柄の最新株価データを取得しています..."):
+                    # 全銘柄の価格を更新
+                    updated_prices = refresh_stock_prices()
+                    if updated_prices:
+                        tickers_updated = len(updated_prices)
+                        st.success(f"{tickers_updated}銘柄の株価を更新しました。")
+                        if ticker in updated_prices:
+                            st.session_state.current_price = updated_prices[ticker]
+                        # 最新の情報を反映するためにページをリロード
+                        st.rerun()
+                    else:
+                        st.error("株価の更新に失敗しました。")
 
 with col2:
     revenue = st.number_input("直近の売上高（百万USD）", value=365817.0, step=1000.0)
