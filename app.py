@@ -14,56 +14,125 @@ from database import get_companies, get_company_financial_data, save_analysis, u
 st.set_page_config(
     page_title="企業価値分析ツール",
     page_icon="📊",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
+# カスタムCSS
+st.markdown("""
+<style>
+    .main-title {
+        font-size: 3.5rem !important;
+        color: #0066cc;
+        text-align: center;
+        margin-bottom: 1rem;
+        font-weight: bold;
+    }
+    
+    .subtitle {
+        font-size: 1.2rem !important;
+        color: #555;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .card {
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        background-color: #f8f9fa;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .card-title {
+        font-size: 1.4rem !important;
+        font-weight: bold;
+        margin-bottom: 1rem;
+        color: #0066cc;
+    }
+    
+    .metric-container {
+        background-color: white;
+        border-radius: 8px;
+        padding: 1rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    
+    .footer {
+        text-align: center;
+        color: #888;
+        font-size: 0.8rem;
+        margin-top: 2rem;
+    }
+    
+    /* プラン選択ボタンのスタイル */
+    .stButton>button {
+        width: 100%;
+        border-radius: 20px;
+        font-weight: bold;
+    }
+    
+    /* ダークモードサポート */
+    @media (prefers-color-scheme: dark) {
+        .card {
+            background-color: #262730;
+        }
+        
+        .metric-container {
+            background-color: #1e1e1e;
+        }
+    }
+</style>
+""", unsafe_allow_html=True)
+
 # アプリケーションタイトル
-st.title("企業の本質的価値分析ツール")
-st.markdown("このアプリでは、予想収益成長率と純利益率に基づいて企業の本質的価値を計算し、投資判断をサポートします。")
+st.markdown("<h1 class='main-title'>💰 企業価値分析プロ</h1>", unsafe_allow_html=True)
+st.markdown("<p class='subtitle'>収益成長率と割引率から企業の本質的価値を計算し、投資判断をサポートする高度な分析ツール</p>", unsafe_allow_html=True)
 
 # サブスクリプションプラン機能
 def show_subscription_plans():
     st.sidebar.markdown("---")
-    st.sidebar.header("サブスクリプションプラン")
+    st.sidebar.markdown("<h3 style='text-align: center; color: #0066cc;'>📊 サブスクリプションプラン</h3>", unsafe_allow_html=True)
     
-    col1, col2, col3 = st.sidebar.columns(3)
+    # プランのカード表示スタイル
+    plan_style = """
+    <div style="padding: 15px; margin-bottom: 15px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <h4 style="text-align: center; margin-bottom: 10px;">%s</h4>
+        <p style="text-align: center; font-weight: bold; font-size: 1.2rem; margin-bottom: 12px; color: #0066cc;">%s</p>
+        <ul style="list-style-type: none; padding-left: 5px;">
+            %s
+        </ul>
+    </div>
+    """
     
-    with col1:
-        st.markdown("### 🔹 ベーシック")
-        st.markdown("**¥1,980/月**")
-        st.markdown("- 基本的な企業分析")
-        st.markdown("- 月10社まで分析可能")
-        st.markdown("- 基本的なSWOT分析")
-        if st.button("選択", key="basic_plan"):
-            st.session_state.subscription = "basic"
-            st.success("ベーシックプランが選択されました")
+    # Free プラン
+    free_features = "<li>✓ 基本的な企業分析</li><li>✓ 月3社まで分析可能</li><li>✓ シンプルなレポート</li>"
+    st.sidebar.markdown(plan_style % ("🆓 無料プラン", "¥0", free_features), unsafe_allow_html=True)
+    if st.sidebar.button("選択", key="free_plan", help="無料プランを選択"):
+        st.session_state.subscription = "free"
+        st.sidebar.success("✅ 無料プランが選択されました")
     
-    with col2:
-        st.markdown("### 🔷 プロフェッショナル")
-        st.markdown("**¥4,980/月**")
-        st.markdown("- 無制限の企業分析")
-        st.markdown("- 詳細な競合分析")
-        st.markdown("- 決算情報分析")
-        st.markdown("- プレミアムレポート")
-        if st.button("選択", key="pro_plan"):
-            st.session_state.subscription = "professional"
-            st.success("プロフェッショナルプランが選択されました")
+    st.sidebar.markdown("<hr style='margin: 20px 0'>", unsafe_allow_html=True)
     
-    with col3:
-        st.markdown("### 💎 エンタープライズ")
-        st.markdown("**¥9,980/月**")
-        st.markdown("- すべてのプロ機能")
-        st.markdown("- リアルタイム決算分析")
-        st.markdown("- 業界詳細レポート")
-        st.markdown("- API連携")
-        st.markdown("- 専門家サポート")
-        if st.button("選択", key="enterprise_plan"):
-            st.session_state.subscription = "enterprise"
-            st.success("エンタープライズプランが選択されました")
+    # Basic プラン
+    basic_features = "<li>✓ 全ての無料機能</li><li>✓ 月20社まで分析可能</li><li>✓ 詳細SWOT分析</li><li>✓ 財務指標の比較</li>"
+    st.sidebar.markdown(plan_style % ("🔹 ベーシックプラン", "¥2,500/月", basic_features), unsafe_allow_html=True)
+    if st.sidebar.button("選択", key="basic_plan", help="ベーシックプランを選択"):
+        st.session_state.subscription = "basic"
+        st.sidebar.success("✅ ベーシックプランが選択されました")
+    
+    st.sidebar.markdown("<hr style='margin: 20px 0'>", unsafe_allow_html=True)
+    
+    # Premium プラン
+    premium_features = "<li>✓ 全てのベーシック機能</li><li>✓ 無制限の企業分析</li><li>✓ 決算情報の詳細分析</li><li>✓ 業界詳細レポート</li><li>✓ カスタマーサポート</li>"
+    st.sidebar.markdown(plan_style % ("💎 プレミアムプラン", "¥4,900/月", premium_features), unsafe_allow_html=True)
+    if st.sidebar.button("選択", key="premium_plan", help="プレミアムプランを選択"):
+        st.session_state.subscription = "premium"
+        st.sidebar.success("✅ プレミアムプランが選択されました")
 
 # セッション状態の初期化
 if 'subscription' not in st.session_state:
-    st.session_state.subscription = "basic"  # デフォルトはベーシックプラン
+    st.session_state.subscription = "free"  # デフォルトは無料プラン
 
 # サイドバー - 基本パラメータ入力
 with st.sidebar:
@@ -120,8 +189,8 @@ with st.sidebar:
             index=["テクノロジー", "金融", "ヘルスケア", "消費財", "工業", "通信", "エネルギー", "素材", "公共事業", "不動産", "その他"].index(industry)
         )
         
-        # 証券コードまたはティッカーシンボル（プロおよびエンタープライズプラン用）
-        if st.session_state.subscription in ["professional", "enterprise"]:
+        # 証券コードまたはティッカーシンボル（ベーシックおよびプレミアムプラン用）
+        if st.session_state.subscription in ["basic", "premium"]:
             company_symbol = st.text_input("証券コード/ティッカーシンボル（例: 7203.T, AAPL）", company_symbol)
     
     # 現在の財務情報（企業選択/手動入力に関わらず表示）
@@ -156,10 +225,10 @@ if company_name:
     if 'company_symbol' in locals():
         company_symbol = company_symbol
         
-    if st.session_state.subscription in ["professional", "enterprise"] and company_symbol:
+    if st.session_state.subscription in ["basic", "premium"] and company_symbol:
         from earnings_scraper import get_earnings_highlights
         
-        st.subheader("🔍 最新の決算ハイライト")
+        st.markdown("<div class='card'><h3 class='card-title'>🔍 最新の決算ハイライト</h3>", unsafe_allow_html=True)
         with st.expander("決算情報の詳細を表示", expanded=True):
             earnings_data = get_earnings_highlights(company_symbol)
             
@@ -175,9 +244,10 @@ if company_name:
                 st.markdown(f"**今後の見通し**: {earnings_data['future_outlook']}")
                 st.markdown(f"**戦略的施策**: {earnings_data['strategic_initiatives']}")
                 st.markdown(f"**主要リスク要因**: {earnings_data['risk_factors']}")
+        st.markdown("</div>", unsafe_allow_html=True)
     
-    # エンタープライズプランのみ、業界の詳細分析も表示
-    if st.session_state.subscription == "enterprise":
+    # プレミアムプランのみ、業界の詳細分析も表示
+    if st.session_state.subscription == "premium":
         st.subheader("🏢 業界詳細分析")
         with st.expander("業界のトレンドと競合状況", expanded=False):
             st.markdown("""
@@ -203,16 +273,16 @@ if company_name:
         forecasted_data['年'] = years
         
         # 売上高の予測
-        forecasted_data['売上高（百万円）'] = [current_revenue * ((1 + revenue_growth_rate/100) ** year) for year in years]
+        forecasted_data['売上高（百万USD）'] = [current_revenue * ((1 + revenue_growth_rate/100) ** year) for year in years]
         
         # 純利益率の予測（現在から目標まで線形に変化すると仮定）
         forecasted_data['純利益率 (%)'] = [current_net_margin + (target_net_margin - current_net_margin) * (year / forecast_years) for year in years]
         
         # 純利益の予測
-        forecasted_data['純利益（百万円）'] = forecasted_data['売上高（百万円）'] * forecasted_data['純利益率 (%)'] / 100
+        forecasted_data['純利益（百万USD）'] = forecasted_data['売上高（百万USD）'] * forecasted_data['純利益率 (%)'] / 100
         
         # 1株あたり利益（EPS）の予測
-        forecasted_data['EPS（円）'] = forecasted_data['純利益（百万円）'] * 1000000 / shares_outstanding / 1000000
+        forecasted_data['EPS（USD）'] = forecasted_data['純利益（百万USD）'] * 1000000 / shares_outstanding / 1000000
         
         # 予測データを表示
         st.subheader("財務予測")
@@ -222,20 +292,20 @@ if company_name:
         fig1 = go.Figure()
         fig1.add_trace(go.Bar(
             x=forecasted_data['年'],
-            y=forecasted_data['売上高（百万円）'],
-            name='売上高（百万円）'
+            y=forecasted_data['売上高（百万USD）'],
+            name='売上高（百万USD）'
         ))
         fig1.add_trace(go.Line(
             x=forecasted_data['年'],
-            y=forecasted_data['純利益（百万円）'],
-            name='純利益（百万円）',
+            y=forecasted_data['純利益（百万USD）'],
+            name='純利益（百万USD）',
             yaxis='y2'
         ))
         fig1.update_layout(
             title='売上高と純利益の予測',
             xaxis_title='年',
-            yaxis=dict(title='売上高（百万円）'),
-            yaxis2=dict(title='純利益（百万円）', overlaying='y', side='right'),
+            yaxis=dict(title='売上高（百万USD）'),
+            yaxis2=dict(title='純利益（百万USD）', overlaying='y', side='right'),
             legend=dict(x=0.01, y=0.99),
             height=400
         )
@@ -268,9 +338,9 @@ if company_name:
         st.subheader("本質的価値分析結果")
         col_a, col_b, col_c = st.columns(3)
         with col_a:
-            st.metric("DCF法による株価（円）", f"{dcf_price:.2f}")
+            st.metric("DCF法による株価（USD）", f"{dcf_price:.2f}")
         with col_b:
-            st.metric("現在の株価（円）", f"{current_stock_price:.2f}")
+            st.metric("現在の株価（USD）", f"{current_stock_price:.2f}")
         with col_c:
             st.metric("上昇余地", f"{upside_potential:.2f}%", delta=f"{upside_potential:.2f}%")
         
@@ -388,64 +458,144 @@ if company_name:
 # 使用方法のガイド（企業名が入力されていない場合に表示）
 else:
     # サブスクリプションプランの説明を表示
-    col_plan1, col_plan2 = st.columns([1, 2])
+    st.markdown("<div class='card'><h2 class='card-title' style='text-align: center;'>💰 企業価値分析ツールへようこそ</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; font-size: 1.1rem;'>サイドバーから企業情報を入力して分析を開始しましょう</p>", unsafe_allow_html=True)
     
-    with col_plan1:
-        st.subheader("サブスクリプションプラン")
-        st.info("👈 サイドバーから適切なプランを選択してください")
-        
-        st.markdown("### 🔹 ベーシック")
-        st.markdown("- 基本的な企業分析機能")
-        st.markdown("- 月額 ¥1,980")
-        
-        st.markdown("### 🔷 プロフェッショナル")
-        st.markdown("- 決算情報の詳細分析")
-        st.markdown("- 業績予測と比較機能")
-        st.markdown("- 月額 ¥4,980")
-        
-        st.markdown("### 💎 エンタープライズ")
-        st.markdown("- リアルタイムの業界分析")
-        st.markdown("- 専門家によるレポート")
-        st.markdown("- カスタマーサポート")
-        st.markdown("- 月額 ¥9,980")
+    # 3つのカードを横に並べる
+    col1, col2, col3 = st.columns(3)
     
-    with col_plan2:
-        st.header("このツールの使い方")
-        st.info("👈 サイドバーから企業情報と予測パラメータを入力してください。")
-        
+    with col1:
         st.markdown("""
-        ### 基本的な使用方法
-        1. サイドバーで企業名と業界を選択します。
-        2. 現在の財務情報（売上高、純利益など）を入力します。
-        3. 発行済株式数や現在の株価などの株式関連情報を入力します。
-        4. 将来の成長予測パラメータを調整します：
-           - 売上高成長率
-           - 目標純利益率
-           - 予測期間
-           - 割引率
-        5. 業界平均の財務指標を入力します（PER、PBR、PSRなど）。
-        
-        入力が完了すると、自動的に企業価値分析が表示されます。
-        
-        ### 主な機能
-        - **財務予測**: 入力したパラメータに基づいて将来の売上高と純利益を予測
-        - **本質的価値計算**: DCF法を用いた株価の本質的価値計算
-        - **財務指標比較**: 現在の財務指標と業界平均の比較
-        - **SWOT分析**: 企業の強み、弱み、機会、脅威の分析
-        - **競争優位性分析**: 企業のモート（持続的競争優位性）の評価
-        
-        ### 指標の説明
-        - **PER (株価収益率)**: 株価が1株当たり利益の何倍かを示す指標。低いほど割安と考えられる。
-        - **PBR (株価純資産倍率)**: 株価が1株当たり純資産の何倍かを示す指標。1倍を下回ると純資産より安く買えることになる。
-        - **PSR (株価売上高倍率)**: 株価が1株当たり売上高の何倍かを示す指標。特に利益が少ない成長企業の評価に使用される。
-        - **DCF (割引キャッシュフロー)**: 将来の収益を現在価値に割り引いて企業価値を算出する方法。
-        
-        ### 最新決算情報（プロフェッショナル・エンタープライズプラン）
-        プロフェッショナルおよびエンタープライズプランでは、最新の決算情報が自動的に取得・分析され、投資判断の精度が向上します。証券コードを入力するだけで、直近の決算発表内容を確認できます。
-        
-        ### 業界詳細分析（エンタープライズプラン）
-        エンタープライズプランでは、業界全体のトレンドや競合状況の詳細な分析が提供され、より包括的な投資判断が可能になります。
-        """)
+        <div style="background-color: #f0f5ff; padding: 1.5rem; border-radius: 10px; height: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <h3 style="text-align: center; color: #0066cc;">🧮 財務分析</h3>
+            <p>収益成長率と割引率に基づいた企業の本質的価値を計算します。DCF法による株価評価と上昇余地の分析が可能です。</p>
+            <ul>
+                <li>売上高と純利益の予測</li>
+                <li>本質的価値の計算</li>
+                <li>財務指標の比較・分析</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown("""
+        <div style="background-color: #f5fff0; padding: 1.5rem; border-radius: 10px; height: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <h3 style="text-align: center; color: #00aa44;">📊 SWOT分析</h3>
+            <p>業界特性と成長性に基づいた包括的なSWOT分析を提供します。企業の強み、弱み、機会、脅威を明確に把握できます。</p>
+            <ul>
+                <li>強み・弱みの分析</li>
+                <li>機会・脅威の特定</li>
+                <li>競争優位性の評価</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown("""
+        <div style="background-color: #fff0f5; padding: 1.5rem; border-radius: 10px; height: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <h3 style="text-align: center; color: #cc0066;">🔮 投資判断サポート</h3>
+            <p>様々な財務指標と分析結果を総合的に判断して、投資推奨度を算出します。投資判断の根拠を明確に理解できます。</p>
+            <ul>
+                <li>投資推奨度の算出</li>
+                <li>主要リスク要因の特定</li>
+                <li>投資判断の根拠の説明</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    st.markdown("</div>", unsafe_allow_html=True)
+    
+    # 使い方ガイド
+    st.markdown("<div class='card' style='margin-top: 2rem;'><h3 class='card-title'>🚀 使い方ガイド</h3>", unsafe_allow_html=True)
+    
+    # ステップを示す
+    steps = [
+        {"icon": "🔍", "title": "企業を選択", "desc": "サイドバーから企業を選択するか、財務情報を手動で入力します。"},
+        {"icon": "📈", "title": "成長率を設定", "desc": "予想される売上高成長率を設定します。"},
+        {"icon": "💰", "title": "割引率を設定", "desc": "将来キャッシュフローの現在価値計算に使用する割引率を設定します。"},
+        {"icon": "📊", "title": "結果を確認", "desc": "本質的価値分析、財務指標比較、SWOT分析などの結果を確認します。"}
+    ]
+    
+    steps_html = ""
+    for i, step in enumerate(steps):
+        steps_html += f"""
+        <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+            <div style="background-color: #0066cc; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 1.2rem;">
+                {step["icon"]}
+            </div>
+            <div>
+                <h4 style="margin: 0; color: #0066cc;">ステップ {i+1}: {step["title"]}</h4>
+                <p style="margin: 0;">{step["desc"]}</p>
+            </div>
+        </div>
+        """
+    
+    st.markdown(steps_html, unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+    
+    # プラン比較表
+    st.markdown("<div class='card' style='margin-top: 2rem;'><h3 class='card-title'>💎 プラン比較</h3>", unsafe_allow_html=True)
+    
+    # 表形式でプラン比較
+    plan_table = """
+    <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+        <thead>
+            <tr style="background-color: #f0f0f0;">
+                <th style="padding: 10px; text-align: left; border-bottom: 1px solid #ddd;">機能</th>
+                <th style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">無料</th>
+                <th style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">ベーシック</th>
+                <th style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">プレミアム</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;">月額料金</td>
+                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">¥0</td>
+                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">¥2,500</td>
+                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">¥4,900</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;">分析可能企業数</td>
+                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">月3社</td>
+                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">月20社</td>
+                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">無制限</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;">基本価値分析</td>
+                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">✓</td>
+                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">✓</td>
+                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">✓</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;">SWOT分析</td>
+                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">基本のみ</td>
+                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">詳細</td>
+                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">詳細</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;">決算情報分析</td>
+                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">×</td>
+                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">✓</td>
+                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">✓</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;">業界詳細分析</td>
+                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">×</td>
+                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">×</td>
+                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">✓</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;">カスタマーサポート</td>
+                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">×</td>
+                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">Eメールのみ</td>
+                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">優先サポート</td>
+            </tr>
+        </tbody>
+    </table>
+    """
+    
+    st.markdown(plan_table, unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # フッター
 st.markdown("---")
