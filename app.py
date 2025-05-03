@@ -244,15 +244,15 @@ def display_header():
     with col2:
         if st.session_state.logged_in:
             st.markdown(f"<div class='user-menu'><p>👤 {st.session_state.user['username']} さん</p></div>", unsafe_allow_html=True)
-            if st.button("ログアウト"):
+            if st.button("ログアウト", key="header_logout_btn"):
                 logout_user()
         else:
             col2_1, col2_2 = st.columns(2)
             with col2_1:
-                if st.button("ログイン", use_container_width=True):
+                if st.button("ログイン", key="header_login_btn", use_container_width=True):
                     switch_page('login')
             with col2_2:
-                if st.button("登録", use_container_width=True):
+                if st.button("登録", key="header_signup_btn", use_container_width=True):
                     switch_page('signup')
 
 # ログインページ
@@ -264,7 +264,7 @@ def show_login_page():
     username = st.text_input("ユーザー名またはメールアドレス")
     password = st.text_input("パスワード", type="password")
     
-    if st.button("ログイン", use_container_width=True):
+    if st.button("ログイン", key="login_form_btn", use_container_width=True):
         if username and password:
             success, message = login_user(username, password)
             if success:
@@ -294,7 +294,7 @@ def show_signup_page():
     
     terms_agreed = st.checkbox("利用規約とプライバシーポリシーに同意します")
     
-    if st.button("登録する", use_container_width=True):
+    if st.button("登録する", key="signup_form_btn", use_container_width=True):
         if username and email and password and confirm_password:
             if terms_agreed:
                 success, message = signup_user(username, email, password, confirm_password)
@@ -404,7 +404,7 @@ def show_payment_page():
     """支払い情報入力画面を表示"""
     if not st.session_state.logged_in:
         st.warning("支払い処理を行うにはログインが必要です。")
-        if st.button("ログインページへ"):
+        if st.button("ログインページへ", key="payment_login_btn"):
             switch_page('login')
         return
     
@@ -460,7 +460,7 @@ def show_payment_page():
     st.markdown("### 利用規約")
     terms_agreed = st.checkbox("利用規約・キャンセルポリシーに同意する")
     
-    if st.button("支払いを完了する", use_container_width=True, disabled=not terms_agreed):
+    if st.button("支払いを完了する", key="complete_payment_btn", use_container_width=True, disabled=not terms_agreed):
         # 支払い処理（サンプル）
         payment_result = PaymentProcessor.process_payment(
             st.session_state.user['id'],
@@ -473,7 +473,7 @@ def show_payment_page():
             st.success(payment_result['message'])
             st.success("お支払いが完了しました。ありがとうございます！")
             st.session_state.user['subscription_plan'] = st.session_state.selected_plan
-            if st.button("ホームに戻る"):
+            if st.button("ホームに戻る", key="back_to_home_btn"):
                 switch_page('home')
                 st.rerun()
         else:
@@ -481,7 +481,7 @@ def show_payment_page():
     
     st.markdown("</div>", unsafe_allow_html=True)
     
-    if st.button("プラン選択に戻る"):
+    if st.button("プラン選択に戻る", key="back_to_plans_btn"):
         switch_page('plans')
         st.rerun()
 
