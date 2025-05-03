@@ -826,7 +826,7 @@ else:
             <p>{result['moat_analysis']['moat_evaluation']}</p>
             
             <h3>主な競争優位性の源泉</h3>
-            <p>{result['moat_analysis']['moat_sources'].replace('\n', '<br>')}</p>
+            <p>{result['moat_analysis']['moat_sources'].replace("\\n", "<br>")}</p>
             """, unsafe_allow_html=True)
             
             st.markdown("</div>", unsafe_allow_html=True)
@@ -877,7 +877,8 @@ else:
                             
                             highlights = earnings_data["highlights"]
                             
-                            st.markdown(f"""
+                            # HTMLを組み立てる方法に変更
+                            html_content = f"""
                             <h3>四半期業績</h3>
                             <p>{highlights.get('quarterly_performance', 'データがありません')}</p>
                             
@@ -892,7 +893,8 @@ else:
                             
                             <h3>将来の見通し</h3>
                             <p>{highlights.get('guidance', 'データがありません')}</p>
-                            """, unsafe_allow_html=True)
+                            """
+                            st.markdown(html_content, unsafe_allow_html=True)
                             
                             st.markdown("</div>", unsafe_allow_html=True)
                         else:
@@ -919,7 +921,7 @@ else:
                         st.download_button(
                             label="レポートをダウンロード",
                             data=b"Sample PDF content",  # 実際にはPDFバイナリデータ
-                            file_name=f"{result['company_name']}_分析レポート_{result['analysis_date']}.pdf",
+                            file_name=result['company_name'] + "_分析レポート_" + result['analysis_date'] + ".pdf",
                             mime="application/pdf"
                         )
                 
