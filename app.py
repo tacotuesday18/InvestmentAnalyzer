@@ -109,7 +109,11 @@ with st.sidebar:
 # メインコンテンツ
 if company_name:
     # プロおよびエンタープライズプランでは、最新の決算情報も表示
-    if st.session_state.subscription in ["professional", "enterprise"] and 'company_symbol' in locals() and company_symbol:
+    company_symbol = ""
+    if 'company_symbol' in locals():
+        company_symbol = company_symbol
+        
+    if st.session_state.subscription in ["professional", "enterprise"] and company_symbol:
         from earnings_scraper import get_earnings_highlights
         
         st.subheader("🔍 最新の決算ハイライト")
