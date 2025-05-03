@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
+import trafilatura
+import requests
 from utils import generate_swot_analysis, generate_moat_analysis
 from financial_models import calculate_intrinsic_value, calculate_financial_ratios
 
@@ -17,9 +19,56 @@ st.set_page_config(
 st.title("企業の本質的価値分析ツール")
 st.markdown("このアプリでは、予想収益成長率と純利益率に基づいて企業の本質的価値を計算し、投資判断をサポートします。")
 
+# サブスクリプションプラン機能
+def show_subscription_plans():
+    st.sidebar.markdown("---")
+    st.sidebar.header("サブスクリプションプラン")
+    
+    col1, col2, col3 = st.sidebar.columns(3)
+    
+    with col1:
+        st.markdown("### 🔹 ベーシック")
+        st.markdown("**¥1,980/月**")
+        st.markdown("- 基本的な企業分析")
+        st.markdown("- 月10社まで分析可能")
+        st.markdown("- 基本的なSWOT分析")
+        if st.button("選択", key="basic_plan"):
+            st.session_state.subscription = "basic"
+            st.success("ベーシックプランが選択されました")
+    
+    with col2:
+        st.markdown("### 🔷 プロフェッショナル")
+        st.markdown("**¥4,980/月**")
+        st.markdown("- 無制限の企業分析")
+        st.markdown("- 詳細な競合分析")
+        st.markdown("- 決算情報分析")
+        st.markdown("- プレミアムレポート")
+        if st.button("選択", key="pro_plan"):
+            st.session_state.subscription = "professional"
+            st.success("プロフェッショナルプランが選択されました")
+    
+    with col3:
+        st.markdown("### 💎 エンタープライズ")
+        st.markdown("**¥9,980/月**")
+        st.markdown("- すべてのプロ機能")
+        st.markdown("- リアルタイム決算分析")
+        st.markdown("- 業界詳細レポート")
+        st.markdown("- API連携")
+        st.markdown("- 専門家サポート")
+        if st.button("選択", key="enterprise_plan"):
+            st.session_state.subscription = "enterprise"
+            st.success("エンタープライズプランが選択されました")
+
+# セッション状態の初期化
+if 'subscription' not in st.session_state:
+    st.session_state.subscription = "basic"  # デフォルトはベーシックプラン
+
 # サイドバー - 基本パラメータ入力
 with st.sidebar:
     st.header("企業情報と予測パラメータ")
+    
+    # サブスクリプションプランの表示
+    show_subscription_plans()
     
     # 企業の基本情報
     company_name = st.text_input("企業名", "")
@@ -27,6 +76,10 @@ with st.sidebar:
         "業界",
         ["テクノロジー", "金融", "ヘルスケア", "消費財", "工業", "通信", "エネルギー", "素材", "公共事業", "不動産", "その他"]
     )
+    
+    # 証券コードまたはティッカーシンボル（プロおよびエンタープライズプラン用）
+    if st.session_state.subscription in ["professional", "enterprise"]:
+        company_symbol = st.text_input("証券コード/ティッカーシンボル（例: 7203.T, AAPL）", "")
     
     # 現在の財務情報
     st.subheader("現在の財務情報")
@@ -55,6 +108,43 @@ with st.sidebar:
 
 # メインコンテンツ
 if company_name:
+    # プロおよびエンタープライズプランでは、最新の決算情報も表示
+    if st.session_state.subscription in ["professional", "enterprise"] and 'company_symbol' in locals() and company_symbol:
+        from earnings_scraper import get_earnings_highlights
+        
+        st.subheader("🔍 最新の決算ハイライト")
+        with st.expander("決算情報の詳細を表示", expanded=True):
+            earnings_data = get_earnings_highlights(company_symbol)
+            
+            col_earnings1, col_earnings2 = st.columns(2)
+            with col_earnings1:
+                st.markdown("##### 📈 業績ハイライト")
+                st.markdown(f"**売上成長率**: {earnings_data['revenue_growth']}")
+                st.markdown(f"**営業利益率**: {earnings_data['operating_margin']}")
+                st.markdown(f"**純利益**: {earnings_data['net_income']}")
+            
+            with col_earnings2:
+                st.markdown("##### 🔮 今後の見通しと戦略")
+                st.markdown(f"**今後の見通し**: {earnings_data['future_outlook']}")
+                st.markdown(f"**戦略的施策**: {earnings_data['strategic_initiatives']}")
+                st.markdown(f"**主要リスク要因**: {earnings_data['risk_factors']}")
+    
+    # エンタープライズプランのみ、業界の詳細分析も表示
+    if st.session_state.subscription == "enterprise":
+        st.subheader("🏢 業界詳細分析")
+        with st.expander("業界のトレンドと競合状況", expanded=False):
+            st.markdown("""
+            ##### 業界トレンド
+            1. **デジタルトランスフォーメーション**: 業界全体でデジタル化が加速しています
+            2. **サステナビリティ**: ESG投資の増加に伴い、持続可能な事業モデルへの移行が進んでいます
+            3. **規制環境**: 各国での規制強化が事業に影響を与えています
+            
+            ##### 競合状況
+            - 主要競合他社とのシェア比較
+            - 価格競争と差別化戦略の比較
+            - 市場への新規参入状況と参入障壁の分析
+            """)
+    
     col1, col2 = st.columns([2, 1])
     
     with col1:
@@ -250,42 +340,65 @@ if company_name:
 
 # 使用方法のガイド（企業名が入力されていない場合に表示）
 else:
-    st.info("👈 サイドバーから企業情報と予測パラメータを入力してください。")
+    # サブスクリプションプランの説明を表示
+    col_plan1, col_plan2 = st.columns([1, 2])
     
-    st.header("このツールの使い方")
+    with col_plan1:
+        st.subheader("サブスクリプションプラン")
+        st.info("👈 サイドバーから適切なプランを選択してください")
+        
+        st.markdown("### 🔹 ベーシック")
+        st.markdown("- 基本的な企業分析機能")
+        st.markdown("- 月額 ¥1,980")
+        
+        st.markdown("### 🔷 プロフェッショナル")
+        st.markdown("- 決算情報の詳細分析")
+        st.markdown("- 業績予測と比較機能")
+        st.markdown("- 月額 ¥4,980")
+        
+        st.markdown("### 💎 エンタープライズ")
+        st.markdown("- リアルタイムの業界分析")
+        st.markdown("- 専門家によるレポート")
+        st.markdown("- カスタマーサポート")
+        st.markdown("- 月額 ¥9,980")
     
-    st.markdown("""
-    ### 基本的な使用方法
-    1. サイドバーで企業名と業界を選択します。
-    2. 現在の財務情報（売上高、純利益など）を入力します。
-    3. 発行済株式数や現在の株価などの株式関連情報を入力します。
-    4. 将来の成長予測パラメータを調整します：
-       - 売上高成長率
-       - 目標純利益率
-       - 予測期間
-       - 割引率
-    5. 業界平均の財務指標を入力します（PER、PBR、PSRなど）。
-    
-    入力が完了すると、右側に自動的に企業価値分析が表示されます。
-    
-    ### 主な機能
-    - **財務予測**: 入力したパラメータに基づいて将来の売上高と純利益を予測
-    - **本質的価値計算**: DCF法を用いた株価の本質的価値計算
-    - **財務指標比較**: 現在の財務指標と業界平均の比較
-    - **SWOT分析**: 企業の強み、弱み、機会、脅威の分析
-    - **競争優位性分析**: 企業のモート（持続的競争優位性）の評価
-    
-    ### 指標の説明
-    - **PER (株価収益率)**: 株価が1株当たり利益の何倍かを示す指標。低いほど割安と考えられる。
-    - **PBR (株価純資産倍率)**: 株価が1株当たり純資産の何倍かを示す指標。1倍を下回ると純資産より安く買えることになる。
-    - **PSR (株価売上高倍率)**: 株価が1株当たり売上高の何倍かを示す指標。特に利益が少ない成長企業の評価に使用される。
-    - **DCF (割引キャッシュフロー)**: 将来の収益を現在価値に割り引いて企業価値を算出する方法。
-    
-    ### 注意点
-    - このツールは投資判断の参考情報を提供するものであり、実際の投資判断はご自身の責任で行ってください。
-    - 入力パラメータの精度が分析結果の質に大きく影響します。
-    - 将来予測には不確実性があるため、複数のシナリオでの検証をお勧めします。
-    """)
+    with col_plan2:
+        st.header("このツールの使い方")
+        st.info("👈 サイドバーから企業情報と予測パラメータを入力してください。")
+        
+        st.markdown("""
+        ### 基本的な使用方法
+        1. サイドバーで企業名と業界を選択します。
+        2. 現在の財務情報（売上高、純利益など）を入力します。
+        3. 発行済株式数や現在の株価などの株式関連情報を入力します。
+        4. 将来の成長予測パラメータを調整します：
+           - 売上高成長率
+           - 目標純利益率
+           - 予測期間
+           - 割引率
+        5. 業界平均の財務指標を入力します（PER、PBR、PSRなど）。
+        
+        入力が完了すると、自動的に企業価値分析が表示されます。
+        
+        ### 主な機能
+        - **財務予測**: 入力したパラメータに基づいて将来の売上高と純利益を予測
+        - **本質的価値計算**: DCF法を用いた株価の本質的価値計算
+        - **財務指標比較**: 現在の財務指標と業界平均の比較
+        - **SWOT分析**: 企業の強み、弱み、機会、脅威の分析
+        - **競争優位性分析**: 企業のモート（持続的競争優位性）の評価
+        
+        ### 指標の説明
+        - **PER (株価収益率)**: 株価が1株当たり利益の何倍かを示す指標。低いほど割安と考えられる。
+        - **PBR (株価純資産倍率)**: 株価が1株当たり純資産の何倍かを示す指標。1倍を下回ると純資産より安く買えることになる。
+        - **PSR (株価売上高倍率)**: 株価が1株当たり売上高の何倍かを示す指標。特に利益が少ない成長企業の評価に使用される。
+        - **DCF (割引キャッシュフロー)**: 将来の収益を現在価値に割り引いて企業価値を算出する方法。
+        
+        ### 最新決算情報（プロフェッショナル・エンタープライズプラン）
+        プロフェッショナルおよびエンタープライズプランでは、最新の決算情報が自動的に取得・分析され、投資判断の精度が向上します。証券コードを入力するだけで、直近の決算発表内容を確認できます。
+        
+        ### 業界詳細分析（エンタープライズプラン）
+        エンタープライズプランでは、業界全体のトレンドや競合状況の詳細な分析が提供され、より包括的な投資判断が可能になります。
+        """)
 
 # フッター
 st.markdown("---")
