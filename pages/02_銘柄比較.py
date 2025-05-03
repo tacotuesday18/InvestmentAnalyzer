@@ -180,19 +180,57 @@ with st.expander("株価を手動で更新"):
 # マルチセレクト用のオプション
 ticker_select_options = [f"{ticker} - {get_stock_data(ticker)['name']}" for ticker in available_tickers]
 
-# 銘柄選択（最大5つまで）
+# 複数銘柄の同時比較機能を強化
+st.markdown("<div class='mobile-card'>", unsafe_allow_html=True)
+st.markdown("<h3>銘柄選択</h3>", unsafe_allow_html=True)
+
+# 業界フィルター (モバイルフレンドリー)
+industries = list(set([get_stock_data(ticker).get('industry', 'その他') for ticker in available_tickers]))
+industries = ['すべて'] + sorted(industries)
+selected_industry = st.selectbox("業界でフィルター", industries)
+
+# フィルタリングされた銘柄リスト
+filtered_tickers = available_tickers
+if selected_industry != 'すべて':
+    filtered_tickers = [t for t in available_tickers if get_stock_data(t).get('industry', 'その他') == selected_industry]
+
+# フィルタリングされたマルチセレクト用のオプション
+ticker_select_options = [f"{ticker} - {get_stock_data(ticker)['name']}" for ticker in filtered_tickers]
+
+# 銘柄検索 (モバイルフレンドリー)
+search_term = st.text_input("銘柄を検索 (ティッカーまたは企業名)", "")
+if search_term:
+    search_term = search_term.lower()
+    ticker_select_options = [
+        option for option in ticker_select_options 
+        if search_term in option.lower()
+    ]
+
+# 銘柄選択（最大8つまで - 複数企業の比較を強化）
 selected_ticker_options = st.multiselect(
-    "比較する銘柄を選択してください（最大5つ）",
+    "比較する銘柄を選択してください（最大8つ）",
     options=ticker_select_options,
     default=[ticker_select_options[0], ticker_select_options[1]] if len(ticker_select_options) >= 2 else []
 )
+st.markdown("</div>", unsafe_allow_html=True)
 
 # 選択された銘柄からティッカーシンボルを抽出
 selected_tickers = [option.split(" - ")[0] for option in selected_ticker_options]
 
-# 評価方法の選択
-st.markdown("### 評価方法")
-col1, col2, col3, col4 = st.columns(4)
+# 評価方法の選択 (モバイルフレンドリー)
+st.markdown("<div class='mobile-card'>", unsafe_allow_html=True)
+st.markdown("<h3>評価方法</h3>", unsafe_allow_html=True)
+
+# レスポンシブなレイアウト
+if st.session_state.get('is_mobile', False) or len(st.session_state) < 5:  # モバイル判定の簡易実装
+    # モバイル向けレイアウト（縦に並べる）
+    use_pe = st.checkbox("PER (株価収益率)", value=True)
+    use_pb = st.checkbox("PBR (株価純資産倍率)", value=True)
+    use_ps = st.checkbox("PSR (株価売上高倍率)", value=True)
+    use_dcf = st.checkbox("DCF (割引キャッシュフロー法)", value=True)
+else:
+    # デスクトップ向けレイアウト（横に並べる）
+    col1, col2, col3, col4 = st.columns(4)
 
 with col1:
     use_pe = st.checkbox("PER (株価収益率)", value=True)
@@ -238,8 +276,8 @@ if use_dcf:
 if st.button("比較を実行", key="compare_btn", use_container_width=True):
     if len(selected_tickers) == 0:
         st.warning("少なくとも1つの銘柄を選択してください。")
-    elif len(selected_tickers) > 5:
-        st.warning("最大5つの銘柄までしか比較できません。")
+    elif len(selected_tickers) > 8:
+        st.warning("最大8つの銘柄までしか比較できません。")
     elif len(valuation_methods) == 0:
         st.warning("少なくとも1つの評価方法を選択してください。")
     else:

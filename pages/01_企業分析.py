@@ -119,10 +119,17 @@ with st.sidebar:
         st.switch_page("pages/02_銘柄比較.py")
 
 # 入力フォーム
-st.markdown("<div class='form-section'>", unsafe_allow_html=True)
+st.markdown("<div class='form-section mobile-card'>", unsafe_allow_html=True)
 st.markdown("<h2>企業情報と予測パラメータの入力</h2>", unsafe_allow_html=True)
 
-col1, col2 = st.columns(2)
+# ブラウザの幅に応じて列の数を調整 (モバイル対応)
+if st.session_state.get('is_mobile', False) or len(st.session_state) < 5:  # モバイル判定の簡易実装
+    # モバイル向けレイアウト（縦に並べる）
+    col1 = st.container()
+    col2 = st.container()
+else:
+    # デスクトップ向けレイアウト（横に並べる）
+    col1, col2 = st.columns(2)
 
 with col1:
     company_name = st.text_input("企業名", value="Apple Inc.")

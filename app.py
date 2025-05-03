@@ -34,12 +34,47 @@ st.markdown("""
         font-weight: bold;
     }
     
+    /* モバイル対応 */
+    @media (max-width: 768px) {
+        .main-title {
+            font-size: 2rem !important;
+        }
+        
+        .subtitle {
+            font-size: 1rem !important;
+        }
+        
+        /* コンテナに最大幅を設定して小さな画面でも見やすく */
+        .container {
+            max-width: 100% !important;
+            padding: 0 10px !important;
+        }
+        
+        /* モバイルでは余白を減らす */
+        .stButton>button {
+            width: 100%;
+            margin: 0.2rem 0;
+        }
+        
+        /* グラフの高さをモバイルで調整 */
+        .plotly-graph {
+            height: 300px !important;
+        }
+    }
+    
     /* サブタイトル */
     .subtitle {
         font-size: 1.2rem !important;
         color: #555;
         text-align: center;
         margin-bottom: 2rem;
+    }
+    
+    /* レスポンシブグリッド */
+    .responsive-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1rem;
     }
     
     /* カード要素 */
