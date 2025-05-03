@@ -10,6 +10,9 @@ import os
 # プロジェクトのルートディレクトリをパスに追加
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+# stock_dataモジュールをインポート
+from stock_data import get_stock_data, update_stock_price, fetch_tradingview_price
+
 # ページ設定
 st.set_page_config(
     page_title="企業分析 - 企業価値分析プロ",
@@ -128,12 +131,33 @@ with col1:
         "通信", "エネルギー", "素材", "公共事業", "不動産", "その他"
     ])
     ticker = st.text_input("ティッカーシンボル（例: AAPL）", value="AAPL")
+    
+    # ティッカーが入力されている場合、TradingViewからの株価取得ボタンを表示
+    if ticker:
+        # 横に並べる2つのボタンを作成
+        fetch_col1, fetch_col2 = st.columns([1, 1])
+        with fetch_col1:
+            if st.button("TradingViewから最新株価を取得", key="fetch_price_btn"):
+                with st.spinner("株価を取得中..."):
+                    new_price = fetch_tradingview_price(ticker)
+                    if new_price:
+                        # 取得した株価を表示し、フォームの値を更新
+                        st.success(f"{ticker}の最新株価: ${new_price:.2f}")
+                        # セッション状態に価格を保存して、下のフィールドで使用できるようにする
+                        st.session_state.current_price = new_price
+                        # 自動的に更新するため再読み込み
+                        st.experimental_rerun()
+                    else:
+                        st.error("株価の取得に失敗しました。")
 
 with col2:
     revenue = st.number_input("直近の売上高（百万USD）", value=365817.0, step=1000.0)
     net_income = st.number_input("直近の純利益（百万USD）", value=94680.0, step=100.0)
     shares_outstanding = st.number_input("発行済株式数（百万株）", value=15634.0, step=10.0)
-    current_stock_price = st.number_input("現在の株価（USD）", value=175.04, step=0.1)
+    
+    # TradingViewから取得した価格があれば、それをデフォルト値として使用
+    default_price = st.session_state.get('current_price', 175.04)
+    current_stock_price = st.number_input("現在の株価（USD）", value=default_price, step=0.1)
 
 st.markdown("### DCF分析パラメータ")
 
