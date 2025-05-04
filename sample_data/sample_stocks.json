@@ -3,31 +3,31 @@
         "name": "Apple Inc.",
         "industry": "テクノロジー",
         "current_price": 175.04,
-        "revenue": 365817.0,
-        "net_income": 94680.0,
-        "eps": 5.96,
-        "book_value_per_share": 15.5,
-        "shares_outstanding": 15634.0,
-        "pe_ratio": 29.37,
-        "pb_ratio": 11.29,
-        "ps_ratio": 7.51,
-        "roe": 38.44,
-        "historical_growth": 15.2,
+        "revenue": 383293.0,
+        "net_income": 97175.0,
+        "eps": 6.16,
+        "book_value_per_share": 18.85,
+        "shares_outstanding": 15552.0,
+        "pe_ratio": 28.42,
+        "pb_ratio": 9.29,
+        "ps_ratio": 7.1,
+        "roe": 32.7,
+        "historical_growth": 8.1,
         "historical_data": {
             "revenue": [
-                260174.0,
-                274515.0,
-                365817.0
+                365817.0,
+                366802.0,
+                383293.0
             ],
             "net_income": [
-                57411.0,
-                74196.0,
-                94680.0
+                94680.0,
+                96995.0,
+                97175.0
             ],
             "years": [
-                2020,
                 2021,
-                2022
+                2022,
+                2023
             ]
         }
     },
@@ -35,31 +35,31 @@
         "name": "Microsoft Corporation",
         "industry": "テクノロジー",
         "current_price": 386.77,
-        "revenue": 198270.0,
-        "net_income": 72361.0,
-        "eps": 9.68,
-        "book_value_per_share": 34.2,
-        "shares_outstanding": 7470.0,
-        "pe_ratio": 39.96,
-        "pb_ratio": 11.31,
-        "ps_ratio": 14.59,
-        "roe": 28.33,
-        "historical_growth": 17.5,
+        "revenue": 211915.0,
+        "net_income": 79207.0,
+        "eps": 10.68,
+        "book_value_per_share": 40.95,
+        "shares_outstanding": 7431.0,
+        "pe_ratio": 36.22,
+        "pb_ratio": 9.44,
+        "ps_ratio": 13.59,
+        "roe": 26.1,
+        "historical_growth": 18.3,
         "historical_data": {
             "revenue": [
-                143015.0,
                 168088.0,
-                198270.0
+                198270.0,
+                211915.0
             ],
             "net_income": [
-                44281.0,
                 61271.0,
-                72361.0
+                72361.0,
+                79207.0
             ],
             "years": [
-                2020,
                 2021,
-                2022
+                2022,
+                2023
             ]
         }
     },
@@ -323,31 +323,31 @@
         "name": "Meta Platforms, Inc.",
         "industry": "テクノロジー",
         "current_price": 467.72,
-        "revenue": 116609.0,
-        "net_income": 23200.0,
-        "eps": 8.59,
-        "book_value_per_share": 54.0,
-        "shares_outstanding": 2565.0,
-        "pe_ratio": 54.45,
-        "pb_ratio": 8.66,
-        "ps_ratio": 10.28,
-        "roe": 15.9,
-        "historical_growth": 13.5,
+        "revenue": 134901.0,
+        "net_income": 39096.0,
+        "eps": 15.26,
+        "book_value_per_share": 66.35,
+        "shares_outstanding": 2573.0,
+        "pe_ratio": 30.65,
+        "pb_ratio": 7.05,
+        "ps_ratio": 8.93,
+        "roe": 23.0,
+        "historical_growth": 15.7,
         "historical_data": {
             "revenue": [
-                85965.0,
                 117929.0,
-                116609.0
+                116609.0,
+                134901.0
             ],
             "net_income": [
-                29146.0,
                 39370.0,
-                23200.0
+                23200.0,
+                39096.0
             ],
             "years": [
-                2020,
                 2021,
-                2022
+                2022,
+                2023
             ]
         }
     },
