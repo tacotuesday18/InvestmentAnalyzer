@@ -2,15 +2,15 @@
     "AAPL": {
         "name": "Apple Inc.",
         "industry": "テクノロジー",
-        "current_price": 200.0,
+        "current_price": 175.04,
         "revenue": 365817.0,
         "net_income": 94680.0,
         "eps": 5.96,
         "book_value_per_share": 15.5,
         "shares_outstanding": 15634.0,
-        "pe_ratio": 33.557046979865774,
-        "pb_ratio": 12.903225806451612,
-        "ps_ratio": 8.547443120467337,
+        "pe_ratio": 29.37,
+        "pb_ratio": 11.29,
+        "ps_ratio": 7.51,
         "roe": 38.44,
         "historical_growth": 15.2,
         "historical_data": {
@@ -130,15 +130,15 @@
     "TSLA": {
         "name": "Tesla, Inc.",
         "industry": "自動車",
-        "current_price": 180.0,
+        "current_price": 235.87,
         "revenue": 81462.0,
         "net_income": 12583.0,
         "eps": 3.98,
         "book_value_per_share": 19.6,
         "shares_outstanding": 3160.0,
-        "pe_ratio": 45.22613065326633,
-        "pb_ratio": 9.183673469387754,
-        "ps_ratio": 6.982396700301981,
+        "pe_ratio": 59.26,
+        "pb_ratio": 12.03,
+        "ps_ratio": 9.15,
         "roe": 20.3,
         "historical_growth": 37.2,
         "historical_data": {
@@ -311,6 +311,70 @@
                 17894.0,
                 31978.0,
                 27528.0
+            ],
+            "years": [
+                2020,
+                2021,
+                2022
+            ]
+        }
+    },
+    "META": {
+        "name": "Meta Platforms, Inc.",
+        "industry": "テクノロジー",
+        "current_price": 467.72,
+        "revenue": 116609.0,
+        "net_income": 23200.0,
+        "eps": 8.59,
+        "book_value_per_share": 54.0,
+        "shares_outstanding": 2565.0,
+        "pe_ratio": 54.45,
+        "pb_ratio": 8.66,
+        "ps_ratio": 10.28,
+        "roe": 15.9,
+        "historical_growth": 13.5,
+        "historical_data": {
+            "revenue": [
+                85965.0,
+                117929.0,
+                116609.0
+            ],
+            "net_income": [
+                29146.0,
+                39370.0,
+                23200.0
+            ],
+            "years": [
+                2020,
+                2021,
+                2022
+            ]
+        }
+    },
+    "NVDA": {
+        "name": "NVIDIA Corporation",
+        "industry": "テクノロジー",
+        "current_price": 887.88,
+        "revenue": 26974.0,
+        "net_income": 4368.0,
+        "eps": 1.74,
+        "book_value_per_share": 10.2,
+        "shares_outstanding": 2470.0,
+        "pe_ratio": 510.28,
+        "pb_ratio": 87.05,
+        "ps_ratio": 81.38,
+        "roe": 17.1,
+        "historical_growth": 53.1,
+        "historical_data": {
+            "revenue": [
+                16675.0,
+                26914.0,
+                26974.0
+            ],
+            "net_income": [
+                4332.0,
+                9752.0,
+                4368.0
             ],
             "years": [
                 2020,

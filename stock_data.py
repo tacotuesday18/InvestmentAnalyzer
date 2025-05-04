@@ -210,6 +210,46 @@ SAMPLE_STOCKS = {
             "net_income": [17894.0, 31978.0, 27528.0],
             "years": [2020, 2021, 2022]
         }
+    },
+    "META": {
+        "name": "Meta Platforms, Inc.",
+        "industry": "テクノロジー",
+        "current_price": 467.72,
+        "revenue": 116609.0,  # 百万USD
+        "net_income": 23200.0,  # 百万USD
+        "eps": 8.59,  # USD
+        "book_value_per_share": 54.0,  # USD
+        "shares_outstanding": 2565.0,  # 百万株
+        "pe_ratio": 54.45,
+        "pb_ratio": 8.66,
+        "ps_ratio": 10.28,
+        "roe": 15.9,  # %
+        "historical_growth": 13.5,  # %
+        "historical_data": {
+            "revenue": [85965.0, 117929.0, 116609.0],
+            "net_income": [29146.0, 39370.0, 23200.0],
+            "years": [2020, 2021, 2022]
+        }
+    },
+    "NVDA": {
+        "name": "NVIDIA Corporation",
+        "industry": "テクノロジー",
+        "current_price": 887.88,
+        "revenue": 26974.0,  # 百万USD
+        "net_income": 4368.0,  # 百万USD
+        "eps": 1.74,  # USD
+        "book_value_per_share": 10.2,  # USD
+        "shares_outstanding": 2470.0,  # 百万株
+        "pe_ratio": 510.28,
+        "pb_ratio": 87.05,
+        "ps_ratio": 81.38,
+        "roe": 17.1,  # %
+        "historical_growth": 53.1,  # %
+        "historical_data": {
+            "revenue": [16675.0, 26914.0, 26974.0],
+            "net_income": [4332.0, 9752.0, 4368.0],
+            "years": [2020, 2021, 2022]
+        }
     }
 }
 
@@ -316,6 +356,8 @@ def save_sample_data():
     file_path = os.path.join(SAMPLE_DATA_DIR, "industry_averages.json")
     with open(file_path, 'w', encoding='utf-8') as f:
         json.dump(INDUSTRY_AVERAGES, f, ensure_ascii=False, indent=4)
+    
+    print("サンプルデータを保存しました - マグニフィセント7銘柄を含む")
 
 def load_sample_data():
     """サンプルデータをJSONファイルから読み込む"""
