@@ -234,15 +234,15 @@ SAMPLE_STOCKS = {
     "NVDA": {
         "name": "NVIDIA Corporation",
         "industry": "テクノロジー",
-        "current_price": 887.88,
+        "current_price": 126.08,  # 2023年7月の1:10株式分割反映済み
         "revenue": 26974.0,  # 百万USD
         "net_income": 4368.0,  # 百万USD
-        "eps": 1.74,  # USD
-        "book_value_per_share": 10.2,  # USD
-        "shares_outstanding": 2470.0,  # 百万株
-        "pe_ratio": 510.28,
-        "pb_ratio": 87.05,
-        "ps_ratio": 81.38,
+        "eps": 0.174,  # USD（株式分割反映済み）
+        "book_value_per_share": 1.02,  # USD（株式分割反映済み）
+        "shares_outstanding": 24700.0,  # 百万株（株式分割反映済み）
+        "pe_ratio": 724.60,
+        "pb_ratio": 123.61,
+        "ps_ratio": 115.27,
         "roe": 17.1,  # %
         "historical_growth": 53.1,  # %
         "historical_data": {
