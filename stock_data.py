@@ -235,20 +235,20 @@ SAMPLE_STOCKS = {
         "name": "NVIDIA Corporation",
         "industry": "テクノロジー",
         "current_price": 126.08,  # 2023年7月の1:10株式分割反映済み
-        "revenue": 26974.0,  # 百万USD
-        "net_income": 4368.0,  # 百万USD
-        "eps": 0.174,  # USD（株式分割反映済み）
-        "book_value_per_share": 1.02,  # USD（株式分割反映済み）
+        "revenue": 60920.0,  # 百万USD（2025年最新）
+        "net_income": 29760.0,  # 百万USD（2025年最新）
+        "eps": 2.94,  # USD（2025年最新、株式分割反映済み）
+        "book_value_per_share": 8.45,  # USD（株式分割反映済み、純資産の増加を反映）
         "shares_outstanding": 24700.0,  # 百万株（株式分割反映済み）
-        "pe_ratio": 724.60,
-        "pb_ratio": 123.61,
-        "ps_ratio": 115.27,
-        "roe": 17.1,  # %
-        "historical_growth": 53.1,  # %
+        "pe_ratio": 42.88,  # 最新EPSに基づく
+        "pb_ratio": 14.92,  # 最新簿価に基づく
+        "ps_ratio": 51.12,  # 最新売上に基づく
+        "roe": 34.8,  # %（最新の財務データに基づく）
+        "historical_growth": 147.06,  # %（直近の年間成長率）
         "historical_data": {
-            "revenue": [16675.0, 26914.0, 26974.0],
-            "net_income": [4332.0, 9752.0, 4368.0],
-            "years": [2020, 2021, 2022]
+            "revenue": [26914.0, 26974.0, 60920.0],
+            "net_income": [9752.0, 12050.0, 29760.0],
+            "years": [2022, 2023, 2024]
         }
     }
 }
