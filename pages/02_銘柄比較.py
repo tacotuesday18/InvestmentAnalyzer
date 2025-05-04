@@ -5,12 +5,15 @@ import plotly.express as px
 import plotly.graph_objects as go
 import sys
 import os
+import json
 
 # プロジェクトのルートディレクトリをパスに追加
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # stock_dataモジュールをインポート
-from stock_data import get_stock_data, get_available_tickers, compare_valuations, get_industry_average, update_stock_price, fetch_tradingview_price, refresh_stock_prices
+from stock_data import get_stock_data, get_available_tickers, compare_valuations, get_industry_average
+from stock_data import update_stock_price, fetch_tradingview_price, refresh_stock_prices
+from stock_data import load_sample_data, ensure_sample_data_dir, SAMPLE_DATA_DIR
 
 # ページ設定
 st.set_page_config(
@@ -123,49 +126,202 @@ st.markdown("<h2 class='card-title'>比較する銘柄を選択</h2>", unsafe_al
 available_tickers = get_available_tickers()
 ticker_options = {ticker: f"{ticker} - {get_stock_data(ticker)['name']}" for ticker in available_tickers}
 
-# 株価更新セクション
-with st.expander("株価を手動で更新"):
-    st.markdown("特定の銘柄の株価を更新します。これにより分析結果も変化します。")
+# 株価・財務データ更新セクション
+with st.expander("データを手動で更新", expanded=True):
+    st.markdown("### 株価・財務データ更新")
+    st.markdown("最新データを入力して分析精度を向上させます。正確な企業価値評価には最新のデータが不可欠です。")
     
-    update_col1, update_col2, update_col3 = st.columns([2, 1, 1])
+    # タブで株価更新と財務データ更新を分ける
+    price_tab, financial_tab = st.tabs(["株価更新", "財務データ更新"])
     
-    with update_col1:
-        # 利用可能なティッカーからドロップダウンで選択
-        update_ticker = st.selectbox(
+    with price_tab:
+        st.markdown("#### 株価データの更新")
+        st.markdown("各銘柄の現在の株価を入力してください。")
+        
+        update_col1, update_col2 = st.columns([2, 1])
+        
+        with update_col1:
+            # 利用可能なティッカーからドロップダウンで選択
+            update_ticker = st.selectbox(
+                "更新する銘柄",
+                options=available_tickers,
+                format_func=lambda x: f"{x} - {get_stock_data(x)['name']}"
+            )
+        
+        with update_col2:
+            if update_ticker:
+                current_price = get_stock_data(update_ticker)["current_price"]
+                new_price = st.number_input(
+                    "最新の株価 (USD)",
+                    min_value=0.01,
+                    max_value=10000.0,
+                    value=float(current_price),
+                    step=0.01,
+                    format="%.2f"
+                )
+                
+                # 更新ボタン
+                if st.button("株価を更新", key="update_price_btn", use_container_width=True):
+                    if update_ticker and new_price > 0:
+                        success = update_stock_price(update_ticker, new_price)
+                        if success:
+                            st.success(f"{update_ticker}の株価を${new_price:.2f}に更新しました。")
+                            # 最新の情報を反映するためにページをリロード
+                            st.rerun()
+                        else:
+                            st.error("株価の更新に失敗しました。")
+        
+        # 複数銘柄の一括更新セクション
+        st.markdown("#### 複数銘柄の価格を一括更新")
+        
+        # 3列のレイアウトで表示
+        cols = st.columns(3)
+        price_updates = {}
+        
+        # マグニフィセント7の銘柄を優先表示
+        magnificent7 = ["AAPL", "MSFT", "GOOGL", "AMZN", "META", "TSLA", "NVDA"]
+        display_tickers = [t for t in magnificent7 if t in available_tickers]
+        
+        for i, ticker in enumerate(display_tickers):
+            with cols[i % 3]:
+                current_data = get_stock_data(ticker)
+                current_price = current_data.get('current_price', 0.0)
+                ticker_name = current_data.get('name', ticker)
+                new_price = st.number_input(
+                    f"{ticker} - {ticker_name}",
+                    min_value=0.01,
+                    max_value=10000.0,
+                    value=float(current_price),
+                    step=0.01,
+                    format="%.2f",
+                    key=f"price_{ticker}"
+                )
+                price_updates[ticker] = new_price
+        
+        # 一括更新ボタン
+        if st.button("選択した銘柄の価格を一括更新", use_container_width=True):
+            with st.spinner("株価データを更新中..."):
+                updated_count = 0
+                for ticker, price in price_updates.items():
+                    if update_stock_price(ticker, price):
+                        updated_count += 1
+                st.success(f"{updated_count}銘柄の株価を更新しました。")
+                # 最新の情報を反映するためにページをリロード
+                st.rerun()
+    
+    with financial_tab:
+        st.markdown("#### 財務データの更新")
+        st.markdown("最新の四半期/年次レポートに基づいて財務データを更新できます。")
+        
+        # 銘柄選択
+        fin_update_ticker = st.selectbox(
             "更新する銘柄",
             options=available_tickers,
-            format_func=lambda x: f"{x} - {get_stock_data(x)['name']}"
+            format_func=lambda x: f"{x} - {get_stock_data(x)['name']}",
+            key="fin_ticker"
         )
-    
-    with update_col2:
-        if update_ticker:
-            current_price = get_stock_data(update_ticker)["current_price"]
-            # 現在の株価から±30%の範囲で新しい価格を入力可能に
-            min_price = max(0.1, current_price * 0.7)
-            max_price = current_price * 1.3
-            new_price = st.number_input(
-                "新しい株価 (USD)",
-                min_value=float(min_price),
-                max_value=float(max_price),
-                value=float(current_price),
-                step=0.01,
-                format="%.2f"
-            )
-    
-    with update_col3:
-        # 更新ボタン
-        if st.button("株価を更新", key="update_price_btn"):
-            if update_ticker and new_price > 0:
-                success = update_stock_price(update_ticker, new_price)
-                if success:
-                    st.success(f"{update_ticker}の株価を${new_price:.2f}に更新しました。")
-                    # 最新の情報を反映するためにページをリロード
-                    st.rerun()
-                else:
-                    st.error("株価の更新に失敗しました。")
+        
+        if fin_update_ticker:
+            stock_data = get_stock_data(fin_update_ticker)
+            
+            # 各種財務データを入力するためのフォーム
+            with st.form("financial_update_form"):
+                st.markdown(f"#### {fin_update_ticker} - {stock_data['name']} の財務データ更新")
+                
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    revenue = st.number_input(
+                        "売上高（百万USD）",
+                        min_value=0.0,
+                        value=float(stock_data["revenue"]),
+                        step=100.0
+                    )
+                    
+                    net_income = st.number_input(
+                        "純利益（百万USD）",
+                        value=float(stock_data["net_income"]),
+                        step=10.0
+                    )
+                    
+                    eps = st.number_input(
+                        "EPS（USD）",
+                        value=float(stock_data["eps"]),
+                        step=0.01,
+                        format="%.2f"
+                    )
+                
+                with col2:
+                    book_value_per_share = st.number_input(
+                        "1株あたり純資産（USD）",
+                        min_value=0.01,
+                        value=float(stock_data["book_value_per_share"]),
+                        step=0.1,
+                        format="%.2f"
+                    )
+                    
+                    shares_outstanding = st.number_input(
+                        "発行済株式数（百万株）",
+                        min_value=0.1,
+                        value=float(stock_data["shares_outstanding"]),
+                        step=10.0
+                    )
+                    
+                    # 業界の選択肢
+                    industry_options = list(set([get_stock_data(t).get('industry', 'その他') for t in available_tickers]))
+                    industry = st.selectbox(
+                        "業界",
+                        options=industry_options,
+                        index=industry_options.index(stock_data["industry"]) if stock_data["industry"] in industry_options else 0
+                    )
+                
+                # 更新ボタン
+                submitted = st.form_submit_button("財務データを更新", use_container_width=True)
+                if submitted:
+                    try:
+                        # 財務データを更新する処理を実装
+                        # 実際の実装では、stock_data.pyに新しい関数を追加して処理
+                        stocks_data, industry_data = load_sample_data()
+                        if fin_update_ticker in stocks_data:
+                            # データを更新
+                            stocks_data[fin_update_ticker]["revenue"] = revenue
+                            stocks_data[fin_update_ticker]["net_income"] = net_income
+                            stocks_data[fin_update_ticker]["eps"] = eps
+                            stocks_data[fin_update_ticker]["book_value_per_share"] = book_value_per_share
+                            stocks_data[fin_update_ticker]["shares_outstanding"] = shares_outstanding
+                            stocks_data[fin_update_ticker]["industry"] = industry
+                            
+                            # 財務指標も更新
+                            current_price = stocks_data[fin_update_ticker]["current_price"]
+                            stocks_data[fin_update_ticker]["pe_ratio"] = current_price / eps if eps > 0 else 0
+                            stocks_data[fin_update_ticker]["pb_ratio"] = current_price / book_value_per_share
+                            stocks_data[fin_update_ticker]["ps_ratio"] = (current_price * shares_outstanding) / revenue if revenue > 0 else 0
+                            
+                            # ファイルに保存
+                            ensure_sample_data_dir()
+                            file_path = os.path.join(SAMPLE_DATA_DIR, "sample_stocks.json")
+                            with open(file_path, 'w', encoding='utf-8') as f:
+                                json.dump(stocks_data, f, ensure_ascii=False, indent=4)
+                            
+                            st.success(f"{fin_update_ticker}の財務データを更新しました。")
+                            st.rerun()
+                        else:
+                            st.error("指定された銘柄が見つかりません。")
+                    except Exception as e:
+                        st.error(f"財務データの更新中にエラーが発生しました: {str(e)}")
 
-    # 注意書き - ユーザー入力ベースの価格更新
-    st.info("注意: 株価はユーザー入力に基づいています。正確な企業価値評価のために最新の株価を手動で入力してください。")
+    # 外部データソースへのリンク
+    st.markdown("### 最新データ取得リソース")
+    st.markdown("""
+    以下のサイトから最新の株価と財務データを取得できます：
+    - [Yahoo Finance](https://finance.yahoo.com/) - 株価、基本財務指標
+    - [MarketWatch](https://www.marketwatch.com/) - 詳細な財務データ
+    - [Finviz](https://finviz.com/) - スクリーニングと基本指標
+    - [Macrotrends](https://www.macrotrends.net/) - 長期的な財務トレンド
+    """)
+    
+    # データ自動取得についての注意
+    st.info("注意: 現在のバージョンでは手動データ入力のみをサポートしています。将来のアップデートでは、APIを使用した自動データ取得機能を実装予定です。")
 
 # マルチセレクト用のオプション
 ticker_select_options = [f"{ticker} - {get_stock_data(ticker)['name']}" for ticker in available_tickers]
