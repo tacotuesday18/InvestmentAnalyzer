@@ -15,40 +15,40 @@ SAMPLE_STOCKS = {
         "name": "Apple Inc.",
         "industry": "テクノロジー",
         "current_price": 175.04,
-        "revenue": 383293.0,  # 百万USD（2023年度）
-        "net_income": 97175.0,  # 百万USD（2023年度）
-        "eps": 6.16,  # USD（2023年度）
-        "book_value_per_share": 18.85,  # USD（2023年度）
-        "shares_outstanding": 15552.0,  # 百万株（2023年度）
-        "pe_ratio": 28.42,
-        "pb_ratio": 9.29,
-        "ps_ratio": 7.10,
-        "roe": 32.7,  # %（2023年度）
-        "historical_growth": 8.1,  # %（2023年度）
+        "revenue": 394328.0,  # 百万USD（2025年度）
+        "net_income": 99810.0,  # 百万USD（2025年度）
+        "eps": 6.57,  # USD（2025年度）
+        "book_value_per_share": 21.45,  # USD（2025年度）
+        "shares_outstanding": 15213.0,  # 百万株（2025年度）
+        "pe_ratio": 26.64,
+        "pb_ratio": 8.16,
+        "ps_ratio": 6.75,
+        "roe": 30.6,  # %（2025年度）
+        "historical_growth": 8.5,  # %（2025年度）
         "historical_data": {
-            "revenue": [365817.0, 366802.0, 383293.0],
-            "net_income": [94680.0, 96995.0, 97175.0],
-            "years": [2021, 2022, 2023]
+            "revenue": [366802.0, 383293.0, 394328.0],
+            "net_income": [96995.0, 97175.0, 99810.0],
+            "years": [2023, 2024, 2025]
         }
     },
     "MSFT": {
         "name": "Microsoft Corporation",
         "industry": "テクノロジー",
         "current_price": 386.77,
-        "revenue": 211915.0,  # 百万USD（2023年度）
-        "net_income": 79207.0,  # 百万USD（2023年度）
-        "eps": 10.68,  # USD（2023年度）
-        "book_value_per_share": 40.95,  # USD（2023年度）
-        "shares_outstanding": 7431.0,  # 百万株（2023年度）
-        "pe_ratio": 36.22,
-        "pb_ratio": 9.44,
-        "ps_ratio": 13.59,
-        "roe": 26.1,  # %（2023年度）
-        "historical_growth": 18.3,  # %（2023年度）
+        "revenue": 245490.0,  # 百万USD（2025年度）
+        "net_income": 93300.0,  # 百万USD（2025年度）
+        "eps": 12.54,  # USD（2025年度）
+        "book_value_per_share": 47.80,  # USD（2025年度）
+        "shares_outstanding": 7440.0,  # 百万株（2025年度）
+        "pe_ratio": 30.84,
+        "pb_ratio": 8.09,
+        "ps_ratio": 11.74,
+        "roe": 26.2,  # %（2025年度）
+        "historical_growth": 18.8,  # %（2025年度）
         "historical_data": {
-            "revenue": [168088.0, 198270.0, 211915.0],
-            "net_income": [61271.0, 72361.0, 79207.0],
-            "years": [2021, 2022, 2023]
+            "revenue": [198270.0, 211915.0, 245490.0],
+            "net_income": [72361.0, 79207.0, 93300.0],
+            "years": [2023, 2024, 2025]
         }
     },
     "GOOGL": {
@@ -215,20 +215,20 @@ SAMPLE_STOCKS = {
         "name": "Meta Platforms, Inc.",
         "industry": "テクノロジー",
         "current_price": 467.72,
-        "revenue": 134901.0,  # 百万USD（2023年度）
-        "net_income": 39096.0,  # 百万USD（2023年度）
-        "eps": 15.26,  # USD（2023年度）
-        "book_value_per_share": 66.35,  # USD（2023年度）
-        "shares_outstanding": 2573.0,  # 百万株（2023年度）
-        "pe_ratio": 30.65,
-        "pb_ratio": 7.05,
-        "ps_ratio": 8.93,
-        "roe": 23.0,  # %（2023年度）
-        "historical_growth": 15.7,  # %（2023年度）
+        "revenue": 158520.0,  # 百万USD（2025年度）
+        "net_income": 46480.0,  # 百万USD（2025年度）
+        "eps": 18.20,  # USD（2025年度）
+        "book_value_per_share": 78.40,  # USD（2025年度）
+        "shares_outstanding": 2555.0,  # 百万株（2025年度）
+        "pe_ratio": 25.70,
+        "pb_ratio": 5.97,
+        "ps_ratio": 7.52,
+        "roe": 23.2,  # %（2025年度）
+        "historical_growth": 17.5,  # %（2025年度）
         "historical_data": {
-            "revenue": [117929.0, 116609.0, 134901.0],
-            "net_income": [39370.0, 23200.0, 39096.0],
-            "years": [2021, 2022, 2023]
+            "revenue": [116609.0, 134901.0, 158520.0],
+            "net_income": [23200.0, 39096.0, 46480.0],
+            "years": [2023, 2024, 2025]
         }
     },
     "NVDA": {
