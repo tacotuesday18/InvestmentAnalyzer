@@ -228,8 +228,8 @@ if selected_ticker:
             discount_factors = [(1 + discount_rate/100) ** -year for year in forecasted_data['year']]
             discounted_cash_flows = [cf * df for cf, df in zip(forecasted_data['free_cash_flow'], discount_factors)]
             
-            # 終末価値の計算（ゴードンモデル）
-            terminal_value = forecasted_data['free_cash_flow'].iloc[-1] * (1 + terminal_growth/100) / ((discount_rate/100) - (terminal_growth/100))
+            # 終末価値の計算（ゴードンモデル、永続成長率2%で固定）
+            terminal_value = forecasted_data['free_cash_flow'].iloc[-1] * (1 + 2.0/100) / ((discount_rate/100) - (2.0/100))
             discounted_terminal_value = terminal_value * discount_factors[-1]
             
             # 企業価値の総和
@@ -352,15 +352,15 @@ if selected_ticker:
                     # 純利益の予測
                     forecasted_data_sens['net_income'] = forecasted_data_sens['revenue'] * (net_margin / 100)
                     
-                    # フリーキャッシュフローの計算
-                    forecasted_data_sens['free_cash_flow'] = forecasted_data_sens['net_income'] * (1 - (capex_percent / 100))
+                    # フリーキャッシュフローの計算（純利益の80%と仮定）
+                    forecasted_data_sens['free_cash_flow'] = forecasted_data_sens['net_income'] * 0.8
                     
                     # 企業価値の計算
                     discount_factors_sens = [(1 + d/100) ** -year for year in forecasted_data_sens['year']]
                     discounted_cash_flows_sens = [cf * df for cf, df in zip(forecasted_data_sens['free_cash_flow'], discount_factors_sens)]
                     
-                    # 終末価値の計算
-                    terminal_value_sens = forecasted_data_sens['free_cash_flow'].iloc[-1] * (1 + terminal_growth/100) / ((d/100) - (terminal_growth/100))
+                    # 終末価値の計算（永続成長率2%で固定）
+                    terminal_value_sens = forecasted_data_sens['free_cash_flow'].iloc[-1] * (1 + 2.0/100) / ((d/100) - (2.0/100))
                     discounted_terminal_value_sens = terminal_value_sens * discount_factors_sens[-1]
                     
                     # 企業価値の総和
