@@ -313,75 +313,7 @@ if selected_ticker:
             st.markdown("<div class='card'>", unsafe_allow_html=True)
             st.markdown("<h2 class='card-title'>企業価値分析結果</h2>", unsafe_allow_html=True)
             
-            # 業界平均倍率を使った企業価値計算（修正版）
-            # 計算の基本的考え方：
-            # 1. 予測期間後の最終年の財務数値を使用
-            # 2. その数値に業界平均倍率を適用して将来時点での企業価値を推定
-            # 3. その価値を割引率で現在価値に割り引く
-            
-            final_year_revenue = forecasted_data['revenue'].iloc[-1]
-            final_year_net_income = forecasted_data['net_income'].iloc[-1]
-            
-            # 純資産（簡易的な推定）- 通常はバランスシートから直接取得すべき
-            estimated_equity = final_year_net_income * 10
-            
-            # 予測年数後の企業価値（倍率法）を計算
-            future_per_market_cap = final_year_net_income * industry_per
-            future_psr_market_cap = final_year_revenue * industry_psr
-            future_pbr_market_cap = estimated_equity * industry_pbr
-            
-            # 予測年数後の1株あたり価値
-            future_per_price = future_per_market_cap / (stock_data['shares_outstanding'] * 1000000)
-            future_psr_price = future_psr_market_cap / (stock_data['shares_outstanding'] * 1000000)
-            future_pbr_price = future_pbr_market_cap / (stock_data['shares_outstanding'] * 1000000)
-            
-            # 予測年数後の平均株価
-            future_avg_price = (future_per_price + future_psr_price + future_pbr_price) / 3
-            
-            # 現在価値への割引（予測期間分の割引率を適用）
-            # 正確には (1 + 割引率)^予測年数 で割り引く
-            discounted_multiple_price = future_avg_price / ((1 + discount_rate/100) ** forecast_years)
-            
-            # 上昇余地の計算
-            multiple_upside = ((discounted_multiple_price / current_stock_price) - 1) * 100
-            
-
-            
-            # DCF分析結果
-            st.markdown("<h3>DCF分析結果</h3>", unsafe_allow_html=True)
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                st.markdown(f"""
-                <div class='result-card'>
-                    <p class='result-value'>${per_share_value:.2f}</p>
-                    <p class='result-label'>DCF法による1株価値</p>
-                </div>
-                """, unsafe_allow_html=True)
-            
-            with col2:
-                upside_class = "up-value" if upside_potential >= 0 else "down-value"
-                upside_sign = "+" if upside_potential >= 0 else ""
-                st.markdown(f"""
-                <div class='result-card'>
-                    <p class='result-value {upside_class}'>{upside_sign}{upside_potential:.1f}%</p>
-                    <p class='result-label'>DCF法による上昇余地</p>
-                </div>
-                """, unsafe_allow_html=True)
-            
-            # 詳細なDCF計算結果の表示
-            st.markdown("<h3>予測財務データ</h3>", unsafe_allow_html=True)
-            
-            # データフレームの表示用にカラム名を変更
-            display_df = forecasted_data.copy()
-            display_df.columns = ['予測年', '売上高（$）', '純利益（$）']
-            # 数値を見やすく表示するためにフォーマット
-            for col in display_df.columns[1:]:
-                display_df[col] = display_df[col].map('${:,.0f}'.format)
-            st.dataframe(display_df, use_container_width=True)
-            
-            # 業界平均倍率による評価
-            st.markdown("<h3>業界平均倍率による評価</h3>", unsafe_allow_html=True)
+            # 業界平均倍率および本質的価値の計算準備
             
             # 予測最終年の値を使用
             final_year_revenue = forecasted_data['revenue'].iloc[-1]
@@ -410,7 +342,19 @@ if selected_ticker:
             # 上昇余地
             multiple_upside = ((discounted_multiple_price / current_stock_price) - 1) * 100
             
-            # 業界平均倍率による評価結果の表示
+            # 将来の価値（比較表用）
+            future_per_market_cap = per_valuation
+            future_psr_market_cap = psr_valuation
+            future_pbr_market_cap = pbr_valuation
+            future_per_price = per_share_price
+            future_psr_price = psr_share_price
+            future_pbr_price = pbr_share_price
+            future_avg_price = avg_multiple_price
+            
+            # DCF分析結果
+            st.markdown("<h3>DCF分析結果</h3>", unsafe_allow_html=True)
+            
+            # DCFの評価結果の表示
             st.markdown(f"""
             <div style="background-color: #f2f7ff; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center;">
                 <p style="margin-bottom: 0px;"><strong>{forecast_years}年後</strong>の予測価値と現在価値への割引結果</p>
@@ -495,7 +439,18 @@ if selected_ticker:
                     <p class='result-note'>平均上昇余地: {upside_sign}{avg_upside:.1f}%</p>
                 </div>
                 """, unsafe_allow_html=True)
-                
+            
+            # 詳細なDCF計算結果の表示
+            st.markdown("<h3>予測財務データ</h3>", unsafe_allow_html=True)
+            
+            # データフレームの表示用にカラム名を変更
+            display_df = forecasted_data.copy()
+            display_df.columns = ['予測年', '売上高（$）', '純利益（$）']
+            # 数値を見やすく表示するためにフォーマット
+            for col in display_df.columns[1:]:
+                display_df[col] = display_df[col].map('${:,.0f}'.format)
+            st.dataframe(display_df, use_container_width=True)
+            
             # 業界平均倍率による評価の説明
             with st.expander("📈 業界平均倍率評価について"):
                 st.markdown(f"""
