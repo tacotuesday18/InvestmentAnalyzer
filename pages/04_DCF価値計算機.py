@@ -230,13 +230,13 @@ if selected_ticker:
             net_income = stock_data['net_income'] * 1000000
         
         # 予測期間と成長率
-        forecast_years = st.slider("予測期間（年）", min_value=1, max_value=5, value=3, step=1)
-        revenue_growth = st.slider("売上高成長率（%）", min_value=-10.0, max_value=50.0, value=stock_data.get('historical_growth', 10.0), step=0.5)
+        forecast_years = st.number_input("予測期間（年）", min_value=1, max_value=10, value=3, step=1)
+        revenue_growth = st.number_input("売上高成長率（%）", min_value=-50.0, max_value=100.0, value=stock_data.get('historical_growth', 10.0), step=0.1, format="%.1f")
     
     with col2:
         # 割引率とマージン
-        discount_rate = st.slider("割引率（%）", min_value=5.0, max_value=25.0, value=10.0, step=0.5)
-        net_margin = st.slider("純利益率（%）", min_value=-5.0, max_value=40.0, value=(net_income / revenue * 100) if revenue > 0 else 15.0, step=0.5)
+        discount_rate = st.number_input("割引率（%）", min_value=1.0, max_value=50.0, value=10.0, step=0.1, format="%.1f")
+        net_margin = st.number_input("純利益率（%）", min_value=-50.0, max_value=100.0, value=(net_income / revenue * 100) if revenue > 0 else 15.0, step=0.1, format="%.1f")
         
         # 業界平均倍率の入力
         st.markdown("#### 業界平均倍率")
@@ -556,39 +556,81 @@ if selected_ticker:
                 """, unsafe_allow_html=True)
             
             # DCF計算の説明
-            st.markdown("<h3>DCF計算方法の説明</h3>", unsafe_allow_html=True)
+            st.markdown("<h3>本質的価値の計算方法</h3>", unsafe_allow_html=True)
             
             # 計算過程の説明を追加
-            with st.expander("📊 DCF計算過程の詳細説明"):
+            with st.expander("📊 本質的価値の計算方法の詳細説明"):
                 st.markdown(f"""
-                <h4>DCF法とは？</h4>
-                <p>DCF（Discounted Cash Flow：割引キャッシュフロー）法は、将来の収益を現在価値に割り引くことで企業価値を評価する方法です。</p>
+                <h4>本質的価値計算とは？</h4>
+                <p>本質的価値とは、企業の将来利益に基づいて算出される理論上の株価のことです。現在の株価と比較することで、投資判断の材料となります。</p>
                 
-                <h4>簡易版DCF計算手順</h4>
-                <p>本ツールでは、以下の手順でDCF計算を行っています：</p>
+                <h4>計算の流れ</h4>
+                <p>本ツールでは、以下の手順で本質的価値を計算しています：</p>
                 
-                <h4>1. 予測売上高と純利益の計算</h4>
-                <p>入力された売上高成長率 <strong>{revenue_growth:.1f}%</strong> を使用して、{forecast_years}年間の売上高を予測しました。</p>
-                <p>入力された純利益率 <strong>{net_margin:.1f}%</strong> を使用して、各年の純利益を計算しました。</p>
+                <h4>1. 将来の財務予測</h4>
+                <p><strong>売上高成長率 {revenue_growth:.1f}%</strong> に基づいて将来の売上高を予測します。</p>
+                <p><strong>純利益率 {net_margin:.1f}%</strong> に基づいて将来の純利益を計算します。</p>
+                <p>この予測を <strong>{forecast_years}年間</strong> 行い、将来の財務状況をモデル化します。</p>
                 
-                <h4>2. 最終年の純利益に業界平均PER倍率を適用</h4>
-                <p>{forecast_years}年後の予測純利益: ${final_year_net_income:,.0f}</p>
-                <p>業界平均PER: {industry_per}倍</p>
-                <p>終末価値（割引前）: ${final_year_net_income:,.0f} × {industry_per} = ${terminal_value:,.0f}</p>
+                <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 10px 0;">
+                <p style="font-weight: bold; margin-bottom: 10px;">【計算例】</p>
+                <p>現在の売上高: ${revenue:,.0f}</p>
+                <ul>
+                    <li>1年後の予測売上高: ${revenue:,.0f} × (1 + {revenue_growth/100}) = ${revenue * (1 + revenue_growth/100):,.0f}</li>
+                    <li>2年後の予測売上高: ${revenue:,.0f} × (1 + {revenue_growth/100})<sup>2</sup> = ${revenue * (1 + revenue_growth/100)**2:,.0f}</li>
+                    <li>{forecast_years}年後の予測売上高: ${revenue:,.0f} × (1 + {revenue_growth/100})<sup>{forecast_years}</sup> = ${revenue * (1 + revenue_growth/100)**forecast_years:,.0f}</li>
+                </ul>
+                <p>{forecast_years}年後の予測純利益: ${revenue * (1 + revenue_growth/100)**forecast_years:,.0f} × {net_margin/100} = ${final_year_net_income:,.0f}</p>
+                </div>
                 
-                <h4>3. 割引率の適用</h4>
-                <p>割引率 <strong>{discount_rate:.1f}%</strong> を使用して、将来の価値を現在価値に割り引きました。</p>
+                <h4>2. 終末価値（ターミナルバリュー）の計算</h4>
+                <p>予測期間終了後も企業は存続し価値を生み出し続けるという前提のもと、<strong>業界平均PER（株価収益率）{industry_per}倍</strong> を使って終末価値を計算します。</p>
+                <p>PERとは、株価が純利益の何倍であるかを示す指標で、業界や成長率によって適正値が異なります。</p>
+                
+                <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 10px 0;">
+                <p style="font-weight: bold; margin-bottom: 10px;">【終末価値の計算】</p>
+                <p>終末価値 = {forecast_years}年後の予測純利益 × 業界平均PER</p>
+                <p>終末価値 = ${final_year_net_income:,.0f} × {industry_per} = ${terminal_value:,.0f}</p>
+                </div>
+                
+                <h4>3. 現在価値への割引</h4>
+                <p>将来の価値を現在の価値に変換するために、<strong>割引率 {discount_rate:.1f}%</strong> を使用して割引計算を行います。</p>
+                <p>割引率は投資のリスクや資本コストを反映し、高いほど将来価値は小さく評価されます。</p>
+                
+                <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 10px 0;">
+                <p style="font-weight: bold; margin-bottom: 10px;">【割引計算】</p>
+                <p>割引係数 = 1 ÷ (1 + 割引率)<sup>予測年数</sup></p>
                 <p>割引係数 = 1 ÷ (1 + {discount_rate/100})<sup>{forecast_years}</sup> = {1/((1 + discount_rate/100) ** forecast_years):.4f}</p>
-                <p>割引後終末価値: ${terminal_value:,.0f} × {1/((1 + discount_rate/100) ** forecast_years):.4f} = ${dcf_value:,.0f}</p>
+                <p>現在価値 = 終末価値 × 割引係数</p>
+                <p>現在価値 = ${terminal_value:,.0f} × {1/((1 + discount_rate/100) ** forecast_years):.4f} = ${dcf_value:,.0f}</p>
+                </div>
                 
-                <h4>4. 1株あたり価値の計算</h4>
-                <p>1株あたり価値 = 企業価値 ÷ 発行済株式数</p>
-                <p>発行済株式数: {stock_data['shares_outstanding'] * 1000000:,.0f}株</p>
-                <p>1株あたり価値: ${dcf_value:,.0f} ÷ {stock_data['shares_outstanding'] * 1000000:,.0f}株 = ${per_share_value:.2f}</p>
+                <h4>4. 1株あたり本質的価値の計算</h4>
+                <p>企業全体の価値を発行済株式数で割ることで、1株あたりの本質的価値を計算します。</p>
                 
-                <h4>5. 上昇余地の計算</h4>
-                <p>上昇余地 = (DCF法による株価 ÷ 現在株価 - 1) × 100</p>
-                <p>上昇余地 = (${per_share_value:.2f} ÷ ${current_stock_price:.2f} - 1) × 100 = {upside_potential:.1f}%</p>
+                <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 10px 0;">
+                <p style="font-weight: bold; margin-bottom: 10px;">【1株あたり価値の計算】</p>
+                <p>1株あたり本質的価値 = 企業価値 ÷ 発行済株式数</p>
+                <p>1株あたり本質的価値 = ${dcf_value:,.0f} ÷ {stock_data['shares_outstanding'] * 1000000:,.0f}株 = <span style="color: #36b37e; font-weight: bold;">${per_share_value:.2f}</span></p>
+                </div>
+                
+                <h4>5. 投資判断の指標：上昇余地</h4>
+                <p>計算された本質的価値と現在の株価を比較して、上昇余地（または下落リスク）を評価します。</p>
+                
+                <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 10px 0;">
+                <p style="font-weight: bold; margin-bottom: 10px;">【上昇余地の計算】</p>
+                <p>上昇余地 = (本質的価値 ÷ 現在株価 - 1) × 100</p>
+                <p>上昇余地 = (${per_share_value:.2f} ÷ ${current_stock_price:.2f} - 1) × 100 = <span style="color: {upside_potential >= 0 and '#36b37e' or '#ff5630'}; font-weight: bold;">{upside_potential >= 0 and '+' or ''}{upside_potential:.1f}%</span></p>
+                </div>
+                
+                <h4>投資判断の目安</h4>
+                <ul>
+                    <li>上昇余地が <strong>+20%以上</strong>：割安（強い買い）</li>
+                    <li>上昇余地が <strong>+10〜+20%</strong>：やや割安（買い）</li>
+                    <li>上昇余地が <strong>-10〜+10%</strong>：適正水準（中立）</li>
+                    <li>上昇余地が <strong>-20〜-10%</strong>：やや割高（売り）</li>
+                    <li>上昇余地が <strong>-20%以下</strong>：割高（強い売り）</li>
+                </ul>
                 """, unsafe_allow_html=True)
                 
             # DCFの結果概要を表示
