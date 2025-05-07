@@ -135,6 +135,39 @@ with st.sidebar:
 st.markdown("<h1 class='main-header'>🧮 DCF価値計算機</h1>", unsafe_allow_html=True)
 st.markdown("割引キャッシュフロー（DCF）法を使用して、企業の本質的価値を計算し、現在の株価と比較して投資判断をサポートします。")
 
+# DCF計算の説明を追加
+with st.expander("🔍 DCF計算方法について詳しく"):
+    st.markdown("""
+    <h3>DCF法とは？</h3>
+    <p>DCF（Discounted Cash Flow：割引キャッシュフロー）法は、企業の<strong>将来の収益</strong>を予測し、
+    それを<strong>現在の価値</strong>に割り引くことで企業の本質的価値を算出する方法です。</p>
+    
+    <h3>計算の流れ</h3>
+    <ol>
+        <li><strong>予測期間の設定</strong>：通常3～5年間の将来キャッシュフローを予測します</li>
+        <li><strong>売上高の予測</strong>：売上高成長率を使って将来の売上高を予測します</li>
+        <li><strong>純利益の計算</strong>：純利益率を使って将来の純利益を計算します</li>
+        <li><strong>フリーキャッシュフローの計算</strong>：純利益の80%をフリーキャッシュフローと仮定します（このアプリでは簡易版として）</li>
+        <li><strong>割引率の適用</strong>：将来のキャッシュフローを割引率で現在価値に割り引きます</li>
+        <li><strong>終末価値の計算</strong>：予測期間以降の永続的な価値を計算します（永続成長率2%を使用）</li>
+        <li><strong>企業価値の合計</strong>：割引後のキャッシュフローと終末価値を合計します</li>
+        <li><strong>1株あたり価値の計算</strong>：企業価値合計を発行済株式数で割って算出します</li>
+    </ol>
+    
+    <h3>単純化した計算式</h3>
+    <p>企業価値 = 予測期間のDCF合計 + 終末価値</p>
+    <p>1株あたり企業価値 = 企業価値 ÷ 発行済株式数</p>
+    
+    <div style="background-color: #f8f9fa; padding: 10px; border-radius: 5px; margin-top: 20px;">
+    <p style="margin-bottom: 5px;"><strong>注意点</strong>：</p>
+    <ul style="margin-top: 0;">
+        <li>DCF法は将来予測に依存するため、パラメータ変更で結果が大きく変わります</li>
+        <li>感度分析を使って、成長率や割引率の変動が企業価値に与える影響を確認しましょう</li>
+        <li>DCF法は完璧な方法ではないため、他の評価方法と組み合わせて総合的に判断しましょう</li>
+    </ul>
+    </div>
+    """, unsafe_allow_html=True)
+
 # 入力カード
 st.markdown("<div class='card'>", unsafe_allow_html=True)
 st.markdown("<h2 class='card-title'>企業情報と予測パラメータ</h2>", unsafe_allow_html=True)
@@ -333,6 +366,39 @@ if selected_ticker:
             # DCF構成要素の内訳
             st.markdown("<h3>DCF構成要素</h3>", unsafe_allow_html=True)
             
+            # 計算過程の説明を追加
+            with st.expander("📊 計算過程の詳細説明"):
+                st.markdown(f"""
+                <h4>1. 予測売上高と純利益の計算</h4>
+                <p>入力された売上高成長率 <strong>{revenue_growth:.1f}%</strong> を使用して、{forecast_years}年間の売上高を予測しました。</p>
+                <p>入力された純利益率 <strong>{net_margin:.1f}%</strong> を使用して、各年の純利益を計算しました。</p>
+                
+                <h4>2. フリーキャッシュフローへの変換</h4>
+                <p>各年の純利益の <strong>80%</strong> をフリーキャッシュフロー(FCF)と仮定しました。</p>
+                <p>これは投資や運転資本の変動を簡略化した推定方法です。</p>
+                
+                <h4>3. 割引率の適用</h4>
+                <p>割引率 <strong>{discount_rate:.1f}%</strong> を使用して、将来のキャッシュフローを現在価値に割り引きました。</p>
+                <p>割引係数 = 1 ÷ (1 + 割引率)<sup>年数</sup></p>
+                <p>各年の割引係数: {[f"{df:.4f}" for df in discount_factors]}</p>
+                
+                <h4>4. 終末価値の計算</h4>
+                <p>予測期間終了後の永続的な価値（終末価値）を計算しました。</p>
+                <p>終末価値計算式: 最終年FCF × (1 + 永続成長率) ÷ (割引率 - 永続成長率)</p>
+                <p>永続成長率は<strong>2.0%</strong>で固定しています。</p>
+                <p>終末価値（割引前）: ${terminal_value / discount_factors[-1]:,.0f}</p>
+                <p>終末価値（割引後）: ${discounted_terminal_value:,.0f}</p>
+                
+                <h4>5. 企業価値の計算</h4>
+                <p>企業価値 = 予測期間の割引キャッシュフロー合計 + 割引後の終末価値</p>
+                <p>企業価値: ${total_dcf:,.0f}</p>
+                
+                <h4>6. 1株あたり価値の計算</h4>
+                <p>1株あたり価値 = 企業価値 ÷ 発行済株式数</p>
+                <p>発行済株式数: {stock_data['shares_outstanding'] * 1000000:,.0f}株</p>
+                <p>1株あたり価値: ${per_share_value:.2f}</p>
+                """, unsafe_allow_html=True)
+            
             dcf_components = pd.DataFrame({
                 '項目': ['予測期間のDCF', '終末価値', '企業価値合計', '1株あたり企業価値'],
                 '金額（$）': [
@@ -356,6 +422,32 @@ if selected_ticker:
             # 感度分析
             st.markdown("<h3>感度分析</h3>", unsafe_allow_html=True)
             st.markdown("成長率と割引率の変動が企業価値に与える影響を確認できます。")
+            
+            # 感度分析の説明を追加
+            with st.expander("📈 感度分析について"):
+                st.markdown("""
+                <h4>感度分析とは？</h4>
+                <p>感度分析とは、DCF計算の重要な入力値（売上高成長率と割引率）を変動させた場合に、
+                企業価値がどのように変化するかを調べる分析方法です。</p>
+                
+                <h4>なぜ感度分析が重要なのか？</h4>
+                <ul>
+                    <li>将来の成長率や割引率は予測が難しく、不確実性があります</li>
+                    <li>わずかなパラメータの変化で企業価値が大きく変動する可能性があります</li>
+                    <li>投資判断の信頼性を高めるために、様々なシナリオを検討することが重要です</li>
+                </ul>
+                
+                <h4>ヒートマップの見方</h4>
+                <p>下のヒートマップは、売上高成長率（縦軸）と割引率（横軸）の組み合わせによる
+                企業価値の変化を色で表しています。</p>
+                <ul>
+                    <li><strong>青色</strong>：現在の株価より高い企業価値（割安の可能性）</li>
+                    <li><strong>赤色</strong>：現在の株価より低い企業価値（割高の可能性）</li>
+                    <li><strong>白色</strong>：現在の株価に近い企業価値</li>
+                </ul>
+                <p>青色の領域が広いほど、様々な条件下でも割安である可能性が高く、
+                投資判断の信頼性が高いと考えられます。</p>
+                """, unsafe_allow_html=True)
             
             # 感度分析の範囲設定
             growth_range = np.linspace(revenue_growth - 5, revenue_growth + 5, 5)
