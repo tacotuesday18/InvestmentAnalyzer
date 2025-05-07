@@ -261,8 +261,8 @@ if selected_ticker:
             total_dcf = sum(discounted_cash_flows) + discounted_terminal_value
             equity_value = total_dcf # 簡略化のため、負債は無視
             
-            # 1株あたり価値
-            per_share_value = equity_value / stock_data['shares_outstanding']
+            # 1株あたり価値 (shares_outstandingは百万株単位から実際の株式数に変換)
+            per_share_value = equity_value / (stock_data['shares_outstanding'] * 1000000)
             
             # 上昇余地の計算
             upside_potential = ((per_share_value / current_stock_price) - 1) * 100
@@ -391,8 +391,8 @@ if selected_ticker:
                     # 企業価値の総和
                     total_dcf_sens = sum(discounted_cash_flows_sens) + discounted_terminal_value_sens
                     
-                    # 1株あたり価値
-                    per_share_value_sens = total_dcf_sens / stock_data['shares_outstanding']
+                    # 1株あたり価値（百万株単位から実際の株式数に変換）
+                    per_share_value_sens = total_dcf_sens / (stock_data['shares_outstanding'] * 1000000)
                     
                     row.append(per_share_value_sens)
                     

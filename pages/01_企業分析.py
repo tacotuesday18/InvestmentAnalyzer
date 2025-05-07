@@ -176,11 +176,11 @@ with col2:
         net_income = float(net_income_str.replace(',', ''))
     except:
         net_income = 94680000000.0
-    shares_outstanding_str = st.text_input("発行済株式数（百万株）", value="15,634.0")
+    shares_outstanding_str = st.text_input("発行済株式数", value="15,634,000,000")
     try:
         shares_outstanding = float(shares_outstanding_str.replace(',', ''))
     except:
-        shares_outstanding = 15634.0
+        shares_outstanding = 15634000000.0
     
     # TradingViewから取得した価格があれば、それをデフォルト値として使用
     default_price = st.session_state.get('current_price', 175.04)
