@@ -409,13 +409,14 @@ if selected_ticker:
                 <div class='result-card'>
                     <p class='result-value {upside_class}'>{upside_sign}{multiple_upside:.1f}%</p>
                     <p class='result-label'>現在の上昇余地</p>
-                    <p class='result-note'>現在株価: ${current_stock_price:.2f}</p>
+                    <p class='result-note'>本質的価値 ${discounted_multiple_price:.2f} vs 現在株価 ${current_stock_price:.2f}</p>
                 </div>
                 """, unsafe_allow_html=True)
                 
             with col3:
                 # 総合的な投資推奨度（DCFと倍率法の平均）
                 avg_upside = (upside_potential + multiple_upside) / 2
+                avg_upside_sign = "+" if avg_upside >= 0 else ""
                 if avg_upside > 20:
                     recommendation = "強い買い"
                     recommendation_class = "up-value"
@@ -436,7 +437,7 @@ if selected_ticker:
                 <div class='result-card'>
                     <p class='result-value {recommendation_class}'>{recommendation}</p>
                     <p class='result-label'>総合推奨度</p>
-                    <p class='result-note'>平均上昇余地: {upside_sign}{avg_upside:.1f}%</p>
+                    <p class='result-note'>平均上昇余地: {avg_upside_sign}{avg_upside:.1f}%</p>
                 </div>
                 """, unsafe_allow_html=True)
             
