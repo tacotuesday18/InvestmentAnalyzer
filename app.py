@@ -657,13 +657,14 @@ def show_home():
     
     st.markdown("<h2>ダッシュボード</h2>", unsafe_allow_html=True)
     
+    # 上段のカード
     col1, col2, col3 = st.columns(3)
     
     with col1:
         st.markdown("<div class='card'>", unsafe_allow_html=True)
         st.markdown("<h3 class='card-title'>📊 企業分析</h3>", unsafe_allow_html=True)
         st.markdown("DCF法による株価評価や詳細なSWOT分析など、企業の本質的価値を分析します。")
-        if st.button("企業分析へ", use_container_width=True):
+        if st.button("企業分析へ", key="to_analysis", use_container_width=True):
             st.switch_page("pages/01_企業分析.py")
         st.markdown("</div>", unsafe_allow_html=True)
     
@@ -671,16 +672,43 @@ def show_home():
         st.markdown("<div class='card'>", unsafe_allow_html=True)
         st.markdown("<h3 class='card-title'>🔍 銘柄比較</h3>", unsafe_allow_html=True)
         st.markdown("複数の銘柄を選択して様々な評価方法（PER、PBR、PSR、DCF法）で比較分析します。")
-        if st.button("銘柄比較へ", use_container_width=True):
+        if st.button("銘柄比較へ", key="to_comparison", use_container_width=True):
             st.switch_page("pages/02_銘柄比較.py")
         st.markdown("</div>", unsafe_allow_html=True)
     
     with col3:
         st.markdown("<div class='card'>", unsafe_allow_html=True)
-        st.markdown("<h3 class='card-title'>📝 分析履歴</h3>", unsafe_allow_html=True)
-        st.markdown("過去に行った企業分析の履歴を確認し、最新情報で更新することができます。")
-        if st.button("分析履歴へ", use_container_width=True):
-            st.switch_page("pages/03_分析履歴.py")
+        st.markdown("<h3 class='card-title'>🔎 銘柄スクリーナー</h3>", unsafe_allow_html=True)
+        st.markdown("様々な条件でフィルタリングして、投資対象となる銘柄を効率的に見つけることができます。")
+        if st.button("スクリーナーへ", key="to_screener", use_container_width=True):
+            st.switch_page("pages/03_銘柄スクリーナー.py")
+        st.markdown("</div>", unsafe_allow_html=True)
+    
+    # 下段のカード
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.markdown("<div class='card'>", unsafe_allow_html=True)
+        st.markdown("<h3 class='card-title'>🧮 DCF価値計算機</h3>", unsafe_allow_html=True)
+        st.markdown("DCF法で企業価値を詳細に計算。成長率や割引率の感度分析で投資の確信度を高めます。")
+        if st.button("DCF計算機へ", key="to_dcf", use_container_width=True):
+            st.switch_page("pages/04_DCF価値計算機.py")
+        st.markdown("</div>", unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown("<div class='card'>", unsafe_allow_html=True)
+        st.markdown("<h3 class='card-title'>📈 株価チャート</h3>", unsafe_allow_html=True)
+        st.markdown("主要銘柄の株価チャートと価格推移を視覚的に確認できます。（準備中）")
+        if st.button("チャートへ", key="to_chart", use_container_width=True, disabled=True):
+            pass  # 実装予定
+        st.markdown("</div>", unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown("<div class='card'>", unsafe_allow_html=True)
+        st.markdown("<h3 class='card-title'>📝 分析レポート</h3>", unsafe_allow_html=True)
+        st.markdown("保存した分析結果を確認したり、新しい情報で更新したりできます。（準備中）")
+        if st.button("レポートへ", key="to_reports", use_container_width=True, disabled=True):
+            pass  # 実装予定
         st.markdown("</div>", unsafe_allow_html=True)
     
     # アカウント情報
