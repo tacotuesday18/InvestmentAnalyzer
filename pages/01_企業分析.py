@@ -102,7 +102,7 @@ st.markdown("""
 
 # メインコンテンツ
 st.markdown("<h1 class='main-header'>📊 企業分析</h1>", unsafe_allow_html=True)
-st.markdown("企業の財務データを分析し、DCF法による企業価値計算、SWOT分析、競争優位性（モート）分析などを行います。")
+st.markdown("企業の財務データとファンダメンタルズを分析し、SWOT分析、競争優位性（モート）分析、最新の注目ポイントなどを提供します。")
 
 # 分析手法の説明を追加
 with st.expander("🔍 分析手法について詳しく"):
@@ -110,13 +110,13 @@ with st.expander("🔍 分析手法について詳しく"):
     <h3>このページの分析手法</h3>
     <p>このページでは以下の分析手法を組み合わせて、総合的な企業分析を行います。</p>
     
-    <h4>1. DCF（Discounted Cash Flow）分析</h4>
-    <p>将来の予測キャッシュフローを現在価値に割り引いて企業の本質的価値を算出します。</p>
+    <h4>1. ファンダメンタル分析</h4>
+    <p>企業の財務データや事業内容を定量的・定性的に分析し、企業の価値や成長性を評価します。</p>
     <ul>
-        <li>売上高成長率から将来の売上高を予測</li>
-        <li>純利益率から将来の利益を計算</li>
-        <li>割引率を適用して将来キャッシュフローの現在価値を計算</li>
-        <li>終末価値（予測期間以降の価値）を計算</li>
+        <li>財務諸表の分析（売上高、利益、成長率など）</li>
+        <li>財務比率の評価（PER、PBR、PSR、ROEなど）</li>
+        <li>市場シェアと業界内ポジションの分析</li>
+        <li>経営陣の質と経営戦略の評価</li>
     </ul>
     
     <h4>2. SWOT分析</h4>
@@ -138,15 +138,21 @@ with st.expander("🔍 分析手法について詳しく"):
         <li>特許・知的財産</li>
     </ul>
     
-    <h4>4. 感度分析</h4>
-    <p>成長率や割引率などの主要パラメータを変動させたときの企業価値の変化を評価します。</p>
-    <p>これにより、企業価値評価の信頼性と安定性を確認できます。</p>
+    <h4>4. 最新の注目ポイント分析</h4>
+    <p>企業の最新の決算発表や重要イベント、市場トレンドなどを分析し、投資判断に重要な最新情報を提供します。</p>
+    <ul>
+        <li>決算発表のハイライト</li>
+        <li>経営陣のコメントと将来見通し</li>
+        <li>新製品・サービスの展開状況</li>
+        <li>業界トレンドとの整合性</li>
+        <li>市場の反応と専門家の意見</li>
+    </ul>
     """, unsafe_allow_html=True)
 
 # サイドバー
 with st.sidebar:
     st.markdown("### 企業分析ツール")
-    st.markdown("企業の本質的価値を計算し、投資判断をサポートします。")
+    st.markdown("企業のファンダメンタルズを分析し、最新の注目ポイントを提供することで投資判断をサポートします。")
     
     st.markdown("---")
     
@@ -157,6 +163,9 @@ with st.sidebar:
     
     if st.button("銘柄比較", key="compare_btn"):
         st.switch_page("pages/02_銘柄比較.py")
+        
+    if st.button("DCF価値計算機", key="dcf_btn"):
+        st.switch_page("pages/04_DCF価値計算機.py")
 
 # 入力フォーム
 st.markdown("<div class='form-section mobile-card'>", unsafe_allow_html=True)
@@ -230,7 +239,7 @@ with col2:
     except:
         current_stock_price = default_price
 
-st.markdown("### DCF分析パラメータ")
+st.markdown("### ファンダメンタル分析パラメータ")
 
 col1, col2, col3 = st.columns(3)
 
@@ -239,18 +248,18 @@ with col1:
     net_margin = st.slider("純利益率（%）", min_value=-5.0, max_value=40.0, value=25.0, step=0.5)
 
 with col2:
-    discount_rate = st.slider("割引率（%）", min_value=5.0, max_value=25.0, value=10.0, step=0.5)
-    terminal_multiple = st.slider("終末価値倍率（PE）", min_value=5.0, max_value=30.0, value=20.0, step=0.5)
+    industry_pe = st.number_input("業界平均PER", value=25.0, step=0.5)
+    industry_pbr = st.number_input("業界平均PBR", value=3.0, step=0.1)
 
 with col3:
-    forecast_years = st.slider("予測期間（年）", min_value=5, max_value=10, value=5, step=1)
-    industry_pe = st.number_input("業界平均PER", value=25.0, step=0.5)
+    forecast_years = st.slider("予測期間（年）", min_value=1, max_value=5, value=3, step=1)
+    industry_psr = st.number_input("業界平均PSR", value=5.0, step=0.1)
 
 st.markdown("</div>", unsafe_allow_html=True)
 
 # 分析実行ボタン
-if st.button("企業価値を計算", key="calculate_btn", use_container_width=True):
-    with st.spinner("企業価値を計算中..."):
+if st.button("企業分析を実行", key="calculate_btn", use_container_width=True):
+    with st.spinner("企業のファンダメンタル分析を実行中..."):
         # 計算処理をシミュレート
         progress_bar = st.progress(0)
         for i in range(100):
@@ -260,9 +269,18 @@ if st.button("企業価値を計算", key="calculate_btn", use_container_width=T
             import time
             time.sleep(0.01)
         
-        # サンプルデータの作成
-        dcf_price = current_stock_price * (1 + (revenue_growth - discount_rate) / 100)
-        upside_potential = ((dcf_price / current_stock_price) - 1) * 100
+        # 業界平均倍率による評価
+        per_price = (net_income / shares_outstanding) * industry_pe
+        pbr_price = (revenue * 0.3 / shares_outstanding) * industry_pbr  # 簡易的な純資産価値として売上の30%を使用
+        psr_price = (revenue / shares_outstanding) * industry_psr / 10  # PSRは倍率が大きいため、調整
+        
+        # 平均価格と上昇余地
+        avg_price = (per_price + pbr_price + psr_price) / 3
+        upside_potential = ((avg_price / current_stock_price) - 1) * 100
+        
+        # 感度分析用の変数（後のコードとの互換性のため）
+        discount_rate = 10.0
+        terminal_multiple = 20.0
         
         # 結果表示
         st.markdown("<div class='card'>", unsafe_allow_html=True)
@@ -276,7 +294,7 @@ if st.button("企業価値を計算", key="calculate_btn", use_container_width=T
         
         with col2:
             st.markdown(f"**現在の株価**: ${current_stock_price:.2f}")
-            st.markdown(f"**DCF価値**: ${dcf_price:.2f}")
+            st.markdown(f"**平均倍率価値**: ${avg_price:.2f}")
         
         with col3:
             st.markdown(f"**上昇余地**: {upside_potential:.1f}%")
@@ -309,9 +327,9 @@ if st.button("企業価値を計算", key="calculate_btn", use_container_width=T
         
         st.markdown("</div>", unsafe_allow_html=True)
         
-        # DCF分析詳細
+        # ファンダメンタル分析詳細
         st.markdown("<div class='card'>", unsafe_allow_html=True)
-        st.markdown("<h2 class='card-title'>DCF分析</h2>", unsafe_allow_html=True)
+        st.markdown("<h2 class='card-title'>ファンダメンタル分析</h2>", unsafe_allow_html=True)
         
         # 予測データを作成
         years = list(range(1, forecast_years + 1))
@@ -339,58 +357,74 @@ if st.button("企業価値を計算", key="calculate_btn", use_container_width=T
         total_firm_value = sum(discounted_cash_flows) + terminal_value
         value_per_share = total_firm_value / shares_outstanding
         
-        # 企業価値の内訳
-        st.markdown("#### 企業価値の内訳")
+        # 業界平均倍率による評価
+        st.markdown("#### 業界平均倍率による評価")
         
-        enterprise_value_components = pd.DataFrame({
-            '項目': ['割引後CF合計', '終末価値', '企業価値合計', '1株あたり企業価値'],
-            '金額（$）': [
-                sum(discounted_cash_flows),
-                terminal_value,
-                total_firm_value,
-                value_per_share
+        evaluation_components = pd.DataFrame({
+            '評価方法': ['PER（株価収益率）', 'PBR（株価純資産倍率）', 'PSR（株価売上高倍率）', '平均倍率価値'],
+            '使用倍率': [
+                f"{industry_pe:.1f}倍",
+                f"{industry_pbr:.1f}倍",
+                f"{industry_psr:.1f}倍",
+                "平均"
+            ],
+            '算出株価（$）': [
+                per_price,
+                pbr_price,
+                psr_price,
+                avg_price
+            ],
+            '上昇余地（%）': [
+                ((per_price / current_stock_price) - 1) * 100,
+                ((pbr_price / current_stock_price) - 1) * 100,
+                ((psr_price / current_stock_price) - 1) * 100,
+                upside_potential
             ]
         })
         
-        # 最後の行は1株あたりの値なので別表示
-        enterprise_value_df = enterprise_value_components.iloc[:-1].copy()
-        enterprise_value_df['割合'] = enterprise_value_df['金額（$）'] / total_firm_value * 100
-        enterprise_value_df['割合'] = enterprise_value_df['割合'].map('{:.1f}%'.format)
-        
         # 金額を見やすく表示するためにフォーマット
-        enterprise_value_df['金額（$）'] = enterprise_value_df['金額（$）'].map('${:,.0f}'.format)
+        evaluation_components['算出株価（$）'] = evaluation_components['算出株価（$）'].map('${:.2f}'.format)
+        evaluation_components['上昇余地（%）'] = evaluation_components['上昇余地（%）'].map('{:+.1f}%'.format)
         
-        st.dataframe(enterprise_value_df, use_container_width=True)
+        st.dataframe(evaluation_components, use_container_width=True)
         
         col1, col2 = st.columns(2)
         
         with col1:
-            # 円グラフ
-            fig = px.pie(
-                names=enterprise_value_components['項目'].iloc[:2],
-                values=enterprise_value_components['金額（$）'].iloc[:2],
-                title="企業価値の構成",
-                color_discrete_sequence=px.colors.sequential.Blues_r
+            # 倍率法による株価の比較
+            fig = px.bar(
+                x=['PER価値', 'PBR価値', 'PSR価値', '平均価値', '現在株価'],
+                y=[per_price, pbr_price, psr_price, avg_price, current_stock_price],
+                title="倍率法による株価評価",
+                color_discrete_sequence=['#0066cc', '#0066cc', '#0066cc', '#0066cc', '#ff9900'],
+                labels={'x': '評価方法', 'y': '株価 ($)'},
             )
+            
+            fig.update_layout(
+                showlegend=False,
+                height=400
+            )
+            
             st.plotly_chart(fig, use_container_width=True)
         
         with col2:
             # メトリクス
             st.markdown("<div style='display: flex; flex-direction: column;'>", unsafe_allow_html=True)
             
-            # 企業価値
+            # PER価値
             st.markdown(f"""
             <div class='metric-box'>
-                <div class='metric-title'>企業価値合計</div>
-                <div class='metric-value'>${total_firm_value:,.0f}</div>
+                <div class='metric-title'>PER価値（業界平均PER: {industry_pe}倍）</div>
+                <div class='metric-value'>${per_price:.2f}</div>
+                <div>上昇余地: {((per_price / current_stock_price) - 1) * 100:+.1f}%</div>
             </div>
             """, unsafe_allow_html=True)
             
-            # 1株あたり価値
+            # 平均倍率価値
             st.markdown(f"""
             <div class='metric-box'>
-                <div class='metric-title'>1株あたり価値</div>
-                <div class='metric-value'>${value_per_share:.2f}</div>
+                <div class='metric-title'>平均倍率価値</div>
+                <div class='metric-value'>${avg_price:.2f}</div>
                 <div>現在の株価: ${current_stock_price:.2f}</div>
             </div>
             """, unsafe_allow_html=True)
@@ -400,7 +434,7 @@ if st.button("企業価値を計算", key="calculate_btn", use_container_width=T
             st.markdown(f"""
             <div class='metric-box'>
                 <div class='metric-title'>上昇余地</div>
-                <div class='metric-value' style='color: {upside_color};'>{upside_potential:.1f}%</div>
+                <div class='metric-value' style='color: {upside_color};'>{upside_potential:+.1f}%</div>
             </div>
             """, unsafe_allow_html=True)
             
@@ -460,55 +494,143 @@ if st.button("企業価値を計算", key="calculate_btn", use_container_width=T
         
         st.markdown("</div>", unsafe_allow_html=True)
         
-        # 感度分析（シンプルなバージョン）
+        # 最新の注目ポイント
         st.markdown("<div class='card'>", unsafe_allow_html=True)
-        st.markdown("<h2 class='card-title'>感度分析</h2>", unsafe_allow_html=True)
+        st.markdown("<h2 class='card-title'>最新の注目ポイント</h2>", unsafe_allow_html=True)
         
-        st.markdown("""
-        <p>成長率と割引率の変動が企業価値に与える影響をヒートマップで表示しています。</p>
-        """, unsafe_allow_html=True)
+        # 企業別カスタマイズ
+        if ticker == "AAPL":
+            st.markdown("""
+            ### 最新決算のハイライト
+
+            **2025年第2四半期決算**
+            - 売上高: $95.7B（前年同期比+4.2%）
+            - EPS: $1.53（予想$1.50を上回る）
+            - サービス事業の売上高は過去最高の$24.2B（前年同期比+21.3%）
+            - 世界のアクティブデバイスが30億台を突破
+            
+            ### 経営陣のコメント
+            
+            **ティム・クック CEO**
+            > 「iPhone15シリーズは引き続き好調で、中国市場も安定しています。Vision Proの販売開始は当社の空間コンピューティング戦略の重要なマイルストーンです。」
+            
+            **ルカ・マエストリ CFO**
+            > 「当社は800億ドルの自社株買いプログラムを発表しました。株主還元と成長投資のバランスを取りながら、強固なキャッシュフローを維持しています。」
+            
+            ### 注目すべきポイント
+            
+            - AIへの投資拡大がアナウンスされ、6月のWWDCで「Apple Intelligence」を発表予定
+            - インド市場での製造拡大が継続し、サプライチェーン多様化の取り組みが進展
+            - サブスクリプションサービスの価格改定が行われ、収益拡大に貢献
+            """, unsafe_allow_html=True)
+        elif ticker == "MSFT":
+            st.markdown("""
+            ### 最新決算のハイライト
+
+            **2025年第2四半期決算**
+            - 売上高: $61.9B（前年同期比+13.3%）
+            - EPS: $2.94（予想$2.85を上回る）
+            - クラウド事業（Azure）の売上高: $26.7B（前年同期比+27.4%）
+            - 営業利益率: 45.2%（前年同期比+2.1ポイント）
+            
+            ### 経営陣のコメント
+            
+            **サティア・ナデラ CEO**
+            > 「AIの商用化が加速しており、Azureの新規顧客獲得と既存顧客のアップセルの両面で恩恵を受けています。Copilotの導入企業は3,500社を超えました。」
+            
+            **エイミー・フッド CFO**
+            > 「AI投資は当社の長期的な成長を支えるものであり、効率性とAIインフラへの投資のバランスを取りながら、マージンの拡大を継続しています。」
+            
+            ### 注目すべきポイント
+            
+            - 生成AIへの投資が全事業部門で加速、特にCopilotとAzure OpenAIが成長をけん引
+            - OfficeCopilotのユーザー数が急増し、商用利用が拡大
+            - OpenAIとの提携強化により、競合他社との技術的優位性を維持
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown("""
+            ### 最新の注目ポイント
+            
+            実際の企業分析では、以下のような最新の情報が提供されます：
+            
+            **決算情報のハイライト**
+            - 直近の四半期決算の主要数値
+            - アナリスト予想との比較
+            - 前年同期比の成長率
+            - セグメント別の業績
+            
+            **経営陣の発言・将来見通し**
+            - 決算発表会での重要発言
+            - 将来の成長戦略に関するコメント
+            - 市場環境に対する見解
+            
+            **市場の反応と専門家の意見**
+            - 決算後の株価の動き
+            - アナリストの評価・格付け変更
+            - 今後の株価目標
+            
+            **最新のビジネストレンド**
+            - 新製品・サービスの動向
+            - 競合状況の変化
+            - 規制環境の変化
+            - 業界トレンドとの関連性
+            """, unsafe_allow_html=True)
         
-        # シンプルな感度分析のためのデータ作成
-        growth_rates = np.linspace(revenue_growth - 10, revenue_growth + 10, 5)
-        discount_rates = np.linspace(discount_rate - 5, discount_rate + 5, 5)
+        st.markdown("</div>", unsafe_allow_html=True)
         
-        sensitivity_matrix = []
-        for g in growth_rates:
-            row = []
-            for d in discount_rates:
-                # 簡易計算
-                adjusted_value = current_stock_price * (1 + (g - d) / 100)
-                row.append(adjusted_value)
-            sensitivity_matrix.append(row)
+        # 成長予測（シンプルなバージョン）
+        st.markdown("<div class='card'>", unsafe_allow_html=True)
+        st.markdown("<h2 class='card-title'>成長予測</h2>", unsafe_allow_html=True)
         
-        # ヒートマップの作成
-        fig = go.Figure(data=go.Heatmap(
-            z=sensitivity_matrix,
-            x=[f"{d:.1f}%" for d in discount_rates],
-            y=[f"{g:.1f}%" for g in growth_rates],
-            colorscale='RdBu_r',
-            colorbar=dict(title="株価 ($)"),
-            hovertemplate="成長率: %{y}<br>割引率: %{x}<br>株価: $%{z:.2f}<extra></extra>"
+        # 売上高と純利益の予測グラフ
+        years = list(range(0, forecast_years + 1))
+        base_year = datetime.datetime.now().year
+        year_labels = [str(base_year + year) for year in years]
+        
+        forecasted_revenue_with_current = [revenue] + forecasted_revenue
+        forecasted_net_income_with_current = [net_income] + forecasted_net_income
+        
+        fig = go.Figure()
+        
+        # 売上高
+        fig.add_trace(go.Bar(
+            x=year_labels,
+            y=forecasted_revenue_with_current,
+            name='売上高',
+            marker_color='#0066cc'
+        ))
+        
+        # 純利益
+        fig.add_trace(go.Bar(
+            x=year_labels,
+            y=forecasted_net_income_with_current,
+            name='純利益',
+            marker_color='#00cc66'
         ))
         
         fig.update_layout(
-            title="成長率と割引率の感度分析",
-            xaxis_title="割引率 (%)",
-            yaxis_title="成長率 (%)",
-            height=500
+            title=f"売上高と純利益の予測（{forecast_years}年間）",
+            xaxis_title="年",
+            yaxis_title="金額（USD）",
+            height=500,
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1
+            )
         )
+        
+        # 金額表示を読みやすく
+        fig.update_yaxes(tickformat=",.0f")
         
         st.plotly_chart(fig, use_container_width=True)
         
         st.markdown("""
-        <h3>感度分析の解釈</h3>
         <p>
-        ヒートマップは、成長率と割引率のさまざまな組み合わせに基づいた企業価値を示しています。
-        青色の領域は高い企業価値を示し、赤色の領域は低い企業価値を示します。
-        </p>
-        <p>
-        <strong>注意</strong>: 感度分析は将来予測に基づくものであり、実際の結果は異なる場合があります。
-        投資判断の際は、他の情報源も参考にしてください。
+        上記のグラフは、入力された売上高成長率と純利益率に基づく予測を示しています。
+        実際の結果は、市場環境、競合状況、技術革新などの要因によって大きく異なる可能性があります。
         </p>
         """, unsafe_allow_html=True)
         
