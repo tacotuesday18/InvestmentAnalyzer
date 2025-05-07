@@ -176,24 +176,17 @@ if selected_ticker:
     
     with col1:
         # 売上と純利益の入力
-        revenue = st.number_input("直近の売上高（USD）", value=stock_data['revenue'] * 1000000, step=1000000.0, format="%.0f")
-        net_income = st.number_input("直近の純利益（USD）", value=stock_data['net_income'] * 1000000, step=1000000.0, format="%.0f")
+        revenue = st.number_input("年間売上高（USD）", value=stock_data['revenue'] * 1000000, step=1000000.0, format="%.0f")
+        net_income = st.number_input("年間純利益（USD）", value=stock_data['net_income'] * 1000000, step=1000000.0, format="%.0f")
         
         # 予測期間と成長率
-        forecast_years = st.slider("予測期間（年）", min_value=5, max_value=20, value=10, step=1)
+        forecast_years = st.slider("予測期間（年）", min_value=1, max_value=5, value=3, step=1)
         revenue_growth = st.slider("売上高成長率（%）", min_value=-10.0, max_value=50.0, value=stock_data.get('historical_growth', 10.0), step=0.5)
-        
-        # 終末価値の設定
-        terminal_growth = st.slider("永続成長率（%）", min_value=0.0, max_value=5.0, value=2.0, step=0.1)
     
     with col2:
         # 割引率とマージン
         discount_rate = st.slider("割引率（%）", min_value=5.0, max_value=25.0, value=10.0, step=0.5)
         net_margin = st.slider("純利益率（%）", min_value=-5.0, max_value=40.0, value=(net_income / revenue * 100) if revenue > 0 else 15.0, step=0.5)
-        
-        # 税率と資本的支出
-        tax_rate = st.slider("税率（%）", min_value=0.0, max_value=40.0, value=21.0, step=0.5)
-        capex_percent = st.slider("資本的支出（対売上高%）", min_value=0.0, max_value=30.0, value=10.0, step=0.5)
         
         # カスタム株価の入力（オプション）
         custom_stock_price = st.number_input(
@@ -225,8 +218,8 @@ if selected_ticker:
             # 純利益の予測
             forecasted_data['net_income'] = forecasted_data['revenue'] * (net_margin / 100)
             
-            # フリーキャッシュフローの計算
-            forecasted_data['free_cash_flow'] = forecasted_data['net_income'] * (1 - (capex_percent / 100))
+            # フリーキャッシュフローの計算（簡易版：純利益の80%としてフリーキャッシュフローを推定）
+            forecasted_data['free_cash_flow'] = forecasted_data['net_income'] * 0.8
             
             # 進捗バーの更新
             progress_bar.progress(50)
