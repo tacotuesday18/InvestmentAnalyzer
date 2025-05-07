@@ -176,8 +176,8 @@ if selected_ticker:
     
     with col1:
         # 売上と純利益の入力
-        revenue = st.number_input("直近の売上高（百万USD）", value=stock_data['revenue'], step=100.0)
-        net_income = st.number_input("直近の純利益（百万USD）", value=stock_data['net_income'], step=10.0)
+        revenue = st.number_input("直近の売上高（USD）", value=stock_data['revenue'] * 1000000, step=1000000.0, format="%.0f")
+        net_income = st.number_input("直近の純利益（USD）", value=stock_data['net_income'] * 1000000, step=1000000.0, format="%.0f")
         
         # 予測期間と成長率
         forecast_years = st.slider("予測期間（年）", min_value=5, max_value=20, value=10, step=1)
@@ -306,7 +306,10 @@ if selected_ticker:
             
             # データフレームの表示用にカラム名を変更
             display_df = forecasted_data.copy()
-            display_df.columns = ['予測年', '売上高（百万$）', '純利益（百万$）', 'フリーキャッシュフロー（百万$）']
+            display_df.columns = ['予測年', '売上高（$）', '純利益（$）', 'フリーキャッシュフロー（$）']
+            # 数値を見やすく表示するためにフォーマット
+            for col in display_df.columns[1:]:
+                display_df[col] = display_df[col].map('${:,.0f}'.format)
             st.dataframe(display_df, use_container_width=True)
             
             # DCF構成要素の内訳
@@ -314,7 +317,7 @@ if selected_ticker:
             
             dcf_components = pd.DataFrame({
                 '項目': ['予測期間のDCF', '終末価値', '企業価値合計', '1株あたり企業価値'],
-                '金額（百万$）': [
+                '金額（$）': [
                     sum(discounted_cash_flows),
                     discounted_terminal_value,
                     total_dcf,
@@ -324,8 +327,11 @@ if selected_ticker:
             
             # 最後の行は1株あたりの値なので別表示
             enterprise_value_df = dcf_components.iloc[:-1].copy()
-            enterprise_value_df['割合'] = enterprise_value_df['金額（百万$）'] / total_dcf * 100
+            enterprise_value_df['割合'] = enterprise_value_df['金額（$）'] / total_dcf * 100
             enterprise_value_df['割合'] = enterprise_value_df['割合'].map('{:.1f}%'.format)
+            
+            # 金額を見やすく表示するためにフォーマット
+            enterprise_value_df['金額（$）'] = enterprise_value_df['金額（$）'].map('${:,.0f}'.format)
             
             st.dataframe(enterprise_value_df, use_container_width=True)
             

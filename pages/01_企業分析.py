@@ -165,8 +165,8 @@ with col1:
                 st.error("更新する株価がありません。先に「現在の株価（USD）」を入力してください。")
 
 with col2:
-    revenue = st.number_input("直近の売上高（百万USD）", value=365817.0, step=1000.0)
-    net_income = st.number_input("直近の純利益（百万USD）", value=94680.0, step=100.0)
+    revenue = st.number_input("直近の売上高（USD）", value=365817000000.0, step=1000000.0, format="%.0f")
+    net_income = st.number_input("直近の純利益（USD）", value=94680000000.0, step=1000000.0, format="%.0f")
     shares_outstanding = st.number_input("発行済株式数（百万株）", value=15634.0, step=10.0)
     
     # TradingViewから取得した価格があれば、それをデフォルト値として使用
@@ -262,10 +262,14 @@ if st.button("企業価値を計算", key="calculate_btn", use_container_width=T
         forecasted_net_income = [rev * (net_margin/100) for rev in forecasted_revenue]
         forecasted_df = pd.DataFrame({
             '年': years,
-            '売上高（百万$）': forecasted_revenue,
+            '売上高（$）': forecasted_revenue,
             '純利益率（%）': [net_margin] * forecast_years,
-            '純利益（百万$）': forecasted_net_income
+            '純利益（$）': forecasted_net_income
         })
+        
+        # 金額を見やすく表示するためにフォーマット
+        forecasted_df['売上高（$）'] = forecasted_df['売上高（$）'].map('${:,.0f}'.format)
+        forecasted_df['純利益（$）'] = forecasted_df['純利益（$）'].map('${:,.0f}'.format)
         
         # 予測財務データ
         st.markdown("#### 予測財務データ")
@@ -283,7 +287,7 @@ if st.button("企業価値を計算", key="calculate_btn", use_container_width=T
         
         enterprise_value_components = pd.DataFrame({
             '項目': ['割引後CF合計', '終末価値', '企業価値合計', '1株あたり企業価値'],
-            '金額（百万$）': [
+            '金額（$）': [
                 sum(discounted_cash_flows),
                 terminal_value,
                 total_firm_value,
@@ -293,8 +297,11 @@ if st.button("企業価値を計算", key="calculate_btn", use_container_width=T
         
         # 最後の行は1株あたりの値なので別表示
         enterprise_value_df = enterprise_value_components.iloc[:-1].copy()
-        enterprise_value_df['割合'] = enterprise_value_df['金額（百万$）'] / total_firm_value * 100
+        enterprise_value_df['割合'] = enterprise_value_df['金額（$）'] / total_firm_value * 100
         enterprise_value_df['割合'] = enterprise_value_df['割合'].map('{:.1f}%'.format)
+        
+        # 金額を見やすく表示するためにフォーマット
+        enterprise_value_df['金額（$）'] = enterprise_value_df['金額（$）'].map('${:,.0f}'.format)
         
         st.dataframe(enterprise_value_df, use_container_width=True)
         
@@ -304,7 +311,7 @@ if st.button("企業価値を計算", key="calculate_btn", use_container_width=T
             # 円グラフ
             fig = px.pie(
                 names=enterprise_value_components['項目'].iloc[:2],
-                values=enterprise_value_components['金額（百万$）'].iloc[:2],
+                values=enterprise_value_components['金額（$）'].iloc[:2],
                 title="企業価値の構成",
                 color_discrete_sequence=px.colors.sequential.Blues_r
             )
@@ -318,7 +325,7 @@ if st.button("企業価値を計算", key="calculate_btn", use_container_width=T
             st.markdown(f"""
             <div class='metric-box'>
                 <div class='metric-title'>企業価値合計</div>
-                <div class='metric-value'>${total_firm_value:,.0f}百万</div>
+                <div class='metric-value'>${total_firm_value:,.0f}</div>
             </div>
             """, unsafe_allow_html=True)
             
