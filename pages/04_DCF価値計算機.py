@@ -238,6 +238,12 @@ if selected_ticker:
         discount_rate = st.slider("割引率（%）", min_value=5.0, max_value=25.0, value=10.0, step=0.5)
         net_margin = st.slider("純利益率（%）", min_value=-5.0, max_value=40.0, value=(net_income / revenue * 100) if revenue > 0 else 15.0, step=0.5)
         
+        # 業界平均倍率の入力
+        st.markdown("#### 業界平均倍率")
+        industry_per = st.number_input("業界平均PER（株価収益率）", min_value=1.0, max_value=100.0, value=25.0, step=1.0)
+        industry_psr = st.number_input("業界平均PSR（株価売上高倍率）", min_value=0.1, max_value=50.0, value=5.0, step=0.1)
+        industry_pbr = st.number_input("業界平均PBR（株価純資産倍率）", min_value=0.1, max_value=50.0, value=3.0, step=0.1)
+        
         # カスタム株価の入力（オプション）
         custom_stock_price_str = st.text_input(
             "現在の株価（USD）を上書き（必要な場合のみ）",
@@ -305,15 +311,59 @@ if selected_ticker:
             
             # 結果表示
             st.markdown("<div class='card'>", unsafe_allow_html=True)
-            st.markdown("<h2 class='card-title'>DCF分析結果</h2>", unsafe_allow_html=True)
+            st.markdown("<h2 class='card-title'>企業価値分析結果</h2>", unsafe_allow_html=True)
             
+            # 平均株価と割引を計算（この時点ではまだないため）
+            final_year_revenue = forecasted_data['revenue'].iloc[-1]
+            final_year_net_income = forecasted_data['net_income'].iloc[-1]
+            estimated_equity = final_year_net_income * 10
+            
+            per_valuation = final_year_net_income * industry_per
+            psr_valuation = final_year_revenue * industry_psr
+            pbr_valuation = estimated_equity * industry_pbr
+            
+            per_share_price = per_valuation / (stock_data['shares_outstanding'] * 1000000)
+            psr_share_price = psr_valuation / (stock_data['shares_outstanding'] * 1000000)
+            pbr_share_price = pbr_valuation / (stock_data['shares_outstanding'] * 1000000)
+            
+            avg_multiple_price = (per_share_price + psr_share_price + pbr_share_price) / 3
+            discounted_multiple_price = avg_multiple_price / (1 + discount_rate/100)
+            multiple_upside = ((discounted_multiple_price / current_stock_price) - 1) * 100
+            
+            # 評価方法の比較表示
+            st.markdown("<h3>評価方法の比較</h3>", unsafe_allow_html=True)
+            
+            comparison_data = pd.DataFrame({
+                '評価方法': ['DCF法', '業界平均倍率法'],
+                '企業価値（$/株）': [per_share_value, discounted_multiple_price],
+                '上昇余地': [upside_potential, multiple_upside]
+            })
+            
+            # 平均値を追加
+            avg_value = (per_share_value + discounted_multiple_price) / 2
+            avg_upside = ((avg_value / current_stock_price) - 1) * 100
+            avg_row = pd.DataFrame({
+                '評価方法': ['平均値'],
+                '企業価値（$/株）': [avg_value],
+                '上昇余地': [avg_upside]
+            })
+            comparison_data = pd.concat([comparison_data, avg_row], ignore_index=True)
+            
+            # フォーマット
+            comparison_data['企業価値（$/株）'] = comparison_data['企業価値（$/株）'].map('${:.2f}'.format)
+            comparison_data['上昇余地'] = comparison_data['上昇余地'].map('{:+.1f}%'.format)
+            
+            st.dataframe(comparison_data, use_container_width=True)
+            
+            # DCF分析結果
+            st.markdown("<h3>DCF分析結果</h3>", unsafe_allow_html=True)
             col1, col2, col3 = st.columns(3)
             
             with col1:
                 st.markdown(f"""
                 <div class='result-card'>
                     <p class='result-value'>${per_share_value:.2f}</p>
-                    <p class='result-label'>1株あたり本質的価値</p>
+                    <p class='result-label'>DCF法による1株価値</p>
                 </div>
                 """, unsafe_allow_html=True)
             
@@ -323,22 +373,23 @@ if selected_ticker:
                 st.markdown(f"""
                 <div class='result-card'>
                     <p class='result-value {upside_class}'>{upside_sign}{upside_potential:.1f}%</p>
-                    <p class='result-label'>上昇余地</p>
+                    <p class='result-label'>DCF法による上昇余地</p>
                 </div>
                 """, unsafe_allow_html=True)
             
             with col3:
-                # 投資推奨度の決定
-                if upside_potential > 20:
+                # 総合的な投資推奨度（DCFと倍率法の平均）
+                avg_upside = (upside_potential + multiple_upside) / 2
+                if avg_upside > 20:
                     recommendation = "強い買い"
                     recommendation_class = "up-value"
-                elif upside_potential > 10:
+                elif avg_upside > 10:
                     recommendation = "買い"
                     recommendation_class = "up-value"
-                elif upside_potential > -10:
+                elif avg_upside > -10:
                     recommendation = "中立"
                     recommendation_class = ""
-                elif upside_potential > -20:
+                elif avg_upside > -20:
                     recommendation = "売り"
                     recommendation_class = "down-value"
                 else:
@@ -348,7 +399,7 @@ if selected_ticker:
                 st.markdown(f"""
                 <div class='result-card'>
                     <p class='result-value {recommendation_class}'>{recommendation}</p>
-                    <p class='result-label'>投資推奨度</p>
+                    <p class='result-label'>総合推奨度</p>
                 </div>
                 """, unsafe_allow_html=True)
             
@@ -362,6 +413,131 @@ if selected_ticker:
             for col in display_df.columns[1:]:
                 display_df[col] = display_df[col].map('${:,.0f}'.format)
             st.dataframe(display_df, use_container_width=True)
+            
+            # 業界平均倍率による評価
+            st.markdown("<h3>業界平均倍率による評価</h3>", unsafe_allow_html=True)
+            
+            # 予測最終年の値を使用
+            final_year_revenue = forecasted_data['revenue'].iloc[-1]
+            final_year_net_income = forecasted_data['net_income'].iloc[-1]
+            
+            # 簡易的な純資産（自己資本）の推定（通常は貸借対照表から）
+            # ここでは純利益の10倍と仮定
+            estimated_equity = final_year_net_income * 10
+            
+            # 業界平均倍率を使った企業価値評価
+            per_valuation = final_year_net_income * industry_per
+            psr_valuation = final_year_revenue * industry_psr
+            pbr_valuation = estimated_equity * industry_pbr
+            
+            # 倍率ベースの株価
+            per_share_price = per_valuation / (stock_data['shares_outstanding'] * 1000000)
+            psr_share_price = psr_valuation / (stock_data['shares_outstanding'] * 1000000)
+            pbr_share_price = pbr_valuation / (stock_data['shares_outstanding'] * 1000000)
+            
+            # 平均株価（3つの方法の平均）
+            avg_multiple_price = (per_share_price + psr_share_price + pbr_share_price) / 3
+            
+            # 現在価値への割引（割引率を1年分適用）
+            discounted_multiple_price = avg_multiple_price / (1 + discount_rate/100)
+            
+            # 上昇余地
+            multiple_upside = ((discounted_multiple_price / current_stock_price) - 1) * 100
+            
+            # 業界平均倍率による評価結果の表示
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                st.markdown(f"""
+                <div class='result-card'>
+                    <p class='result-value'>${per_share_price:.2f}</p>
+                    <p class='result-label'>PERベース価値</p>
+                    <p class='result-note'>PER: {industry_per}倍</p>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with col2:
+                st.markdown(f"""
+                <div class='result-card'>
+                    <p class='result-value'>${psr_share_price:.2f}</p>
+                    <p class='result-label'>PSRベース価値</p>
+                    <p class='result-note'>PSR: {industry_psr}倍</p>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with col3:
+                st.markdown(f"""
+                <div class='result-card'>
+                    <p class='result-value'>${pbr_share_price:.2f}</p>
+                    <p class='result-label'>PBRベース価値</p>
+                    <p class='result-note'>PBR: {industry_pbr}倍</p>
+                </div>
+                """, unsafe_allow_html=True)
+                
+            st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                upside_class = "up-value" if multiple_upside >= 0 else "down-value"
+                upside_sign = "+" if multiple_upside >= 0 else ""
+                st.markdown(f"""
+                <div class='result-card'>
+                    <p class='result-value'>${discounted_multiple_price:.2f}</p>
+                    <p class='result-label'>倍率法による割引後価値</p>
+                    <p class='result-note'>割引率: {discount_rate}%</p>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with col2:
+                st.markdown(f"""
+                <div class='result-card'>
+                    <p class='result-value {upside_class}'>{upside_sign}{multiple_upside:.1f}%</p>
+                    <p class='result-label'>倍率法による上昇余地</p>
+                    <p class='result-note'>現在株価: ${current_stock_price:.2f}</p>
+                </div>
+                """, unsafe_allow_html=True)
+                
+            # 業界平均倍率による評価の説明
+            with st.expander("📈 業界平均倍率評価について"):
+                st.markdown(f"""
+                <h4>業界平均倍率による評価とは？</h4>
+                <p>企業の将来財務予測（{forecast_years}年後）に業界平均倍率を適用して株価を推定する方法です。</p>
+                
+                <h4>使用している主な倍率</h4>
+                <ul>
+                    <li><strong>PER（株価収益率）</strong>：純利益に対する倍率。{industry_per}倍を使用</li>
+                    <li><strong>PSR（株価売上高倍率）</strong>：売上高に対する倍率。{industry_psr}倍を使用</li>
+                    <li><strong>PBR（株価純資産倍率）</strong>：純資産に対する倍率。{industry_pbr}倍を使用</li>
+                </ul>
+                
+                <h4>計算方法</h4>
+                <p>1. {forecast_years}年後の財務予測を使用:</p>
+                <ul>
+                    <li>売上高: ${final_year_revenue:,.0f}</li>
+                    <li>純利益: ${final_year_net_income:,.0f}</li>
+                    <li>推定純資産: ${estimated_equity:,.0f}</li>
+                </ul>
+                
+                <p>2. 各倍率ベースの企業価値:</p>
+                <ul>
+                    <li>PERベース: ${final_year_net_income:,.0f} × {industry_per} = ${per_valuation:,.0f}</li>
+                    <li>PSRベース: ${final_year_revenue:,.0f} × {industry_psr} = ${psr_valuation:,.0f}</li>
+                    <li>PBRベース: ${estimated_equity:,.0f} × {industry_pbr} = ${pbr_valuation:,.0f}</li>
+                </ul>
+                
+                <p>3. 1株あたり価値計算:</p>
+                <ul>
+                    <li>PERベース: ${per_valuation:,.0f} ÷ {stock_data['shares_outstanding'] * 1000000:,.0f}株 = ${per_share_price:.2f}</li>
+                    <li>PSRベース: ${psr_valuation:,.0f} ÷ {stock_data['shares_outstanding'] * 1000000:,.0f}株 = ${psr_share_price:.2f}</li>
+                    <li>PBRベース: ${pbr_valuation:,.0f} ÷ {stock_data['shares_outstanding'] * 1000000:,.0f}株 = ${pbr_share_price:.2f}</li>
+                </ul>
+                
+                <p>4. 平均株価の計算: (${per_share_price:.2f} + ${psr_share_price:.2f} + ${pbr_share_price:.2f}) ÷ 3 = ${avg_multiple_price:.2f}</p>
+                
+                <p>5. 割引率{discount_rate}%を使った現在価値への割引: ${avg_multiple_price:.2f} ÷ (1 + {discount_rate/100}) = ${discounted_multiple_price:.2f}</p>
+                
+                <p>6. 上昇余地の計算: (${discounted_multiple_price:.2f} ÷ ${current_stock_price:.2f} - 1) × 100 = {multiple_upside:.1f}%</p>
+                """, unsafe_allow_html=True)
             
             # DCF構成要素の内訳
             st.markdown("<h3>DCF構成要素</h3>", unsafe_allow_html=True)
