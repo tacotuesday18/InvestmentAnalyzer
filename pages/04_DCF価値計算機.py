@@ -345,34 +345,11 @@ if selected_ticker:
             # 上昇余地の計算
             multiple_upside = ((discounted_multiple_price / current_stock_price) - 1) * 100
             
-            # 評価方法の比較表示
-            st.markdown("<h3>評価方法の比較</h3>", unsafe_allow_html=True)
-            
-            comparison_data = pd.DataFrame({
-                '評価方法': ['DCF法', '業界平均倍率法'],
-                '企業価値（$/株）': [per_share_value, discounted_multiple_price],
-                '上昇余地': [upside_potential, multiple_upside]
-            })
-            
-            # 平均値を追加
-            avg_value = (per_share_value + discounted_multiple_price) / 2
-            avg_upside = ((avg_value / current_stock_price) - 1) * 100
-            avg_row = pd.DataFrame({
-                '評価方法': ['平均値'],
-                '企業価値（$/株）': [avg_value],
-                '上昇余地': [avg_upside]
-            })
-            comparison_data = pd.concat([comparison_data, avg_row], ignore_index=True)
-            
-            # フォーマット
-            comparison_data['企業価値（$/株）'] = comparison_data['企業価値（$/株）'].map('${:.2f}'.format)
-            comparison_data['上昇余地'] = comparison_data['上昇余地'].map('{:+.1f}%'.format)
-            
-            st.dataframe(comparison_data, use_container_width=True)
+
             
             # DCF分析結果
             st.markdown("<h3>DCF分析結果</h3>", unsafe_allow_html=True)
-            col1, col2, col3 = st.columns(3)
+            col1, col2 = st.columns(2)
             
             with col1:
                 st.markdown(f"""
@@ -389,32 +366,6 @@ if selected_ticker:
                 <div class='result-card'>
                     <p class='result-value {upside_class}'>{upside_sign}{upside_potential:.1f}%</p>
                     <p class='result-label'>DCF法による上昇余地</p>
-                </div>
-                """, unsafe_allow_html=True)
-            
-            with col3:
-                # 総合的な投資推奨度（DCFと倍率法の平均）
-                avg_upside = (upside_potential + multiple_upside) / 2
-                if avg_upside > 20:
-                    recommendation = "強い買い"
-                    recommendation_class = "up-value"
-                elif avg_upside > 10:
-                    recommendation = "買い"
-                    recommendation_class = "up-value"
-                elif avg_upside > -10:
-                    recommendation = "中立"
-                    recommendation_class = ""
-                elif avg_upside > -20:
-                    recommendation = "売り"
-                    recommendation_class = "down-value"
-                else:
-                    recommendation = "強い売り"
-                    recommendation_class = "down-value"
-                
-                st.markdown(f"""
-                <div class='result-card'>
-                    <p class='result-value {recommendation_class}'>{recommendation}</p>
-                    <p class='result-label'>総合推奨度</p>
                 </div>
                 """, unsafe_allow_html=True)
             
@@ -497,7 +448,7 @@ if selected_ticker:
                 
             st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
             
-            col1, col2 = st.columns(2)
+            col1, col2, col3 = st.columns(3)
             with col1:
                 upside_class = "up-value" if multiple_upside >= 0 else "down-value"
                 upside_sign = "+" if multiple_upside >= 0 else ""
@@ -515,6 +466,33 @@ if selected_ticker:
                     <p class='result-value {upside_class}'>{upside_sign}{multiple_upside:.1f}%</p>
                     <p class='result-label'>現在の上昇余地</p>
                     <p class='result-note'>現在株価: ${current_stock_price:.2f}</p>
+                </div>
+                """, unsafe_allow_html=True)
+                
+            with col3:
+                # 総合的な投資推奨度（DCFと倍率法の平均）
+                avg_upside = (upside_potential + multiple_upside) / 2
+                if avg_upside > 20:
+                    recommendation = "強い買い"
+                    recommendation_class = "up-value"
+                elif avg_upside > 10:
+                    recommendation = "買い"
+                    recommendation_class = "up-value"
+                elif avg_upside > -10:
+                    recommendation = "中立"
+                    recommendation_class = ""
+                elif avg_upside > -20:
+                    recommendation = "売り"
+                    recommendation_class = "down-value"
+                else:
+                    recommendation = "強い売り"
+                    recommendation_class = "down-value"
+                
+                st.markdown(f"""
+                <div class='result-card'>
+                    <p class='result-value {recommendation_class}'>{recommendation}</p>
+                    <p class='result-label'>総合推奨度</p>
+                    <p class='result-note'>平均上昇余地: {upside_sign}{avg_upside:.1f}%</p>
                 </div>
                 """, unsafe_allow_html=True)
                 
