@@ -282,26 +282,26 @@ if selected_ticker:
             # 純利益の予測
             forecasted_data['net_income'] = forecasted_data['revenue'] * (net_margin / 100)
             
-            # フリーキャッシュフローの計算（簡易版：純利益の80%としてフリーキャッシュフローを推定）
-            forecasted_data['free_cash_flow'] = forecasted_data['net_income'] * 0.8
-            
             # 進捗バーの更新
             progress_bar.progress(50)
             
-            # 企業価値の計算（簡易版DCF）
-            discount_factors = [(1 + discount_rate/100) ** -year for year in forecasted_data['year']]
-            discounted_cash_flows = [cf * df for cf, df in zip(forecasted_data['free_cash_flow'], discount_factors)]
+            # DCF法による企業価値計算
+            # 修正版：キャッシュフローを使わず、純利益を直接割引く簡易的な方法
             
-            # 終末価値の計算（ゴードンモデル、永続成長率2%で固定）
-            terminal_value = forecasted_data['free_cash_flow'].iloc[-1] * (1 + 2.0/100) / ((discount_rate/100) - (2.0/100))
-            discounted_terminal_value = terminal_value * discount_factors[-1]
+            # 最終年の純利益
+            final_year_net_income = forecasted_data['net_income'].iloc[-1]
             
-            # 企業価値の総和
-            total_dcf = sum(discounted_cash_flows) + discounted_terminal_value
-            equity_value = total_dcf # 簡略化のため、負債は無視
+            # 最終年の利益に倍率を適用して終末価値を計算
+            terminal_value = final_year_net_income * industry_per
             
-            # 1株あたり価値 (shares_outstandingは百万株単位から実際の株式数に変換)
-            per_share_value = equity_value / (stock_data['shares_outstanding'] * 1000000)
+            # 割引係数を計算
+            discount_factor = 1 / ((1 + discount_rate/100) ** forecast_years)
+            
+            # 割引後の終末価値を計算
+            dcf_value = terminal_value * discount_factor
+            
+            # 1株あたり価値
+            per_share_value = dcf_value / (stock_data['shares_outstanding'] * 1000000)
             
             # 上昇余地の計算
             upside_potential = ((per_share_value / current_stock_price) - 1) * 100
@@ -313,21 +313,36 @@ if selected_ticker:
             st.markdown("<div class='card'>", unsafe_allow_html=True)
             st.markdown("<h2 class='card-title'>企業価値分析結果</h2>", unsafe_allow_html=True)
             
-            # 平均株価と割引を計算（この時点ではまだないため）
+            # 業界平均倍率を使った企業価値計算（修正版）
+            # 計算の基本的考え方：
+            # 1. 予測期間後の最終年の財務数値を使用
+            # 2. その数値に業界平均倍率を適用して将来時点での企業価値を推定
+            # 3. その価値を割引率で現在価値に割り引く
+            
             final_year_revenue = forecasted_data['revenue'].iloc[-1]
             final_year_net_income = forecasted_data['net_income'].iloc[-1]
+            
+            # 純資産（簡易的な推定）- 通常はバランスシートから直接取得すべき
             estimated_equity = final_year_net_income * 10
             
-            per_valuation = final_year_net_income * industry_per
-            psr_valuation = final_year_revenue * industry_psr
-            pbr_valuation = estimated_equity * industry_pbr
+            # 予測年数後の企業価値（倍率法）を計算
+            future_per_market_cap = final_year_net_income * industry_per
+            future_psr_market_cap = final_year_revenue * industry_psr
+            future_pbr_market_cap = estimated_equity * industry_pbr
             
-            per_share_price = per_valuation / (stock_data['shares_outstanding'] * 1000000)
-            psr_share_price = psr_valuation / (stock_data['shares_outstanding'] * 1000000)
-            pbr_share_price = pbr_valuation / (stock_data['shares_outstanding'] * 1000000)
+            # 予測年数後の1株あたり価値
+            future_per_price = future_per_market_cap / (stock_data['shares_outstanding'] * 1000000)
+            future_psr_price = future_psr_market_cap / (stock_data['shares_outstanding'] * 1000000)
+            future_pbr_price = future_pbr_market_cap / (stock_data['shares_outstanding'] * 1000000)
             
-            avg_multiple_price = (per_share_price + psr_share_price + pbr_share_price) / 3
-            discounted_multiple_price = avg_multiple_price / (1 + discount_rate/100)
+            # 予測年数後の平均株価
+            future_avg_price = (future_per_price + future_psr_price + future_pbr_price) / 3
+            
+            # 現在価値への割引（予測期間分の割引率を適用）
+            # 正確には (1 + 割引率)^予測年数 で割り引く
+            discounted_multiple_price = future_avg_price / ((1 + discount_rate/100) ** forecast_years)
+            
+            # 上昇余地の計算
             multiple_upside = ((discounted_multiple_price / current_stock_price) - 1) * 100
             
             # 評価方法の比較表示
@@ -408,7 +423,7 @@ if selected_ticker:
             
             # データフレームの表示用にカラム名を変更
             display_df = forecasted_data.copy()
-            display_df.columns = ['予測年', '売上高（$）', '純利益（$）', 'フリーキャッシュフロー（$）']
+            display_df.columns = ['予測年', '売上高（$）', '純利益（$）']
             # 数値を見やすく表示するためにフォーマット
             for col in display_df.columns[1:]:
                 display_df[col] = display_df[col].map('${:,.0f}'.format)
@@ -501,7 +516,7 @@ if selected_ticker:
             with st.expander("📈 業界平均倍率評価について"):
                 st.markdown(f"""
                 <h4>業界平均倍率による評価とは？</h4>
-                <p>企業の将来財務予測（{forecast_years}年後）に業界平均倍率を適用して株価を推定する方法です。</p>
+                <p>予測期間（{forecast_years}年後）の財務数値に業界平均倍率を適用して将来の企業価値を推定し、それを現在価値に割り引く方法です。</p>
                 
                 <h4>使用している主な倍率</h4>
                 <ul>
@@ -518,82 +533,78 @@ if selected_ticker:
                     <li>推定純資産: ${estimated_equity:,.0f}</li>
                 </ul>
                 
-                <p>2. 各倍率ベースの企業価値:</p>
+                <p>2. {forecast_years}年後の予測企業価値（各倍率ベース）:</p>
                 <ul>
-                    <li>PERベース: ${final_year_net_income:,.0f} × {industry_per} = ${per_valuation:,.0f}</li>
-                    <li>PSRベース: ${final_year_revenue:,.0f} × {industry_psr} = ${psr_valuation:,.0f}</li>
-                    <li>PBRベース: ${estimated_equity:,.0f} × {industry_pbr} = ${pbr_valuation:,.0f}</li>
+                    <li>PERベース: ${final_year_net_income:,.0f} × {industry_per} = ${future_per_market_cap:,.0f}</li>
+                    <li>PSRベース: ${final_year_revenue:,.0f} × {industry_psr} = ${future_psr_market_cap:,.0f}</li>
+                    <li>PBRベース: ${estimated_equity:,.0f} × {industry_pbr} = ${future_pbr_market_cap:,.0f}</li>
                 </ul>
                 
-                <p>3. 1株あたり価値計算:</p>
+                <p>3. {forecast_years}年後の予測1株価値:</p>
                 <ul>
-                    <li>PERベース: ${per_valuation:,.0f} ÷ {stock_data['shares_outstanding'] * 1000000:,.0f}株 = ${per_share_price:.2f}</li>
-                    <li>PSRベース: ${psr_valuation:,.0f} ÷ {stock_data['shares_outstanding'] * 1000000:,.0f}株 = ${psr_share_price:.2f}</li>
-                    <li>PBRベース: ${pbr_valuation:,.0f} ÷ {stock_data['shares_outstanding'] * 1000000:,.0f}株 = ${pbr_share_price:.2f}</li>
+                    <li>PERベース: ${future_per_market_cap:,.0f} ÷ {stock_data['shares_outstanding'] * 1000000:,.0f}株 = ${future_per_price:.2f}</li>
+                    <li>PSRベース: ${future_psr_market_cap:,.0f} ÷ {stock_data['shares_outstanding'] * 1000000:,.0f}株 = ${future_psr_price:.2f}</li>
+                    <li>PBRベース: ${future_pbr_market_cap:,.0f} ÷ {stock_data['shares_outstanding'] * 1000000:,.0f}株 = ${future_pbr_price:.2f}</li>
                 </ul>
                 
-                <p>4. 平均株価の計算: (${per_share_price:.2f} + ${psr_share_price:.2f} + ${pbr_share_price:.2f}) ÷ 3 = ${avg_multiple_price:.2f}</p>
+                <p>4. {forecast_years}年後の予測平均株価: (${future_per_price:.2f} + ${future_psr_price:.2f} + ${future_pbr_price:.2f}) ÷ 3 = ${future_avg_price:.2f}</p>
                 
-                <p>5. 割引率{discount_rate}%を使った現在価値への割引: ${avg_multiple_price:.2f} ÷ (1 + {discount_rate/100}) = ${discounted_multiple_price:.2f}</p>
+                <p>5. 現在価値への割引: ${future_avg_price:.2f} ÷ (1 + {discount_rate/100})<sup>{forecast_years}</sup> = ${discounted_multiple_price:.2f}</p>
+                <p>※ 割引係数: 1 ÷ (1 + {discount_rate/100})<sup>{forecast_years}</sup> = {1/((1 + discount_rate/100) ** forecast_years):.4f}</p>
                 
                 <p>6. 上昇余地の計算: (${discounted_multiple_price:.2f} ÷ ${current_stock_price:.2f} - 1) × 100 = {multiple_upside:.1f}%</p>
                 """, unsafe_allow_html=True)
             
-            # DCF構成要素の内訳
-            st.markdown("<h3>DCF構成要素</h3>", unsafe_allow_html=True)
+            # DCF計算の説明
+            st.markdown("<h3>DCF計算方法の説明</h3>", unsafe_allow_html=True)
             
             # 計算過程の説明を追加
-            with st.expander("📊 計算過程の詳細説明"):
+            with st.expander("📊 DCF計算過程の詳細説明"):
                 st.markdown(f"""
+                <h4>DCF法とは？</h4>
+                <p>DCF（Discounted Cash Flow：割引キャッシュフロー）法は、将来の収益を現在価値に割り引くことで企業価値を評価する方法です。</p>
+                
+                <h4>簡易版DCF計算手順</h4>
+                <p>本ツールでは、以下の手順でDCF計算を行っています：</p>
+                
                 <h4>1. 予測売上高と純利益の計算</h4>
                 <p>入力された売上高成長率 <strong>{revenue_growth:.1f}%</strong> を使用して、{forecast_years}年間の売上高を予測しました。</p>
                 <p>入力された純利益率 <strong>{net_margin:.1f}%</strong> を使用して、各年の純利益を計算しました。</p>
                 
-                <h4>2. フリーキャッシュフローへの変換</h4>
-                <p>各年の純利益の <strong>80%</strong> をフリーキャッシュフロー(FCF)と仮定しました。</p>
-                <p>これは投資や運転資本の変動を簡略化した推定方法です。</p>
+                <h4>2. 最終年の純利益に業界平均PER倍率を適用</h4>
+                <p>{forecast_years}年後の予測純利益: ${final_year_net_income:,.0f}</p>
+                <p>業界平均PER: {industry_per}倍</p>
+                <p>終末価値（割引前）: ${final_year_net_income:,.0f} × {industry_per} = ${terminal_value:,.0f}</p>
                 
                 <h4>3. 割引率の適用</h4>
-                <p>割引率 <strong>{discount_rate:.1f}%</strong> を使用して、将来のキャッシュフローを現在価値に割り引きました。</p>
-                <p>割引係数 = 1 ÷ (1 + 割引率)<sup>年数</sup></p>
-                <p>各年の割引係数: {[f"{df:.4f}" for df in discount_factors]}</p>
+                <p>割引率 <strong>{discount_rate:.1f}%</strong> を使用して、将来の価値を現在価値に割り引きました。</p>
+                <p>割引係数 = 1 ÷ (1 + {discount_rate/100})<sup>{forecast_years}</sup> = {1/((1 + discount_rate/100) ** forecast_years):.4f}</p>
+                <p>割引後終末価値: ${terminal_value:,.0f} × {1/((1 + discount_rate/100) ** forecast_years):.4f} = ${dcf_value:,.0f}</p>
                 
-                <h4>4. 終末価値の計算</h4>
-                <p>予測期間終了後の永続的な価値（終末価値）を計算しました。</p>
-                <p>終末価値計算式: 最終年FCF × (1 + 永続成長率) ÷ (割引率 - 永続成長率)</p>
-                <p>永続成長率は<strong>2.0%</strong>で固定しています。</p>
-                <p>終末価値（割引前）: ${terminal_value / discount_factors[-1]:,.0f}</p>
-                <p>終末価値（割引後）: ${discounted_terminal_value:,.0f}</p>
-                
-                <h4>5. 企業価値の計算</h4>
-                <p>企業価値 = 予測期間の割引キャッシュフロー合計 + 割引後の終末価値</p>
-                <p>企業価値: ${total_dcf:,.0f}</p>
-                
-                <h4>6. 1株あたり価値の計算</h4>
+                <h4>4. 1株あたり価値の計算</h4>
                 <p>1株あたり価値 = 企業価値 ÷ 発行済株式数</p>
                 <p>発行済株式数: {stock_data['shares_outstanding'] * 1000000:,.0f}株</p>
-                <p>1株あたり価値: ${per_share_value:.2f}</p>
+                <p>1株あたり価値: ${dcf_value:,.0f} ÷ {stock_data['shares_outstanding'] * 1000000:,.0f}株 = ${per_share_value:.2f}</p>
+                
+                <h4>5. 上昇余地の計算</h4>
+                <p>上昇余地 = (DCF法による株価 ÷ 現在株価 - 1) × 100</p>
+                <p>上昇余地 = (${per_share_value:.2f} ÷ ${current_stock_price:.2f} - 1) × 100 = {upside_potential:.1f}%</p>
                 """, unsafe_allow_html=True)
-            
-            dcf_components = pd.DataFrame({
-                '項目': ['予測期間のDCF', '終末価値', '企業価値合計', '1株あたり企業価値'],
-                '金額（$）': [
-                    sum(discounted_cash_flows),
-                    discounted_terminal_value,
-                    total_dcf,
-                    per_share_value
+                
+            # DCFの結果概要を表示
+            dcf_summary = pd.DataFrame({
+                '項目': ['予測年数', '売上高成長率', '純利益率', '割引率', '業界平均PER', '1株あたり企業価値'],
+                '値': [
+                    f"{forecast_years}年",
+                    f"{revenue_growth:.1f}%",
+                    f"{net_margin:.1f}%",
+                    f"{discount_rate:.1f}%",
+                    f"{industry_per:.1f}倍",
+                    f"${per_share_value:.2f}"
                 ]
             })
             
-            # 最後の行は1株あたりの値なので別表示
-            enterprise_value_df = dcf_components.iloc[:-1].copy()
-            enterprise_value_df['割合'] = enterprise_value_df['金額（$）'] / total_dcf * 100
-            enterprise_value_df['割合'] = enterprise_value_df['割合'].map('{:.1f}%'.format)
-            
-            # 金額を見やすく表示するためにフォーマット
-            enterprise_value_df['金額（$）'] = enterprise_value_df['金額（$）'].map('${:,.0f}'.format)
-            
-            st.dataframe(enterprise_value_df, use_container_width=True)
+            st.dataframe(dcf_summary, use_container_width=True)
             
             # 感度分析
             st.markdown("<h3>感度分析</h3>", unsafe_allow_html=True)
@@ -645,22 +656,20 @@ if selected_ticker:
                     # 純利益の予測
                     forecasted_data_sens['net_income'] = forecasted_data_sens['revenue'] * (net_margin / 100)
                     
-                    # フリーキャッシュフローの計算（純利益の80%と仮定）
-                    forecasted_data_sens['free_cash_flow'] = forecasted_data_sens['net_income'] * 0.8
+                    # 最終年の純利益
+                    final_year_net_income_sens = forecasted_data_sens['net_income'].iloc[-1]
                     
-                    # 企業価値の計算
-                    discount_factors_sens = [(1 + d/100) ** -year for year in forecasted_data_sens['year']]
-                    discounted_cash_flows_sens = [cf * df for cf, df in zip(forecasted_data_sens['free_cash_flow'], discount_factors_sens)]
+                    # 最終年の利益に倍率を適用して終末価値を計算
+                    terminal_value_sens = final_year_net_income_sens * industry_per
                     
-                    # 終末価値の計算（永続成長率2%で固定）
-                    terminal_value_sens = forecasted_data_sens['free_cash_flow'].iloc[-1] * (1 + 2.0/100) / ((d/100) - (2.0/100))
-                    discounted_terminal_value_sens = terminal_value_sens * discount_factors_sens[-1]
+                    # 割引係数を計算
+                    discount_factor_sens = 1 / ((1 + d/100) ** forecast_years)
                     
-                    # 企業価値の総和
-                    total_dcf_sens = sum(discounted_cash_flows_sens) + discounted_terminal_value_sens
+                    # 割引後の終末価値を計算
+                    dcf_value_sens = terminal_value_sens * discount_factor_sens
                     
-                    # 1株あたり価値（百万株単位から実際の株式数に変換）
-                    per_share_value_sens = total_dcf_sens / (stock_data['shares_outstanding'] * 1000000)
+                    # 1株あたり価値
+                    per_share_value_sens = dcf_value_sens / (stock_data['shares_outstanding'] * 1000000)
                     
                     row.append(per_share_value_sens)
                     
