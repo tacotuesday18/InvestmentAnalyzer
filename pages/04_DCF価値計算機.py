@@ -175,9 +175,26 @@ if selected_ticker:
     col1, col2 = st.columns(2)
     
     with col1:
-        # 売上と純利益の入力
-        revenue = st.number_input("年間売上高（USD）", value=stock_data['revenue'] * 1000000, step=1000000.0, format="%.0f")
-        net_income = st.number_input("年間純利益（USD）", value=stock_data['net_income'] * 1000000, step=1000000.0, format="%.0f")
+        # 売上と純利益の入力（数値入力の代わりにテキスト入力で桁区切りに対応）
+        revenue_str = st.text_input(
+            "年間売上高（USD）", 
+            value=f"{stock_data['revenue'] * 1000000:,.0f}"
+        )
+        # カンマを除去して数値に変換
+        try:
+            revenue = float(revenue_str.replace(',', ''))
+        except:
+            revenue = stock_data['revenue'] * 1000000
+
+        net_income_str = st.text_input(
+            "年間純利益（USD）", 
+            value=f"{stock_data['net_income'] * 1000000:,.0f}"
+        )
+        # カンマを除去して数値に変換
+        try:
+            net_income = float(net_income_str.replace(',', ''))
+        except:
+            net_income = stock_data['net_income'] * 1000000
         
         # 予測期間と成長率
         forecast_years = st.slider("予測期間（年）", min_value=1, max_value=5, value=3, step=1)
@@ -189,11 +206,19 @@ if selected_ticker:
         net_margin = st.slider("純利益率（%）", min_value=-5.0, max_value=40.0, value=(net_income / revenue * 100) if revenue > 0 else 15.0, step=0.5)
         
         # カスタム株価の入力（オプション）
-        custom_stock_price = st.number_input(
+        custom_stock_price_str = st.text_input(
             "現在の株価（USD）を上書き（必要な場合のみ）",
-            value=0.0,
-            step=0.1
+            value=""
         )
+        
+        # 入力があれば変換
+        try:
+            if custom_stock_price_str and custom_stock_price_str.strip():
+                custom_stock_price = float(custom_stock_price_str.replace(',', ''))
+            else:
+                custom_stock_price = 0.0
+        except:
+            custom_stock_price = 0.0
         
         if custom_stock_price > 0:
             current_stock_price = custom_stock_price

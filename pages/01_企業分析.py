@@ -165,13 +165,30 @@ with col1:
                 st.error("更新する株価がありません。先に「現在の株価（USD）」を入力してください。")
 
 with col2:
-    revenue = st.number_input("直近の売上高（USD）", value=365817000000.0, step=1000000.0, format="%.0f")
-    net_income = st.number_input("直近の純利益（USD）", value=94680000000.0, step=1000000.0, format="%.0f")
-    shares_outstanding = st.number_input("発行済株式数（百万株）", value=15634.0, step=10.0)
+    revenue_str = st.text_input("年間売上高（USD）", value="365,817,000,000")
+    try:
+        revenue = float(revenue_str.replace(',', ''))
+    except:
+        revenue = 365817000000.0
+        
+    net_income_str = st.text_input("年間純利益（USD）", value="94,680,000,000")
+    try:
+        net_income = float(net_income_str.replace(',', ''))
+    except:
+        net_income = 94680000000.0
+    shares_outstanding_str = st.text_input("発行済株式数（百万株）", value="15,634.0")
+    try:
+        shares_outstanding = float(shares_outstanding_str.replace(',', ''))
+    except:
+        shares_outstanding = 15634.0
     
     # TradingViewから取得した価格があれば、それをデフォルト値として使用
     default_price = st.session_state.get('current_price', 175.04)
-    current_stock_price = st.number_input("現在の株価（USD）", value=default_price, step=0.1)
+    current_stock_price_str = st.text_input("現在の株価（USD）", value=f"{default_price}")
+    try:
+        current_stock_price = float(current_stock_price_str.replace(',', ''))
+    except:
+        current_stock_price = default_price
 
 st.markdown("### DCF分析パラメータ")
 
