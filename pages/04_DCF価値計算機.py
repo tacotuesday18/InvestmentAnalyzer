@@ -453,21 +453,27 @@ if selected_ticker:
             # 平均株価（3つの方法の平均）
             avg_multiple_price = (per_share_price + psr_share_price + pbr_share_price) / 3
             
-            # 現在価値への割引（割引率を1年分適用）
-            discounted_multiple_price = avg_multiple_price / (1 + discount_rate/100)
+            # 現在価値への割引（予測期間分の割引率を適用）
+            discounted_multiple_price = avg_multiple_price / ((1 + discount_rate/100) ** forecast_years)
             
             # 上昇余地
             multiple_upside = ((discounted_multiple_price / current_stock_price) - 1) * 100
             
             # 業界平均倍率による評価結果の表示
+            st.markdown(f"""
+            <div style="background-color: #f2f7ff; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center;">
+                <p style="margin-bottom: 0px;"><strong>{forecast_years}年後</strong>の予測価値と現在価値への割引結果</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
             col1, col2, col3 = st.columns(3)
             
             with col1:
                 st.markdown(f"""
                 <div class='result-card'>
                     <p class='result-value'>${per_share_price:.2f}</p>
-                    <p class='result-label'>PERベース価値</p>
-                    <p class='result-note'>PER: {industry_per}倍</p>
+                    <p class='result-label'>{forecast_years}年後の株価（PER）</p>
+                    <p class='result-note'>業界平均PER: {industry_per}倍</p>
                 </div>
                 """, unsafe_allow_html=True)
             
@@ -475,8 +481,8 @@ if selected_ticker:
                 st.markdown(f"""
                 <div class='result-card'>
                     <p class='result-value'>${psr_share_price:.2f}</p>
-                    <p class='result-label'>PSRベース価値</p>
-                    <p class='result-note'>PSR: {industry_psr}倍</p>
+                    <p class='result-label'>{forecast_years}年後の株価（PSR）</p>
+                    <p class='result-note'>業界平均PSR: {industry_psr}倍</p>
                 </div>
                 """, unsafe_allow_html=True)
             
@@ -484,8 +490,8 @@ if selected_ticker:
                 st.markdown(f"""
                 <div class='result-card'>
                     <p class='result-value'>${pbr_share_price:.2f}</p>
-                    <p class='result-label'>PBRベース価値</p>
-                    <p class='result-note'>PBR: {industry_pbr}倍</p>
+                    <p class='result-label'>{forecast_years}年後の株価（PBR）</p>
+                    <p class='result-note'>業界平均PBR: {industry_pbr}倍</p>
                 </div>
                 """, unsafe_allow_html=True)
                 
@@ -498,8 +504,8 @@ if selected_ticker:
                 st.markdown(f"""
                 <div class='result-card'>
                     <p class='result-value'>${discounted_multiple_price:.2f}</p>
-                    <p class='result-label'>倍率法による割引後価値</p>
-                    <p class='result-note'>割引率: {discount_rate}%</p>
+                    <p class='result-label'>現在の本質的価値</p>
+                    <p class='result-note'>{forecast_years}年分の割引率{discount_rate}%適用後</p>
                 </div>
                 """, unsafe_allow_html=True)
             
@@ -507,7 +513,7 @@ if selected_ticker:
                 st.markdown(f"""
                 <div class='result-card'>
                     <p class='result-value {upside_class}'>{upside_sign}{multiple_upside:.1f}%</p>
-                    <p class='result-label'>倍率法による上昇余地</p>
+                    <p class='result-label'>現在の上昇余地</p>
                     <p class='result-note'>現在株価: ${current_stock_price:.2f}</p>
                 </div>
                 """, unsafe_allow_html=True)
