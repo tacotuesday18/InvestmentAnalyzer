@@ -7,6 +7,9 @@ import datetime
 import sys
 import os
 
+# フォーマット用ヘルパー関数
+from format_helpers import format_currency, format_large_number, format_ja_number
+
 # プロジェクトのルートディレクトリをパスに追加
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
