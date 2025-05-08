@@ -8,6 +8,9 @@ import os
 import json
 import datetime
 
+# フォーマット用ヘルパー関数
+from format_helpers import format_currency, format_large_number, format_ja_number
+
 # プロジェクトのルートディレクトリをパスに追加
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -197,10 +200,11 @@ if selected_ticker:
     
     with col2:
         st.markdown(f"**現在の株価**: ${stock_data['current_price']:.2f}")
-        st.markdown(f"**時価総額**: ${(stock_data['current_price'] * stock_data['shares_outstanding']):.2f}百万")
+        market_cap = stock_data['current_price'] * stock_data['shares_outstanding']
+        st.markdown(f"**時価総額**: {format_currency(market_cap, '$')} 百万")
     
     with col3:
-        st.markdown(f"**発行済株式数**: {stock_data['shares_outstanding']:.2f}百万株")
+        st.markdown(f"**発行済株式数**: {format_large_number(stock_data['shares_outstanding'])}百万株")
         st.markdown(f"**1株あたり純資産**: ${stock_data['book_value_per_share']:.2f}")
     
     # DCF分析パラメータ入力
@@ -469,23 +473,23 @@ if selected_ticker:
                 <h4>計算方法</h4>
                 <p>1. {forecast_years}年後の財務予測を使用:</p>
                 <ul>
-                    <li>売上高: ${final_year_revenue:,.0f}</li>
-                    <li>純利益: ${final_year_net_income:,.0f}</li>
-                    <li>推定純資産: ${estimated_equity:,.0f}</li>
+                    <li>売上高: {format_currency(final_year_revenue, '$')}</li>
+                    <li>純利益: {format_currency(final_year_net_income, '$')}</li>
+                    <li>推定純資産: {format_currency(estimated_equity, '$')}</li>
                 </ul>
                 
                 <p>2. {forecast_years}年後の予測企業価値（各倍率ベース）:</p>
                 <ul>
-                    <li>PERベース: ${final_year_net_income:,.0f} × {industry_per} = ${future_per_market_cap:,.0f}</li>
-                    <li>PSRベース: ${final_year_revenue:,.0f} × {industry_psr} = ${future_psr_market_cap:,.0f}</li>
-                    <li>PBRベース: ${estimated_equity:,.0f} × {industry_pbr} = ${future_pbr_market_cap:,.0f}</li>
+                    <li>PERベース: {format_currency(final_year_net_income, '$')} × {industry_per} = {format_currency(future_per_market_cap, '$')}</li>
+                    <li>PSRベース: {format_currency(final_year_revenue, '$')} × {industry_psr} = {format_currency(future_psr_market_cap, '$')}</li>
+                    <li>PBRベース: {format_currency(estimated_equity, '$')} × {industry_pbr} = {format_currency(future_pbr_market_cap, '$')}</li>
                 </ul>
                 
                 <p>3. {forecast_years}年後の予測1株価値:</p>
                 <ul>
-                    <li>PERベース: ${future_per_market_cap:,.0f} ÷ {stock_data['shares_outstanding'] * 1000000:,.0f}株 = ${future_per_price:.2f}</li>
-                    <li>PSRベース: ${future_psr_market_cap:,.0f} ÷ {stock_data['shares_outstanding'] * 1000000:,.0f}株 = ${future_psr_price:.2f}</li>
-                    <li>PBRベース: ${future_pbr_market_cap:,.0f} ÷ {stock_data['shares_outstanding'] * 1000000:,.0f}株 = ${future_pbr_price:.2f}</li>
+                    <li>PERベース: {format_currency(future_per_market_cap, '$')} ÷ {format_large_number(stock_data['shares_outstanding'] * 1000000)}株 = ${future_per_price:.2f}</li>
+                    <li>PSRベース: {format_currency(future_psr_market_cap, '$')} ÷ {format_large_number(stock_data['shares_outstanding'] * 1000000)}株 = ${future_psr_price:.2f}</li>
+                    <li>PBRベース: {format_currency(future_pbr_market_cap, '$')} ÷ {format_large_number(stock_data['shares_outstanding'] * 1000000)}株 = ${future_pbr_price:.2f}</li>
                 </ul>
                 
                 <p>4. {forecast_years}年後の予測平均株価: (${future_per_price:.2f} + ${future_psr_price:.2f} + ${future_pbr_price:.2f}) ÷ 3 = ${future_avg_price:.2f}</p>
