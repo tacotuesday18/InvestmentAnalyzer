@@ -519,13 +519,13 @@ if selected_ticker:
                 
                 <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 10px 0;">
                 <p style="font-weight: bold; margin-bottom: 10px;">【計算例】</p>
-                <p>現在の売上高: ${revenue:,.0f}</p>
+                <p>現在の売上高: {format_currency(revenue, '$')}</p>
                 <ul>
-                    <li>1年後の予測売上高: ${revenue:,.0f} × (1 + {revenue_growth/100}) = ${revenue * (1 + revenue_growth/100):,.0f}</li>
-                    <li>2年後の予測売上高: ${revenue:,.0f} × (1 + {revenue_growth/100})<sup>2</sup> = ${revenue * (1 + revenue_growth/100)**2:,.0f}</li>
-                    <li>{forecast_years}年後の予測売上高: ${revenue:,.0f} × (1 + {revenue_growth/100})<sup>{forecast_years}</sup> = ${revenue * (1 + revenue_growth/100)**forecast_years:,.0f}</li>
+                    <li>1年後の予測売上高: {format_currency(revenue, '$')} × (1 + {revenue_growth/100}) = {format_currency(revenue * (1 + revenue_growth/100), '$')}</li>
+                    <li>2年後の予測売上高: {format_currency(revenue, '$')} × (1 + {revenue_growth/100})<sup>2</sup> = {format_currency(revenue * (1 + revenue_growth/100)**2, '$')}</li>
+                    <li>{forecast_years}年後の予測売上高: {format_currency(revenue, '$')} × (1 + {revenue_growth/100})<sup>{forecast_years}</sup> = {format_currency(revenue * (1 + revenue_growth/100)**forecast_years, '$')}</li>
                 </ul>
-                <p>{forecast_years}年後の予測純利益: ${revenue * (1 + revenue_growth/100)**forecast_years:,.0f} × {net_margin/100} = ${final_year_net_income:,.0f}</p>
+                <p>{forecast_years}年後の予測純利益: {format_currency(revenue * (1 + revenue_growth/100)**forecast_years, '$')} × {net_margin/100} = {format_currency(final_year_net_income, '$')}</p>
                 </div>
                 
                 <h4>2. 終末価値（ターミナルバリュー）の計算</h4>
@@ -535,7 +535,7 @@ if selected_ticker:
                 <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 10px 0;">
                 <p style="font-weight: bold; margin-bottom: 10px;">【終末価値の計算】</p>
                 <p>終末価値 = {forecast_years}年後の予測純利益 × 業界平均PER</p>
-                <p>終末価値 = ${final_year_net_income:,.0f} × {industry_per} = ${terminal_value:,.0f}</p>
+                <p>終末価値 = {format_currency(final_year_net_income, '$')} × {industry_per} = {format_currency(terminal_value, '$')}</p>
                 </div>
                 
                 <h4>3. 現在価値への割引</h4>
@@ -547,7 +547,7 @@ if selected_ticker:
                 <p>割引係数 = 1 ÷ (1 + 割引率)<sup>予測年数</sup></p>
                 <p>割引係数 = 1 ÷ (1 + {discount_rate/100})<sup>{forecast_years}</sup> = {1/((1 + discount_rate/100) ** forecast_years):.4f}</p>
                 <p>現在価値 = 終末価値 × 割引係数</p>
-                <p>現在価値 = ${terminal_value:,.0f} × {1/((1 + discount_rate/100) ** forecast_years):.4f} = ${dcf_value:,.0f}</p>
+                <p>現在価値 = {format_currency(terminal_value, '$')} × {1/((1 + discount_rate/100) ** forecast_years):.4f} = {format_currency(dcf_value, '$')}</p>
                 </div>
                 
                 <h4>4. 1株あたり本質的価値の計算</h4>
@@ -556,7 +556,7 @@ if selected_ticker:
                 <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 10px 0;">
                 <p style="font-weight: bold; margin-bottom: 10px;">【1株あたり価値の計算】</p>
                 <p>1株あたり本質的価値 = 企業価値 ÷ 発行済株式数</p>
-                <p>1株あたり本質的価値 = ${dcf_value:,.0f} ÷ {stock_data['shares_outstanding'] * 1000000:,.0f}株 = <span style="color: #36b37e; font-weight: bold;">${per_share_value:.2f}</span></p>
+                <p>1株あたり本質的価値 = {format_currency(dcf_value, '$')} ÷ {format_large_number(stock_data['shares_outstanding'] * 1000000)}株 = <span style="color: #36b37e; font-weight: bold;">${per_share_value:.2f}</span></p>
                 </div>
                 
                 <h4>5. 投資判断の指標：上昇余地</h4>
