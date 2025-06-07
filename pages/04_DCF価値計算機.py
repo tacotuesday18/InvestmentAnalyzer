@@ -430,13 +430,13 @@ if selected_ticker:
             
             # 業界平均倍率を使った企業価値評価
             per_valuation = final_year_net_income * industry_per
-            psr_valuation = final_year_revenue * industry_psr
-            pbr_valuation = estimated_equity * industry_pbr
+            psr_valuation = final_year_revenue * psr_ratio
+            pbr_valuation = estimated_equity * auto_data['pb_ratio']
             
             # 倍率ベースの株価
-            per_share_price = per_valuation / (stock_data['shares_outstanding'] * 1000000)
-            psr_share_price = psr_valuation / (stock_data['shares_outstanding'] * 1000000)
-            pbr_share_price = pbr_valuation / (stock_data['shares_outstanding'] * 1000000)
+            per_share_price = per_valuation / (auto_data['shares_outstanding'] * 1000000)
+            psr_share_price = psr_valuation / (auto_data['shares_outstanding'] * 1000000)
+            pbr_share_price = pbr_valuation / (auto_data['shares_outstanding'] * 1000000)
             
             # 平均株価（3つの方法の平均）
             avg_multiple_price = (per_share_price + psr_share_price + pbr_share_price) / 3

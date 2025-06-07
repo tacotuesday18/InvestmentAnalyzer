@@ -134,7 +134,13 @@ if selected_ticker:
                                     if eng_item == 'Basic EPS':
                                         row_data[year] = f"${value:.2f}"
                                     else:
-                                        row_data[year] = format_currency(value, "$")
+                                        # Format with dollar sign in front
+                                        if abs(value) >= 1_000_000_000:
+                                            row_data[year] = f"${value/1_000_000_000:.2f}B"
+                                        elif abs(value) >= 1_000_000:
+                                            row_data[year] = f"${value/1_000_000:.1f}M"
+                                        else:
+                                            row_data[year] = f"${value:,.0f}"
                                 else:
                                     row_data[year] = "N/A"
                             income_data.append(row_data)
@@ -175,7 +181,13 @@ if selected_ticker:
                                 year = col.strftime('%Y年')
                                 value = balance_sheet.loc[eng_item, col]
                                 if not pd.isna(value):
-                                    row_data[year] = format_currency(value, "$")
+                                    # Format with dollar sign in front
+                                    if abs(value) >= 1_000_000_000:
+                                        row_data[year] = f"${value/1_000_000_000:.2f}B"
+                                    elif abs(value) >= 1_000_000:
+                                        row_data[year] = f"${value/1_000_000:.1f}M"
+                                    else:
+                                        row_data[year] = f"${value:,.0f}"
                                 else:
                                     row_data[year] = "N/A"
                             balance_data.append(row_data)

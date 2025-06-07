@@ -315,30 +315,58 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
                         "valuation_methods": {}
                     }
                     
+                    # Get additional financial metrics using yfinance
+                    import yfinance as yf
+                    stock_yf = yf.Ticker(ticker)
+                    info = stock_yf.info
+                    
+                    # Calculate actual revenue growth rate from historical data
+                    actual_revenue_growth = calculate_growth_rate(ticker)
+                    
+                    # Calculate additional metrics
+                    market_cap = auto_data['current_price'] * auto_data['shares_outstanding']
+                    
+                    # PEG ratio (PE / Growth rate)
+                    current_pe = auto_data['current_price'] / auto_data['eps'] if auto_data['eps'] > 0 else 0
+                    peg_ratio = current_pe / actual_revenue_growth if actual_revenue_growth > 0 else 0
+                    
+                    # Dividend yield
+                    dividend_yield = info.get('dividendYield', 0) * 100 if info.get('dividendYield') else 0
+                    
+                    # Debt-to-equity ratio
+                    debt_to_equity = info.get('debtToEquity', 0) / 100 if info.get('debtToEquity') else 0
+                    
+                    # ROE (Return on Equity)
+                    roe = info.get('returnOnEquity', 0) * 100 if info.get('returnOnEquity') else 0
+                    
+                    # Store all metrics
+                    result["financial_metrics"] = {
+                        "revenue_growth": actual_revenue_growth,
+                        "peg_ratio": peg_ratio,
+                        "dividend_yield": dividend_yield,
+                        "debt_to_equity": debt_to_equity,
+                        "roe": roe
+                    }
+                    
                     # Calculate current trading multiples (no intrinsic value calculations)
                     if "pe_ratio" in valuation_methods and auto_data['eps'] > 0:
                         current_pe = auto_data['current_price'] / auto_data['eps']
                         result["valuation_methods"]["pe_ratio"] = {
                             "current_multiple": current_pe,
-                            "eps": auto_data['eps'],
-                            "revenue_growth": calculate_growth_rate(auto_data.get('ticker', ticker))
+                            "eps": auto_data['eps']
                         }
                     
                     if "pb_ratio" in valuation_methods and auto_data['book_value_per_share'] > 0:
                         current_pb = auto_data['current_price'] / auto_data['book_value_per_share']
                         result["valuation_methods"]["pb_ratio"] = {
                             "current_multiple": current_pb,
-                            "book_value": auto_data['book_value_per_share'],
-                            "revenue_growth": calculate_growth_rate(auto_data.get('ticker', ticker))
+                            "book_value": auto_data['book_value_per_share']
                         }
                     
                     if "ps_ratio" in valuation_methods and auto_data['revenue'] > 0:
-                        market_cap = auto_data['current_price'] * auto_data['shares_outstanding']
                         current_ps = market_cap / auto_data['revenue']
                         result["valuation_methods"]["ps_ratio"] = {
-                            "current_multiple": current_ps,
-                            "revenue": auto_data['revenue'],
-                            "revenue_growth": calculate_growth_rate(auto_data.get('ticker', ticker))
+                            "current_multiple": current_ps
                         }
                     
                     comparison_results[ticker] = result
@@ -362,15 +390,14 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
                         "現在株価": f"${result['current_price']:.2f}"
                     }
                     
-                    # Add revenue growth rate
-                    revenue_growth = None
-                    for method_data in result["valuation_methods"].values():
-                        if "revenue_growth" in method_data:
-                            revenue_growth = method_data["revenue_growth"]
-                            break
-                    
-                    if revenue_growth is not None:
-                        row["売上成長率"] = f"{revenue_growth:.1f}%"
+                    # Add financial metrics
+                    if "financial_metrics" in result:
+                        metrics = result["financial_metrics"]
+                        row["売上成長率"] = f"{metrics['revenue_growth']:.1f}%"
+                        row["PEG倍率"] = f"{metrics['peg_ratio']:.2f}" if metrics['peg_ratio'] > 0 else "N/A"
+                        row["配当利回り"] = f"{metrics['dividend_yield']:.2f}%" if metrics['dividend_yield'] > 0 else "0.00%"
+                        row["負債比率"] = f"{metrics['debt_to_equity']:.2f}" if metrics['debt_to_equity'] > 0 else "N/A"
+                        row["ROE"] = f"{metrics['roe']:.1f}%" if metrics['roe'] > 0 else "N/A"
                     
                     # 各評価方法の結果を追加
                     for method in valuation_methods:
@@ -389,11 +416,27 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
                             elif method == "ps_ratio":
                                 method_name = "PSR"
                                 row[f"{method_name}"] = f"{method_result['current_multiple']:.2f}倍"
-                                row["売上高"] = f"${method_result['revenue']/1000000:.1f}B"
                     
                     summary_data.append(row)
                 
                 summary_df = pd.DataFrame(summary_data)
+                
+                # Add metric explanations
+                st.markdown("""
+                <div style="margin-bottom: 10px;">
+                <small>
+                <b>指標説明:</b>
+                <b>PER</b>: 株価収益率 (株価÷1株利益) |
+                <b>PBR</b>: 株価純資産倍率 (株価÷1株純資産) |
+                <b>PSR</b>: 株価売上高倍率 (時価総額÷売上高) |
+                <b>PEG</b>: PER÷成長率 (1以下が割安) |
+                <b>配当利回り</b>: 年間配当÷株価×100 |
+                <b>負債比率</b>: 負債÷自己資本 |
+                <b>ROE</b>: 自己資本利益率 (純利益÷自己資本×100)
+                </small>
+                </div>
+                """, unsafe_allow_html=True)
+                
                 st.dataframe(summary_df, use_container_width=True)
                 
                 # 取引倍率チャート
