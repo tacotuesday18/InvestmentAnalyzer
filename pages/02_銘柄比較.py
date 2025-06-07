@@ -205,6 +205,9 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+# Display market status
+display_market_status()
+
 # 入力フォームエリア
 st.markdown("""
 <div class="analysis-card">

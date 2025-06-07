@@ -210,6 +210,30 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+# Display market status
+display_market_status()
+
+# Add live price refresh section
+st.markdown("### 📊 Live Market Data")
+col1, col2, col3, col4 = st.columns(4)
+popular_tickers = ['AAPL', 'MSFT', 'GOOGL', 'NVDA']
+
+for i, ticker in enumerate(popular_tickers):
+    with [col1, col2, col3, col4][i]:
+        price_data = fetch_current_stock_price(ticker)
+        if price_data.get('success'):
+            st.metric(
+                label=ticker,
+                value=f"${price_data['price']:.2f}",
+                delta="Live"
+            )
+        else:
+            st.metric(
+                label=ticker,
+                value="Sample Data",
+                delta="Offline"
+            )
+
 # DCF計算の説明を追加
 with st.expander("🔍 DCF計算方法について詳しく"):
     st.markdown("""
