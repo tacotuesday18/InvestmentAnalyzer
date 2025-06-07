@@ -18,7 +18,7 @@ from stock_data import get_stock_data, get_available_tickers, compare_valuations
 from stock_data import update_stock_price, fetch_tradingview_price, refresh_stock_prices
 from stock_data import load_sample_data, ensure_sample_data_dir, SAMPLE_DATA_DIR
 from real_time_fetcher import fetch_current_stock_price, fetch_comprehensive_data, show_live_price_indicator, display_market_status
-from auto_financial_data import get_auto_financial_data
+from auto_financial_data import get_auto_financial_data, calculate_growth_rate
 
 # ページ設定
 st.set_page_config(

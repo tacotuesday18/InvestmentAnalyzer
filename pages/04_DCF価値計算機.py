@@ -338,7 +338,10 @@ if selected_ticker:
         with col2:
             net_margin = st.number_input("目標純利益率（%）", min_value=0.0, max_value=100.0, value=auto_data['profit_margin'], step=0.1, format="%.1f")
             industry_per = st.number_input("業界平均PER", min_value=1.0, max_value=100.0, value=auto_data['pe_ratio'], step=1.0)
-            terminal_multiple = st.number_input("終末価値倍率", min_value=1.0, max_value=100.0, value=auto_data['pe_ratio'], step=1.0)
+            # Calculate PSR ratio from current data
+            current_market_cap = auto_data['current_price'] * auto_data['shares_outstanding']
+            current_psr = current_market_cap / auto_data['revenue'] if auto_data['revenue'] > 0 else 5.0
+            psr_ratio = st.number_input("PSR倍率", min_value=0.1, max_value=50.0, value=current_psr, step=0.1, format="%.1f")
         
         # Use live data for calculations
         revenue = auto_data['revenue'] * 1_000_000  # Convert back to actual USD
@@ -403,7 +406,7 @@ if selected_ticker:
             dcf_value = terminal_value * discount_factor
             
             # 1株あたり価値
-            per_share_value = dcf_value / (stock_data['shares_outstanding'] * 1000000)
+            per_share_value = dcf_value / (auto_data['shares_outstanding'] * 1000000)
             
             # 上昇余地の計算
             upside_potential = ((per_share_value / current_stock_price) - 1) * 100
