@@ -300,9 +300,49 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
     elif len(valuation_methods) == 0:
         st.warning("少なくとも1つの評価方法を選択してください。")
     else:
-        # 銘柄比較の実行
-        with st.spinner("銘柄を比較中..."):
-            comparison_results = compare_valuations(selected_tickers, valuation_methods)
+        # Auto-fetch financial data for each selected ticker
+        with st.spinner("Fetching live financial data and comparing stocks..."):
+            comparison_results = {}
+            
+            for ticker in selected_tickers:
+                auto_data = get_auto_financial_data(ticker)
+                if auto_data:
+                    # Calculate valuations using live data
+                    result = {
+                        "name": auto_data['name'],
+                        "industry": auto_data['industry'],
+                        "current_price": auto_data['current_price'],
+                        "valuation_methods": {}
+                    }
+                    
+                    # Calculate each valuation method with live data
+                    industry_avg = get_industry_average(auto_data['industry'])
+                    
+                    if "pe_ratio" in valuation_methods and auto_data['eps'] > 0:
+                        fair_value = auto_data['eps'] * industry_avg.get('avg_pe', 25.0)
+                        upside = ((fair_value - auto_data['current_price']) / auto_data['current_price']) * 100
+                        result["valuation_methods"]["pe_ratio"] = {
+                            "fair_value": fair_value,
+                            "upside_potential": upside
+                        }
+                    
+                    if "pb_ratio" in valuation_methods and auto_data['book_value_per_share'] > 0:
+                        fair_value = auto_data['book_value_per_share'] * industry_avg.get('avg_pb', 3.0)
+                        upside = ((fair_value - auto_data['current_price']) / auto_data['current_price']) * 100
+                        result["valuation_methods"]["pb_ratio"] = {
+                            "fair_value": fair_value,
+                            "upside_potential": upside
+                        }
+                    
+                    if "ps_ratio" in valuation_methods and auto_data['revenue'] > 0:
+                        fair_value = (auto_data['revenue'] * industry_avg.get('avg_ps', 5.0)) / auto_data['shares_outstanding']
+                        upside = ((fair_value - auto_data['current_price']) / auto_data['current_price']) * 100
+                        result["valuation_methods"]["ps_ratio"] = {
+                            "fair_value": fair_value,
+                            "upside_potential": upside
+                        }
+                    
+                    comparison_results[ticker] = result
             
             if comparison_results:
                 # 比較結果の表示
