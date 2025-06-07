@@ -315,31 +315,30 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
                         "valuation_methods": {}
                     }
                     
-                    # Calculate each valuation method with live data
-                    industry_avg = get_industry_average(auto_data['industry'])
-                    
+                    # Calculate current trading multiples (no intrinsic value calculations)
                     if "pe_ratio" in valuation_methods and auto_data['eps'] > 0:
-                        fair_value = auto_data['eps'] * industry_avg.get('avg_pe', 25.0)
-                        upside = ((fair_value - auto_data['current_price']) / auto_data['current_price']) * 100
+                        current_pe = auto_data['current_price'] / auto_data['eps']
                         result["valuation_methods"]["pe_ratio"] = {
-                            "fair_value": fair_value,
-                            "upside_potential": upside
+                            "current_multiple": current_pe,
+                            "eps": auto_data['eps'],
+                            "revenue_growth": calculate_growth_rate(auto_data.get('ticker', ticker))
                         }
                     
                     if "pb_ratio" in valuation_methods and auto_data['book_value_per_share'] > 0:
-                        fair_value = auto_data['book_value_per_share'] * industry_avg.get('avg_pb', 3.0)
-                        upside = ((fair_value - auto_data['current_price']) / auto_data['current_price']) * 100
+                        current_pb = auto_data['current_price'] / auto_data['book_value_per_share']
                         result["valuation_methods"]["pb_ratio"] = {
-                            "fair_value": fair_value,
-                            "upside_potential": upside
+                            "current_multiple": current_pb,
+                            "book_value": auto_data['book_value_per_share'],
+                            "revenue_growth": calculate_growth_rate(auto_data.get('ticker', ticker))
                         }
                     
                     if "ps_ratio" in valuation_methods and auto_data['revenue'] > 0:
-                        fair_value = (auto_data['revenue'] * industry_avg.get('avg_ps', 5.0)) / auto_data['shares_outstanding']
-                        upside = ((fair_value - auto_data['current_price']) / auto_data['current_price']) * 100
+                        market_cap = auto_data['current_price'] * auto_data['shares_outstanding']
+                        current_ps = market_cap / auto_data['revenue']
                         result["valuation_methods"]["ps_ratio"] = {
-                            "fair_value": fair_value,
-                            "upside_potential": upside
+                            "current_multiple": current_ps,
+                            "revenue": auto_data['revenue'],
+                            "revenue_growth": calculate_growth_rate(auto_data.get('ticker', ticker))
                         }
                     
                     comparison_results[ticker] = result
@@ -363,6 +362,16 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
                         "現在株価": f"${result['current_price']:.2f}"
                     }
                     
+                    # Add revenue growth rate
+                    revenue_growth = None
+                    for method_data in result["valuation_methods"].values():
+                        if "revenue_growth" in method_data:
+                            revenue_growth = method_data["revenue_growth"]
+                            break
+                    
+                    if revenue_growth is not None:
+                        row["売上成長率"] = f"{revenue_growth:.1f}%"
+                    
                     # 各評価方法の結果を追加
                     for method in valuation_methods:
                         if method in result["valuation_methods"]:
@@ -370,125 +379,66 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
                             
                             # 方法に応じた表示名を設定
                             if method == "pe_ratio":
-                                method_name = "PER評価"
+                                method_name = "PER"
+                                row[f"{method_name}"] = f"{method_result['current_multiple']:.2f}倍"
+                                row["EPS"] = f"${method_result['eps']:.2f}"
                             elif method == "pb_ratio":
-                                method_name = "PBR評価"
+                                method_name = "PBR"
+                                row[f"{method_name}"] = f"{method_result['current_multiple']:.2f}倍"
+                                row["1株純資産"] = f"${method_result['book_value']:.2f}"
                             elif method == "ps_ratio":
-                                method_name = "PSR評価"
-                            else:  # dcf
-                                method_name = "DCF評価"
-                            
-                            row[f"{method_name} (公正価値)"] = f"${method_result['fair_value']:.2f}"
-                            row[f"{method_name} (上昇余地)"] = f"{method_result['upside_potential']:.1f}%"
+                                method_name = "PSR"
+                                row[f"{method_name}"] = f"{method_result['current_multiple']:.2f}倍"
+                                row["売上高"] = f"${method_result['revenue']/1000000:.1f}B"
                     
                     summary_data.append(row)
                 
                 summary_df = pd.DataFrame(summary_data)
                 st.dataframe(summary_df, use_container_width=True)
                 
-                # 比較チャート
-                st.markdown("<h3>公正価値の比較</h3>", unsafe_allow_html=True)
+                # 取引倍率チャート
+                st.markdown("<h3>取引倍率の比較</h3>", unsafe_allow_html=True)
                 
                 # チャートデータの準備
                 chart_data = []
                 
                 for ticker, result in comparison_results.items():
-                    # 現在の株価
-                    chart_data.append({
-                        "ティッカー": ticker,
-                        "評価方法": "現在株価",
-                        "価格": result["current_price"]
-                    })
-                    
-                    # 各評価方法の公正価値
                     for method in valuation_methods:
                         if method in result["valuation_methods"]:
                             method_result = result["valuation_methods"][method]
                             
                             # 方法に応じた表示名を設定
                             if method == "pe_ratio":
-                                method_name = "PER評価"
+                                method_name = "PER"
                             elif method == "pb_ratio":
-                                method_name = "PBR評価"
+                                method_name = "PBR"
                             elif method == "ps_ratio":
-                                method_name = "PSR評価"
-                            else:  # dcf
-                                method_name = "DCF評価"
+                                method_name = "PSR"
                             
                             chart_data.append({
                                 "ティッカー": ticker,
-                                "評価方法": method_name,
-                                "価格": method_result["fair_value"]
+                                "倍率種類": method_name,
+                                "倍率": method_result["current_multiple"]
                             })
                 
-                chart_df = pd.DataFrame(chart_data)
+                if chart_data:
+                    chart_df = pd.DataFrame(chart_data)
+                    
+                    # 棒グラフの作成
+                    fig = px.bar(
+                        chart_df,
+                        x="ティッカー",
+                        y="倍率",
+                        color="倍率種類",
+                        barmode="group",
+                        title="各銘柄の取引倍率比較",
+                        labels={"倍率": "倍率"},
+                        height=500
+                    )
+                    
+                    st.plotly_chart(fig, use_container_width=True)
                 
-                # 棒グラフの作成
-                fig = px.bar(
-                    chart_df,
-                    x="ティッカー",
-                    y="価格",
-                    color="評価方法",
-                    barmode="group",
-                    title="各銘柄の評価方法別公正価値比較",
-                    labels={"価格": "株価 ($)"},
-                    height=500
-                )
-                
-                st.plotly_chart(fig, use_container_width=True)
-                
-                # 上昇余地の比較チャート
-                st.markdown("<h3>上昇余地の比較</h3>", unsafe_allow_html=True)
-                
-                # 上昇余地のチャートデータ準備
-                upside_data = []
-                
-                for ticker, result in comparison_results.items():
-                    for method in valuation_methods:
-                        if method in result["valuation_methods"]:
-                            method_result = result["valuation_methods"][method]
-                            
-                            # 方法に応じた表示名を設定
-                            if method == "pe_ratio":
-                                method_name = "PER評価"
-                            elif method == "pb_ratio":
-                                method_name = "PBR評価"
-                            elif method == "ps_ratio":
-                                method_name = "PSR評価"
-                            else:  # dcf
-                                method_name = "DCF評価"
-                            
-                            upside_data.append({
-                                "ティッカー": ticker,
-                                "評価方法": method_name,
-                                "上昇余地": method_result["upside_potential"]
-                            })
-                
-                upside_df = pd.DataFrame(upside_data)
-                
-                # 上昇余地の棒グラフの作成
-                fig = px.bar(
-                    upside_df,
-                    x="ティッカー",
-                    y="上昇余地",
-                    color="評価方法",
-                    barmode="group",
-                    title="各銘柄の評価方法別上昇余地比較",
-                    labels={"上昇余地": "上昇余地 (%)"},
-                    height=500
-                )
-                
-                # ゼロラインの追加
-                fig.add_shape(
-                    type="line",
-                    x0=-0.5,
-                    y0=0,
-                    x1=len(selected_tickers) - 0.5,
-                    y1=0,
-                    line=dict(color="gray", width=1, dash="dash")
-                )
-                
-                st.plotly_chart(fig, use_container_width=True)
+
                 
                 st.markdown("</div>", unsafe_allow_html=True)
                 
