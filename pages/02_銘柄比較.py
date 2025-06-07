@@ -196,12 +196,20 @@ with st.sidebar:
     if st.button("企業分析", key="analysis_btn"):
         st.switch_page("pages/01_企業分析.py")
 
-# メインコンテンツ
-st.markdown("<h1 class='main-header'>🔍 銘柄比較</h1>", unsafe_allow_html=True)
+# Page header
+st.markdown("""
+<div class="page-header">
+    <div class="page-title">🔍 銘柄比較</div>
+    <div class="page-subtitle">複数企業の多角的な価値評価と投資判断の比較分析</div>
+</div>
+""", unsafe_allow_html=True)
 
 # 入力フォームエリア
-st.markdown("<div class='card'>", unsafe_allow_html=True)
-st.markdown("<h2 class='card-title'>比較する銘柄を選択</h2>", unsafe_allow_html=True)
+st.markdown("""
+<div class="analysis-card">
+    <div class="card-header">比較する銘柄を選択</div>
+</div>
+""", unsafe_allow_html=True)
 
 # 利用可能なティッカーシンボル（先に取得）
 available_tickers = get_available_tickers()

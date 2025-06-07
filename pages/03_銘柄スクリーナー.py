@@ -108,6 +108,33 @@ st.markdown("""
         margin-top: 1.5rem;
     }
     
+    /* Buttons */
+    .stButton > button {
+        background: #667eea !important;
+        color: white !important;
+        border: none !important;
+        padding: 1rem 2rem !important;
+        border-radius: 50px !important;
+        font-weight: 600 !important;
+        transition: all 0.3s ease !important;
+        width: 100% !important;
+    }
+    
+    .stButton > button:hover {
+        background: #5a67d8 !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3) !important;
+    }
+    
+    /* Metrics */
+    .metric-container {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        margin: 1rem 0;
+    }
+    
     /* モバイル対応 */
     @media (max-width: 768px) {
         .metric-value {
@@ -139,8 +166,13 @@ with st.sidebar:
     if st.button("銘柄比較", key="compare_btn"):
         st.switch_page("pages/02_銘柄比較.py")
 
-# メインコンテンツ
-st.markdown("<h1 class='main-header'>🔎 銘柄スクリーナー</h1>", unsafe_allow_html=True)
+# Page header
+st.markdown("""
+<div class="page-header">
+    <div class="page-title">🔎 銘柄スクリーナー</div>
+    <div class="page-subtitle">財務指標とバリュエーションで投資候補を効率的に発見</div>
+</div>
+""", unsafe_allow_html=True)
 
 # 全銘柄データの取得
 stocks_data, industry_data = load_sample_data()
@@ -166,8 +198,11 @@ for ticker, data in stocks_data.items():
     stocks_df = pd.concat([stocks_df, pd.DataFrame([row])], ignore_index=True)
 
 # フィルタリングセクション
-st.markdown("<div class='card'>", unsafe_allow_html=True)
-st.markdown("<h2 class='card-title'>条件でフィルタリング</h2>", unsafe_allow_html=True)
+st.markdown("""
+<div class="analysis-card">
+    <div class="card-header">条件でフィルタリング</div>
+</div>
+""", unsafe_allow_html=True)
 
 col1, col2, col3 = st.columns(3)
 

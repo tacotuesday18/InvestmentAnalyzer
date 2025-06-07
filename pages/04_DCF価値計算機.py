@@ -148,6 +148,33 @@ st.markdown("""
         width: 60px;
         text-align: center;
     }
+    
+    /* Buttons */
+    .stButton > button {
+        background: #667eea !important;
+        color: white !important;
+        border: none !important;
+        padding: 1rem 2rem !important;
+        border-radius: 50px !important;
+        font-weight: 600 !important;
+        transition: all 0.3s ease !important;
+        width: 100% !important;
+    }
+    
+    .stButton > button:hover {
+        background: #5a67d8 !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3) !important;
+    }
+    
+    /* Metrics */
+    .metric-container {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        margin: 1rem 0;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -172,9 +199,13 @@ with st.sidebar:
     if st.button("銘柄スクリーナー", key="screener_btn"):
         st.switch_page("pages/03_銘柄スクリーナー.py")
 
-# メインコンテンツ
-st.markdown("<h1 class='main-header'>🧮 DCF価値計算機</h1>", unsafe_allow_html=True)
-st.markdown("割引キャッシュフロー（DCF）法を使用して、企業の本質的価値を計算し、現在の株価と比較して投資判断をサポートします。")
+# Page header
+st.markdown("""
+<div class="page-header">
+    <div class="page-title">🧮 DCF価値計算機</div>
+    <div class="page-subtitle">割引キャッシュフロー法で企業の本質的価値を科学的に算出</div>
+</div>
+""", unsafe_allow_html=True)
 
 # DCF計算の説明を追加
 with st.expander("🔍 DCF計算方法について詳しく"):
