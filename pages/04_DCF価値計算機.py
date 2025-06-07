@@ -364,7 +364,7 @@ if selected_ticker:
         if custom_stock_price > 0:
             current_stock_price = custom_stock_price
         else:
-            current_stock_price = stock_data['current_price']
+            current_stock_price = auto_data['current_price']
     
     st.markdown("</div>", unsafe_allow_html=True)
     
