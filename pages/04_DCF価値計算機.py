@@ -20,6 +20,7 @@ from real_time_fetcher import fetch_current_stock_price, fetch_comprehensive_dat
 # stock_dataモジュールをインポート
 from stock_data import get_stock_data, get_available_tickers
 from financial_models import calculate_intrinsic_value
+from auto_financial_data import get_auto_financial_data
 
 # ページ設定
 st.set_page_config(
@@ -285,65 +286,65 @@ selected_ticker = st.selectbox(
 )
 
 if selected_ticker:
-    stock_data = get_stock_data(selected_ticker)
+    # Get live financial data automatically
+    with st.spinner(f"Fetching live financial data for {selected_ticker}..."):
+        auto_data = get_auto_financial_data(selected_ticker)
     
-    # 基本情報の表示
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        st.markdown(f"**企業名**: {stock_data['name']}")
-        st.markdown(f"**業界**: {stock_data['industry']}")
-    
-    with col2:
-        st.markdown(f"**現在の株価**: ${stock_data['current_price']:.2f}")
-        market_cap = stock_data['current_price'] * stock_data['shares_outstanding']
-        st.markdown(f"**時価総額**: {format_currency(market_cap, '$')} 百万")
-    
-    with col3:
-        st.markdown(f"**発行済株式数**: {format_large_number(stock_data['shares_outstanding'])}百万株")
-        st.markdown(f"**1株あたり純資産**: ${stock_data['book_value_per_share']:.2f}")
-    
-    # DCF分析パラメータ入力
-    st.markdown("### DCF分析パラメータ")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        # 売上と純利益の入力（数値入力の代わりにテキスト入力で桁区切りに対応）
-        revenue_str = st.text_input(
-            "年間売上高（USD）", 
-            value=f"{stock_data['revenue'] * 1000000:,.0f}"
-        )
-        # カンマを除去して数値に変換
-        try:
-            revenue = float(revenue_str.replace(',', ''))
-        except:
-            revenue = stock_data['revenue'] * 1000000
-
-        net_income_str = st.text_input(
-            "年間純利益（USD）", 
-            value=f"{stock_data['net_income'] * 1000000:,.0f}"
-        )
-        # カンマを除去して数値に変換
-        try:
-            net_income = float(net_income_str.replace(',', ''))
-        except:
-            net_income = stock_data['net_income'] * 1000000
+    if auto_data:
+        st.success("✅ Live financial data loaded successfully")
         
-        # 予測期間と成長率
-        forecast_years = st.number_input("予測期間（年）", min_value=1, max_value=10, value=3, step=1)
-        revenue_growth = st.number_input("売上高成長率（%）", min_value=-50.0, max_value=100.0, value=stock_data.get('historical_growth', 10.0), step=0.1, format="%.1f")
-    
-    with col2:
-        # 割引率とマージン
-        discount_rate = st.number_input("割引率（%）", min_value=1.0, max_value=50.0, value=10.0, step=0.1, format="%.1f")
-        net_margin = st.number_input("純利益率（%）", min_value=-50.0, max_value=100.0, value=(net_income / revenue * 100) if revenue > 0 else 15.0, step=0.1, format="%.1f")
+        # Display company information
+        col1, col2, col3 = st.columns(3)
         
-        # 業界平均倍率の入力
-        st.markdown("#### 業界平均倍率")
-        industry_per = st.number_input("業界平均PER（株価収益率）", min_value=1.0, max_value=100.0, value=25.0, step=1.0)
-        industry_psr = st.number_input("業界平均PSR（株価売上高倍率）", min_value=0.1, max_value=50.0, value=5.0, step=0.1)
-        industry_pbr = st.number_input("業界平均PBR（株価純資産倍率）", min_value=0.1, max_value=50.0, value=3.0, step=0.1)
+        with col1:
+            st.markdown(f"**企業名**: {auto_data['name']}")
+            st.markdown(f"**業界**: {auto_data['industry']}")
+        
+        with col2:
+            st.markdown(f"**現在の株価**: ${auto_data['current_price']:.2f}")
+            st.markdown(f"**時価総額**: {format_currency(auto_data['market_cap'], '$')}百万")
+        
+        with col3:
+            st.markdown(f"**発行済株式数**: {format_large_number(auto_data['shares_outstanding'])}百万株")
+            st.markdown(f"**EPS**: ${auto_data['eps']:.2f}")
+        
+        # Auto-populated financial metrics
+        st.markdown("### 📊 自動取得された財務データ")
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric("年間売上高", f"${auto_data['revenue']:,.0f}M", delta="TTM")
+        
+        with col2:
+            st.metric("純利益", f"${auto_data['net_income']:,.0f}M", delta="TTM")
+        
+        with col3:
+            st.metric("利益率", f"{auto_data['profit_margin']:.1f}%", delta="Current")
+        
+        with col4:
+            st.metric("成長率", f"{auto_data['historical_growth']:.1f}%", delta="Historical")
+        
+        # DCF calculation parameters (only adjustable parameters)
+        st.markdown("### ⚙️ DCF計算パラメータ（調整可能）")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            forecast_years = st.number_input("予測期間（年）", min_value=1, max_value=10, value=3, step=1)
+            revenue_growth = st.number_input("予想売上成長率（%）", min_value=-50.0, max_value=100.0, value=auto_data['historical_growth'], step=0.1, format="%.1f")
+            discount_rate = st.number_input("割引率（%）", min_value=1.0, max_value=50.0, value=10.0, step=0.1, format="%.1f")
+        
+        with col2:
+            net_margin = st.number_input("目標純利益率（%）", min_value=0.0, max_value=100.0, value=auto_data['profit_margin'], step=0.1, format="%.1f")
+            industry_per = st.number_input("業界平均PER", min_value=1.0, max_value=100.0, value=auto_data['pe_ratio'], step=1.0)
+            terminal_multiple = st.number_input("終末価値倍率", min_value=1.0, max_value=100.0, value=auto_data['pe_ratio'], step=1.0)
+        
+        # Use live data for calculations
+        revenue = auto_data['revenue'] * 1_000_000  # Convert back to actual USD
+        net_income = auto_data['net_income'] * 1_000_000
+        shares_outstanding = auto_data['shares_outstanding'] * 1_000_000
+        current_stock_price = auto_data['current_price']
         
         # カスタム株価の入力（オプション）
         custom_stock_price_str = st.text_input(

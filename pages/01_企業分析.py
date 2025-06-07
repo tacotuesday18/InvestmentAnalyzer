@@ -366,17 +366,25 @@ if 'selected_company' in st.session_state:
     # Display market status
     display_market_status()
     
-    # Get real-time price data
-    price_data = fetch_current_stock_price(ticker)
-    if price_data.get('success'):
-        current_stock_price = price_data['price']
+    # Get comprehensive real-time data
+    comprehensive_data = fetch_comprehensive_data(ticker)
+    if comprehensive_data:
+        current_stock_price = comprehensive_data['current_price']
         st.session_state.current_price = current_stock_price
-        show_live_price_indicator(ticker, price_data)
+        st.session_state.live_data = comprehensive_data
+        
+        # Show live data indicator
+        col1, col2, col3 = st.columns([2, 1, 1])
+        with col1:
+            st.metric(f"{ticker} Stock Price", f"${current_stock_price:.2f}", delta="Live Data")
+        with col2:
+            st.success("🟢 Live")
+        with col3:
+            if st.button("🔄 Refresh", key=f"refresh_{ticker}"):
+                st.cache_data.clear()
+                st.rerun()
     else:
-        # Fallback to sample data
-        existing_data = get_stock_data(ticker)
-        current_stock_price = existing_data.get('current_price', 100.0) if existing_data else 100.0
-        st.warning(f"Using sample data for {ticker} - live data unavailable")
+        st.error(f"Unable to fetch live data for {ticker}. Please check the ticker symbol.")
 else:
     # デフォルト値（Appleを初期選択）
     company_name = "Apple Inc."

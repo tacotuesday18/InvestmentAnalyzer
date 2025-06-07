@@ -11,7 +11,7 @@ else:
 
 def render_floating_chatbot():
     """
-    Render a floating chatbot in the bottom right corner
+    Render a financial AI assistant in the sidebar
     """
     # Initialize chat history in session state
     if "chat_messages" not in st.session_state:
@@ -20,54 +20,72 @@ def render_floating_chatbot():
     if "chatbot_visible" not in st.session_state:
         st.session_state.chatbot_visible = False
     
-    # Sidebar-based chatbot for better functionality
+    # Sidebar-based chatbot
     with st.sidebar:
         st.markdown("### AI Financial Assistant")
         
         # Toggle chatbot visibility
-        if st.button("💬 Open AI Chat" if not st.session_state.chatbot_visible else "❌ Close Chat"):
+        chat_button_text = "💬 Open AI Chat" if not st.session_state.chatbot_visible else "❌ Close Chat"
+        if st.button(chat_button_text, key="toggle_chat"):
             st.session_state.chatbot_visible = not st.session_state.chatbot_visible
             st.rerun()
         
         if st.session_state.chatbot_visible:
             st.markdown("---")
             
-            # Display chat messages
-            for message in st.session_state.chat_messages[-5:]:  # Show last 5 messages
-                if message["role"] == "user":
-                    st.markdown(f"**You:** {message['content']}")
-                else:
-                    st.markdown(f"**AI:** {message['content']}")
+            # Display recent chat messages
+            if st.session_state.chat_messages:
+                st.markdown("**Recent Messages:**")
+                for message in st.session_state.chat_messages[-3:]:  # Show last 3 messages
+                    if message["role"] == "user":
+                        st.markdown(f"👤 **You:** {message['content'][:100]}...")
+                    else:
+                        st.markdown(f"🤖 **AI:** {message['content'][:100]}...")
+                
+                if st.button("Clear Chat History", key="clear_chat"):
+                    st.session_state.chat_messages = []
+                    st.rerun()
             
-            # Chat input
-            user_input = st.text_area("Ask about stocks, financial analysis, or market data:", 
-                                    height=100, 
-                                    placeholder="Type your financial question here...")
+            # Chat input form
+            with st.form("chat_form", clear_on_submit=True):
+                user_input = st.text_area(
+                    "Ask about financial analysis:", 
+                    height=80, 
+                    placeholder="例: AAPLの財務状況は？"
+                )
+                
+                col1, col2 = st.columns(2)
+                with col1:
+                    submit = st.form_submit_button("Send", type="primary")
+                with col2:
+                    if st.form_submit_button("Quick DCF Help"):
+                        user_input = "DCF計算について教えて"
+                        submit = True
             
-            if st.button("Send Message", type="primary") and user_input:
+            if submit and user_input:
                 # Add user message
                 st.session_state.chat_messages.append({"role": "user", "content": user_input})
                 
                 # Generate AI response
-                if openai_client:
-                    try:
+                try:
+                    if openai_client:
                         response = process_chat_message(user_input)
                         st.session_state.chat_messages.append({"role": "assistant", "content": response})
-                    except Exception as e:
+                        st.success("Response generated!")
+                    else:
                         st.session_state.chat_messages.append({
                             "role": "assistant", 
-                            "content": f"Error: {str(e)}"
+                            "content": "OpenAI API key required for AI responses. The chatbot needs proper API configuration to function."
                         })
-                else:
+                        st.warning("API key needed")
+                except Exception as e:
+                    error_msg = f"Chat error: {str(e)}"
                     st.session_state.chat_messages.append({
                         "role": "assistant", 
-                        "content": "OpenAI API key not configured. Please set up your API key."
+                        "content": error_msg
                     })
+                    st.error("Response failed")
                 
-                st.rerun()
-            
-            if st.button("Clear Chat"):
-                st.session_state.chat_messages = []
                 st.rerun()
 
 
