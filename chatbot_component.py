@@ -264,8 +264,7 @@ def handle_user_message(message):
     # Add AI response
     st.session_state.chat_messages.append({"role": "assistant", "content": ai_response})
     
-    # Clear input and rerun
-    st.session_state.chat_input_field = ""
+    # Rerun to show new messages
     st.rerun()
 
 def handle_quick_question(question):

@@ -775,9 +775,9 @@ if selected_ticker:
 else:
     st.info("銘柄を選択してください。")
 
-# Add chatbot component
+# Add floating chatbot component
 try:
-    from chatbot_component import render_chatbot
-    render_chatbot()
+    from floating_chatbot import render_floating_chatbot
+    render_floating_chatbot()
 except ImportError:
     pass

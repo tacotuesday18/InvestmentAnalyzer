@@ -773,9 +773,9 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
 else:
     st.markdown("</div>", unsafe_allow_html=True)
 
-# Add chatbot component
+# Add floating chatbot component
 try:
-    from chatbot_component import render_chatbot
-    render_chatbot()
+    from floating_chatbot import render_floating_chatbot
+    render_floating_chatbot()
 except ImportError:
     pass

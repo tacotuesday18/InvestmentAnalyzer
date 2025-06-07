@@ -563,9 +563,9 @@ st.plotly_chart(bubble_fig, use_container_width=True)
 
 st.markdown("</div>", unsafe_allow_html=True)
 
-# Add chatbot component
+# Add floating chatbot component
 try:
-    from chatbot_component import render_chatbot
-    render_chatbot()
+    from floating_chatbot import render_floating_chatbot
+    render_floating_chatbot()
 except ImportError:
     pass
