@@ -94,7 +94,19 @@ def process_chat_message(message):
     if not openai_client:
         return "OpenAI API key not configured. Please set up your API key to use the chat feature."
     
+    # Rate limiting check
+    import time
+    current_time = time.time()
+    if 'last_api_call' not in st.session_state:
+        st.session_state.last_api_call = 0
+    
+    # Limit to one call per 3 seconds to avoid rate limits
+    if current_time - st.session_state.last_api_call < 3:
+        return "Please wait a moment before sending another message to avoid rate limits."
+    
     try:
+        st.session_state.last_api_call = current_time
+        
         # Create context about the financial analysis platform
         system_prompt = """You are an AI financial assistant for a Japanese stock analysis platform. 
         You help users with:
