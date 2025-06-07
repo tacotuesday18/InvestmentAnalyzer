@@ -14,6 +14,9 @@ from format_helpers import format_currency, format_large_number, format_ja_numbe
 # プロジェクトのルートディレクトリをパスに追加
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+# Import real-time data modules
+from real_time_fetcher import fetch_current_stock_price, fetch_comprehensive_data, show_live_price_indicator, display_market_status
+
 # stock_dataモジュールをインポート
 from stock_data import get_stock_data, get_available_tickers
 from financial_models import calculate_intrinsic_value

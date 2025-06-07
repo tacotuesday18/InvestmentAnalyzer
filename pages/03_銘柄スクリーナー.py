@@ -9,6 +9,9 @@ import json
 # プロジェクトのルートディレクトリをパスに追加
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+# Import real-time data modules
+from real_time_fetcher import fetch_current_stock_price, fetch_comprehensive_data, show_live_price_indicator, display_market_status
+
 # stock_dataモジュールをインポート
 from stock_data import get_stock_data, get_available_tickers, load_sample_data
 
