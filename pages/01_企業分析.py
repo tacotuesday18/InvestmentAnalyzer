@@ -21,91 +21,191 @@ st.set_page_config(
     page_title="企業分析 - 企業価値分析プロ",
     page_icon="📊",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
-# カスタムCSS
+# Modern design CSS consistent with homepage
 st.markdown("""
 <style>
-    .main-header {
-        font-size: 2rem !important;
-        font-weight: bold;
-        margin-bottom: 1rem;
-        color: #0066cc;
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    /* Hide Streamlit default elements */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    
+    /* Global styles */
+    .main .block-container {
+        padding-top: 2rem;
+        padding-bottom: 0rem;
+        max-width: 100%;
     }
     
-    .card {
-        border-radius: 10px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        background-color: #f8f9fa;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    html, body, [class*="css"] {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        color: #222222;
     }
     
-    .card-title {
-        font-size: 1.4rem !important;
-        font-weight: bold;
-        margin-bottom: 1rem;
-        color: #0066cc;
-    }
-    
-    .form-section {
-        background-color: #f8f9fa;
-        border-radius: 10px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-    }
-    
-    .metric-box {
-        border-radius: 10px;
-        padding: 1rem;
-        background-color: #f8f9fa;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    /* Page header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 3rem 2rem;
         text-align: center;
-        margin-bottom: 1rem;
+        margin: -2rem -1rem 2rem -1rem;
+        border-radius: 0 0 20px 20px;
     }
     
-    .metric-title {
-        font-size: 0.9rem;
-        color: #666;
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 700;
         margin-bottom: 0.5rem;
     }
     
-    .metric-value {
-        font-size: 1.5rem;
-        font-weight: bold;
-        color: #0066cc;
+    .page-subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
     }
     
-    .recommendation-box {
-        border-radius: 10px;
-        padding: 1rem;
-        margin-top: 1rem;
+    /* Cards */
+    .analysis-card {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        border: 1px solid #f0f0f0;
+    }
+    
+    .card-header {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        color: #222222;
+        border-bottom: 2px solid #667eea;
+        padding-bottom: 0.5rem;
+    }
+    
+    /* Metrics */
+    .metric-container {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
         text-align: center;
-        font-weight: bold;
+        margin: 1rem 0;
+    }
+    
+    .metric-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #667eea;
+        display: block;
+    }
+    
+    .metric-label {
+        font-size: 0.9rem;
+        color: #717171;
+        margin-top: 0.5rem;
+    }
+    
+    /* Buttons */
+    .stButton > button {
+        background: #667eea !important;
+        color: white !important;
+        border: none !important;
+        padding: 1rem 2rem !important;
+        border-radius: 50px !important;
+        font-weight: 600 !important;
+        transition: all 0.3s ease !important;
+        width: 100% !important;
+    }
+    
+    .stButton > button:hover {
+        background: #5a67d8 !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3) !important;
+    }
+    
+    /* Sidebar */
+    .css-1d391kg {
+        background: #f8f9fa;
+    }
+    
+    /* Input fields */
+    .stSelectbox > div > div {
+        border-radius: 10px;
+    }
+    
+    .stNumberInput > div > div {
+        border-radius: 10px;
+    }
+    
+    /* Charts */
+    .plotly-chart {
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    /* Recommendation badges */
+    .recommendation-box {
+        border-radius: 50px;
+        padding: 1rem 2rem;
+        margin: 1rem 0;
+        text-align: center;
+        font-weight: 600;
         font-size: 1.2rem;
     }
     
     .recommendation-buy {
-        background-color: #d1e7dd;
-        color: #0f5132;
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
     }
     
     .recommendation-hold {
-        background-color: #fff3cd;
-        color: #664d03;
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
     }
     
     .recommendation-sell {
-        background-color: #f8d7da;
-        color: #842029;
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+    }
+    
+    /* Navigation */
+    .nav-pills {
+        display: flex;
+        background: #f8f9fa;
+        border-radius: 50px;
+        padding: 0.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .nav-pill {
+        flex: 1;
+        text-align: center;
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        background: transparent;
+        color: #717171;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .nav-pill.active {
+        background: #667eea;
+        color: white;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# メインコンテンツ
-st.markdown("<h1 class='main-header'>📊 企業分析</h1>", unsafe_allow_html=True)
-st.markdown("企業の財務データとファンダメンタルズを分析し、SWOT分析、競争優位性（モート）分析、最新の注目ポイントなどを提供します。")
+# Page header
+st.markdown("""
+<div class="page-header">
+    <div class="page-title">📊 企業分析</div>
+    <div class="page-subtitle">財務データとファンダメンタルズ分析で企業の本質的価値を見極める</div>
+</div>
+""", unsafe_allow_html=True)
 
 # 分析手法の説明を追加
 with st.expander("🔍 分析手法について詳しく"):

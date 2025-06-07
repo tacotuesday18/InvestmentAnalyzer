@@ -23,31 +23,69 @@ st.set_page_config(
     page_title="DCF価値計算機 - 企業価値分析プロ",
     page_icon="🧮",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
-# カスタムCSS
+# Modern design CSS consistent with homepage
 st.markdown("""
 <style>
-    .main-header {
-        font-size: 2rem !important;
-        font-weight: bold;
-        margin-bottom: 1rem;
-        color: #0066cc;
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    /* Hide Streamlit default elements */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    
+    /* Global styles */
+    .main .block-container {
+        padding-top: 2rem;
+        padding-bottom: 0rem;
+        max-width: 100%;
     }
     
-    .card {
-        border-radius: 10px;
-        padding: 1.5rem;
+    html, body, [class*="css"] {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        color: #222222;
+    }
+    
+    /* Page header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 3rem 2rem;
+        text-align: center;
+        margin: -2rem -1rem 2rem -1rem;
+        border-radius: 0 0 20px 20px;
+    }
+    
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .page-subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+    
+    /* Cards */
+    .analysis-card {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        border: 1px solid #f0f0f0;
+    }
+    
+    .card-header {
+        font-size: 1.5rem;
+        font-weight: 600;
         margin-bottom: 1.5rem;
-        background-color: #f8f9fa;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    
-    .card-title {
-        font-size: 1.4rem !important;
-        font-weight: bold;
-        margin-bottom: 1rem;
+        color: #222222;
+        border-bottom: 2px solid #667eea;
+        padding-bottom: 0.5rem;
         color: #0066cc;
     }
     
