@@ -285,6 +285,40 @@ with col4:
     </div>
     """, unsafe_allow_html=True)
 
+# Live market data section
+st.markdown("""
+<div class="stats-container">
+    <h3 style="text-align: center; margin-bottom: 2rem; color: #222;">📈 Live Market Data</h3>
+</div>
+""", unsafe_allow_html=True)
+
+# Display live prices for popular stocks
+try:
+    from real_time_fetcher import fetch_current_stock_price, display_market_status
+    
+    display_market_status()
+    
+    col1, col2, col3, col4 = st.columns(4)
+    popular_tickers = ['AAPL', 'MSFT', 'GOOGL', 'NVDA']
+    
+    for i, ticker in enumerate(popular_tickers):
+        with [col1, col2, col3, col4][i]:
+            price_data = fetch_current_stock_price(ticker)
+            if price_data.get('success'):
+                st.metric(
+                    label=ticker,
+                    value=f"${price_data['price']:.2f}",
+                    delta="Live"
+                )
+            else:
+                st.metric(
+                    label=ticker,
+                    value="N/A",
+                    delta="Offline"
+                )
+except ImportError:
+    pass
+
 # Stats section
 st.markdown("""
 <div class="stats-container">

@@ -363,16 +363,20 @@ if 'selected_company' in st.session_state:
     industry = company['industry']
     country = company['country']
     
-    # 実時間データを取得
-    live_data = get_enhanced_stock_data(ticker)
-    if live_data:
-        current_stock_price = live_data['current_price']
+    # Display market status
+    display_market_status()
+    
+    # Get real-time price data
+    price_data = fetch_current_stock_price(ticker)
+    if price_data.get('success'):
+        current_stock_price = price_data['price']
         st.session_state.current_price = current_stock_price
-        show_data_freshness_indicator(live_data)
-        add_real_time_update_button(ticker)
+        show_live_price_indicator(ticker, price_data)
     else:
-        current_stock_price = 100.0
-        st.warning(f"Failed to retrieve data for {ticker}")
+        # Fallback to sample data
+        existing_data = get_stock_data(ticker)
+        current_stock_price = existing_data.get('current_price', 100.0) if existing_data else 100.0
+        st.warning(f"Using sample data for {ticker} - live data unavailable")
 else:
     # デフォルト値（Appleを初期選択）
     company_name = "Apple Inc."
