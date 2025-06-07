@@ -562,3 +562,10 @@ bubble_fig.update_layout(
 st.plotly_chart(bubble_fig, use_container_width=True)
 
 st.markdown("</div>", unsafe_allow_html=True)
+
+# Add chatbot component
+try:
+    from chatbot_component import render_chatbot
+    render_chatbot()
+except ImportError:
+    pass

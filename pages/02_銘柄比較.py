@@ -772,3 +772,10 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
                 st.error("比較結果の取得中にエラーが発生しました。")
 else:
     st.markdown("</div>", unsafe_allow_html=True)
+
+# Add chatbot component
+try:
+    from chatbot_component import render_chatbot
+    render_chatbot()
+except ImportError:
+    pass

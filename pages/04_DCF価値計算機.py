@@ -774,3 +774,10 @@ if selected_ticker:
             st.markdown("</div>", unsafe_allow_html=True)
 else:
     st.info("銘柄を選択してください。")
+
+# Add chatbot component
+try:
+    from chatbot_component import render_chatbot
+    render_chatbot()
+except ImportError:
+    pass

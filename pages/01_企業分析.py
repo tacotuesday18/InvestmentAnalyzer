@@ -15,6 +15,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # stock_dataモジュールをインポート
 from stock_data import get_stock_data, update_stock_price, fetch_tradingview_price
+from live_data_handler import get_enhanced_stock_data, show_data_freshness_indicator, add_real_time_update_button
 
 # ページ設定
 st.set_page_config(
@@ -1655,3 +1656,10 @@ if st.button("企業分析を実行", key="calculate_btn", use_container_width=T
         
         # 分析が完了したことを表示
         st.success("企業分析が完了しました。ビジネスモデルと市場環境の理解にお役立てください。")
+
+# Add chatbot component
+try:
+    from chatbot_component import render_chatbot
+    render_chatbot()
+except ImportError:
+    pass
