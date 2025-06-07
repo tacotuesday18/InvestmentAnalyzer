@@ -335,3 +335,10 @@ st.markdown("""
     <div class="cta-subtitle">感情ではなくデータに基づいた投資戦略を構築しましょう</div>
 </div>
 """, unsafe_allow_html=True)
+
+# Add chatbot component
+try:
+    from chatbot_component import render_chatbot
+    render_chatbot()
+except ImportError:
+    pass
