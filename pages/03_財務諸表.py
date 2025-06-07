@@ -226,7 +226,13 @@ if selected_ticker:
                                 year = col.strftime('%Y年')
                                 value = cash_flow.loc[eng_item, col]
                                 if not pd.isna(value):
-                                    row_data[year] = format_currency(value, "$")
+                                    # Format with dollar sign in front
+                                    if abs(value) >= 1_000_000_000:
+                                        row_data[year] = f"${value/1_000_000_000:.2f}B"
+                                    elif abs(value) >= 1_000_000:
+                                        row_data[year] = f"${value/1_000_000:.1f}M"
+                                    else:
+                                        row_data[year] = f"${value:,.0f}"
                                 else:
                                     row_data[year] = "N/A"
                             cf_data.append(row_data)
@@ -244,6 +250,19 @@ if selected_ticker:
                 # 主要財務指標
                 st.markdown("<div class='card'>", unsafe_allow_html=True)
                 st.markdown("### 📊 主要財務指標")
+                
+                # Add metric explanations
+                st.markdown("""
+                <div style="margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
+                <small>
+                <b>指標説明:</b><br>
+                <b>PER</b>: 株価収益率 (株価÷1株利益) - 株価が利益の何倍かを示す<br>
+                <b>PBR</b>: 株価純資産倍率 (株価÷1株純資産) - 株価が純資産の何倍かを示す<br>
+                <b>PSR</b>: 株価売上高倍率 (時価総額÷売上高) - 売上に対する株価の割高・割安を示す<br>
+                <b>純利益率</b>: 売上に対する純利益の割合 - 企業の収益効率を示す
+                </small>
+                </div>
+                """, unsafe_allow_html=True)
                 
                 col1, col2, col3, col4 = st.columns(4)
                 
