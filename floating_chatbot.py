@@ -22,10 +22,10 @@ def render_floating_chatbot():
     
     # Sidebar-based chatbot
     with st.sidebar:
-        st.markdown("### AI Financial Assistant")
+        st.markdown("### 💬 AI金融アシスタント")
         
         # Toggle chatbot visibility
-        chat_button_text = "💬 Open AI Chat" if not st.session_state.chatbot_visible else "❌ Close Chat"
+        chat_button_text = "💬 AIチャットを開く" if not st.session_state.chatbot_visible else "❌ チャットを閉じる"
         if st.button(chat_button_text, key="toggle_chat"):
             st.session_state.chatbot_visible = not st.session_state.chatbot_visible
             st.rerun()
@@ -35,30 +35,30 @@ def render_floating_chatbot():
             
             # Display recent chat messages
             if st.session_state.chat_messages:
-                st.markdown("**Recent Messages:**")
+                st.markdown("**最近のメッセージ:**")
                 for message in st.session_state.chat_messages[-3:]:  # Show last 3 messages
                     if message["role"] == "user":
-                        st.markdown(f"👤 **You:** {message['content'][:100]}...")
+                        st.markdown(f"👤 **あなた:** {message['content'][:100]}...")
                     else:
                         st.markdown(f"🤖 **AI:** {message['content'][:100]}...")
                 
-                if st.button("Clear Chat History", key="clear_chat"):
+                if st.button("チャット履歴をクリア", key="clear_chat"):
                     st.session_state.chat_messages = []
                     st.rerun()
             
             # Chat input form
             with st.form("chat_form", clear_on_submit=True):
                 user_input = st.text_area(
-                    "Ask about financial analysis:", 
+                    "金融分析について質問してください:", 
                     height=80, 
                     placeholder="例: AAPLの財務状況は？"
                 )
                 
                 col1, col2 = st.columns(2)
                 with col1:
-                    submit = st.form_submit_button("Send", type="primary")
+                    submit = st.form_submit_button("送信", type="primary")
                 with col2:
-                    if st.form_submit_button("Quick DCF Help"):
+                    if st.form_submit_button("DCFヘルプ"):
                         user_input = "DCF計算について教えて"
                         submit = True
             
@@ -71,20 +71,20 @@ def render_floating_chatbot():
                     if openai_client:
                         response = process_chat_message(user_input)
                         st.session_state.chat_messages.append({"role": "assistant", "content": response})
-                        st.success("Response generated!")
+                        st.success("回答を生成しました！")
                     else:
                         st.session_state.chat_messages.append({
                             "role": "assistant", 
-                            "content": "OpenAI API key required for AI responses. The chatbot needs proper API configuration to function."
+                            "content": "AI回答にはOpenAI APIキーが必要です。チャットボット機能を使用するには適切なAPI設定が必要です。"
                         })
-                        st.warning("API key needed")
+                        st.warning("APIキーが必要です")
                 except Exception as e:
-                    error_msg = f"Chat error: {str(e)}"
+                    error_msg = f"チャットエラー: {str(e)}"
                     st.session_state.chat_messages.append({
                         "role": "assistant", 
                         "content": error_msg
                     })
-                    st.error("Response failed")
+                    st.error("回答の生成に失敗しました")
                 
                 st.rerun()
 
@@ -92,7 +92,7 @@ def render_floating_chatbot():
 def process_chat_message(message):
     """Process chat message and generate response"""
     if not openai_client:
-        return "OpenAI API key not configured. Please set up your API key to use the chat feature."
+        return "OpenAI APIキーが設定されていません。チャット機能を使用するにはAPIキーを設定してください。"
     
     # Rate limiting check
     import time
@@ -102,22 +102,22 @@ def process_chat_message(message):
     
     # Limit to one call per 3 seconds to avoid rate limits
     if current_time - st.session_state.last_api_call < 3:
-        return "Please wait a moment before sending another message to avoid rate limits."
+        return "レート制限を避けるため、少しお待ちください。"
     
     try:
         st.session_state.last_api_call = current_time
         
         # Create context about the financial analysis platform
-        system_prompt = """You are an AI financial assistant for a Japanese stock analysis platform. 
-        You help users with:
-        - Stock analysis and valuation questions
-        - DCF calculations and financial modeling
-        - Market data interpretation
-        - Investment strategy advice
-        - Explaining financial ratios and metrics
+        system_prompt = """あなたは日本の株式分析プラットフォームのAI金融アシスタントです。
+        ユーザーを以下の点でサポートしてください：
+        - 株式分析と企業価値評価の質問
+        - DCF計算と財務モデリング
+        - 市場データの解釈
+        - 投資戦略のアドバイス
+        - 財務比率と指標の説明
         
-        Respond in Japanese when users ask in Japanese, otherwise use English.
-        Keep responses concise but informative. Focus on practical financial advice."""
+        常に日本語で回答してください。簡潔でありながら情報量の多い回答を心がけ、実用的な金融アドバイスに焦点を当ててください。
+        専門用語を使う場合は、分かりやすく説明を加えてください。"""
         
         response = openai_client.chat.completions.create(
             model="gpt-4o",  # the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
@@ -132,4 +132,4 @@ def process_chat_message(message):
         return response.choices[0].message.content
         
     except Exception as e:
-        return f"Sorry, I encountered an error processing your request: {str(e)}"
+        return f"申し訳ございませんが、リクエストの処理中にエラーが発生しました: {str(e)}"
