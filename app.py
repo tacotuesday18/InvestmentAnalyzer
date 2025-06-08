@@ -480,18 +480,7 @@ with st.sidebar:
             st.session_state.show_chat = False
             st.rerun()
             
-        if st.button("💬 AI金融アシスタント", key="nav_chat", use_container_width=True):
-            st.session_state.show_chat = True
-            st.rerun()
-        
-        # Show AI chat when selected from menu
-        if st.session_state.show_chat:
-            st.markdown("---")
-            try:
-                from floating_chatbot import render_floating_chatbot
-                render_floating_chatbot()
-            except ImportError:
-                st.error("AIチャット機能は現在利用できません。")
+
     else:
         # Open button when sidebar is closed
         if st.button("☰", key="hamburger_btn", use_container_width=True):
