@@ -369,7 +369,7 @@ if selected_ticker:
                 </div>
                 """, unsafe_allow_html=True)
                 
-                col1, col2, col3, col4 = st.columns(4)
+                col1, col2, col3, col4, col5 = st.columns(5)
                 
                 with col1:
                     st.markdown("<div class='metric-card'>", unsafe_allow_html=True)
@@ -406,6 +406,19 @@ if selected_ticker:
                         st.metric("純利益率", f"{profit_margin:.1f}%")
                     else:
                         st.metric("純利益率", "N/A")
+                    st.markdown("</div>", unsafe_allow_html=True)
+                
+                with col5:
+                    st.markdown("<div class='metric-card'>", unsafe_allow_html=True)
+                    # Calculate revenue growth rate
+                    try:
+                        import yfinance as yf
+                        from auto_financial_data import calculate_growth_rate
+                        stock = yf.Ticker(selected_ticker)
+                        revenue_growth = calculate_growth_rate(stock)
+                        st.metric("売上成長率", f"{revenue_growth:.1f}%")
+                    except:
+                        st.metric("売上成長率", "N/A")
                     st.markdown("</div>", unsafe_allow_html=True)
                 
                 st.markdown("</div>", unsafe_allow_html=True)
