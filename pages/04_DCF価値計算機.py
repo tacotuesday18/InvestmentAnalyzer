@@ -326,12 +326,13 @@ st.info(f"選択可能銘柄数: {len(available_tickers)}")
 
 ticker_options = {ticker: ticker for ticker in available_tickers}
 
-# 企業選択
+# 企業選択 - Use session state to prevent data persistence issues
 selected_ticker = st.selectbox(
     "銘柄を選択",
     options=available_tickers,
     format_func=lambda x: ticker_options.get(x, x),
-    index=0 if available_tickers else None
+    index=0 if available_tickers else None,
+    key="dcf_ticker_selection"
 )
 
 if selected_ticker:

@@ -157,12 +157,17 @@ selected_ticker = st.selectbox(
     "企業を選択してください",
     options=available_tickers,
     index=0,
-    format_func=lambda x: f"{x}"
+    format_func=lambda x: f"{x}",
+    key="financial_ticker_selection"
 )
 
 with col2:
     if st.button("🔄 データ更新", use_container_width=True):
         st.cache_data.clear()
+        st.cache_resource.clear()
+        # Clear session state to fix data persistence issues
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
         st.success("データを更新しました")
         st.rerun()
 

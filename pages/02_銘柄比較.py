@@ -274,6 +274,10 @@ col1, col2 = st.columns([3, 1])
 with col2:
     if st.button("🔄 Refresh All Data", key="refresh_all_data"):
         st.cache_data.clear()
+        st.cache_resource.clear()
+        # Clear session state to fix data persistence issues
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
         st.success("Data refreshed!")
         st.rerun()
 
@@ -284,18 +288,11 @@ ticker_select_options = available_tickers
 st.markdown("<div class='mobile-card'>", unsafe_allow_html=True)
 st.markdown("<h3>銘柄選択</h3>", unsafe_allow_html=True)
 
-# 業界フィルター (モバイルフレンドリー)
-industries = list(set([get_stock_data(ticker).get('industry', 'その他') for ticker in available_tickers]))
-industries = ['すべて'] + sorted(industries)
-selected_industry = st.selectbox("業界でフィルター", industries)
-
-# フィルタリングされた銘柄リスト
+# Use category filtering from stock_universe instead of problematic industry filtering
 filtered_tickers = available_tickers
-if selected_industry != 'すべて':
-    filtered_tickers = [t for t in available_tickers if get_stock_data(t).get('industry', 'その他') == selected_industry]
 
-# フィルタリングされたマルチセレクト用のオプション
-ticker_select_options = [f"{ticker} - {get_stock_data(ticker)['name']}" for ticker in filtered_tickers]
+# Use simple ticker options without calling get_stock_data
+ticker_select_options = filtered_tickers
 
 # 銘柄検索 (モバイルフレンドリー)
 search_term = st.text_input("銘柄を検索 (ティッカーまたは企業名)", "")
@@ -315,7 +312,7 @@ selected_ticker_options = st.multiselect(
 st.markdown("</div>", unsafe_allow_html=True)
 
 # 選択された銘柄からティッカーシンボルを抽出
-selected_tickers = [option.split(" - ")[0] for option in selected_ticker_options]
+selected_tickers = selected_ticker_options
 
 # 評価方法の選択とメトリクス表示
 st.markdown("<div class='mobile-card'>", unsafe_allow_html=True)
