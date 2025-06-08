@@ -24,7 +24,7 @@ from auto_financial_data import get_auto_financial_data
 
 # ページ設定
 st.set_page_config(
-    page_title="DCF価値計算機 - 企業価値分析プロ",
+    page_title="DCF価値計算機 - Kabu2Easy",
     page_icon="🧮",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -203,11 +203,28 @@ with st.sidebar:
     if st.button("銘柄スクリーナー", key="screener_btn"):
         st.switch_page("pages/03_銘柄スクリーナー.py")
 
-# Page header
+# Hero section - TravelPerk style
 st.markdown("""
-<div class="page-header">
-    <div class="page-title">🧮 DCF価値計算機</div>
-    <div class="page-subtitle">割引キャッシュフロー法で企業の本質的価値を科学的に算出</div>
+<div style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); padding: 3rem 2rem; margin: -1rem -1rem 2rem -1rem; border-radius: 0 0 20px 20px;">
+    <div style="text-align: center;">
+        <div style="font-size: 2.8rem; font-weight: 700; color: #1a202c; margin-bottom: 1rem;">
+            🧮 DCF価値計算機
+        </div>
+        <div style="font-size: 1.3rem; color: #4a5568; margin-bottom: 2rem; max-width: 800px; margin-left: auto; margin-right: auto;">
+            割引キャッシュフロー法で企業の本質的価値を科学的に算出し、適正株価を判定
+        </div>
+        <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+            <div style="background: white; padding: 1rem 1.5rem; border-radius: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                <span style="color: #667eea; font-weight: 600;">💰 企業本質価値算出</span>
+            </div>
+            <div style="background: white; padding: 1rem 1.5rem; border-radius: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                <span style="color: #764ba2; font-weight: 600;">📈 PER・PSR・PBR分析</span>
+            </div>
+            <div style="background: white; padding: 1rem 1.5rem; border-radius: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                <span style="color: #10b981; font-weight: 600;">🎯 投資判断レコメンド</span>
+            </div>
+        </div>
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
