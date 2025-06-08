@@ -10,10 +10,8 @@ st.set_page_config(
     page_title="企業価値分析プロ - 株式分析とDCF法による本質的価値計算",
     page_icon="💹",
     layout="wide",
-    initial_sidebar_state="expanded",
-    menu_items={
-        'About': "# 企業価値分析プロ\n企業の本質的価値を計算し、投資判断をサポートする分析ツールです。",
-    }
+    initial_sidebar_state="collapsed",
+    menu_items=None
 )
 
 # カスタムCSS - Modern Airbnb-style design
@@ -25,6 +23,23 @@ st.markdown("""
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
+    .stApp > header {visibility: hidden;}
+    .stDeployButton {display: none;}
+    .stDecoration {display: none;}
+    
+    /* Hide Streamlit's built-in sidebar toggle and arrows */
+    button[kind="header"] {display: none !important;}
+    .css-1rs6os .css-17eq0hr {display: none !important;}
+    [data-testid="collapsedControl"] {display: none !important;}
+    [data-testid="stSidebarNav"] {display: none !important;}
+    .css-1544g2n {display: none !important;}
+    .css-1d391kg {display: none !important;}
+    .st-emotion-cache-1rs6os {display: none !important;}
+    .st-emotion-cache-17eq0hr {display: none !important;}
+    
+    /* Remove any sidebar control buttons */
+    section[data-testid="stSidebar"] button[aria-label*="Sidebar"] {display: none !important;}
+    section[data-testid="stSidebar"] button[title*="Sidebar"] {display: none !important;}
     
     /* Enhanced Navigation Styles */
     .stSidebar {
