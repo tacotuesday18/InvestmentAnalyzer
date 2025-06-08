@@ -324,6 +324,7 @@ with col2:
     show_revenue_growth = st.checkbox("売上成長率", value=True)
     show_peg = st.checkbox("PEG倍率", value=True)
     show_roe = st.checkbox("ROE (自己資本利益率)", value=True)
+    show_profit_margin = st.checkbox("純利益率", value=True)
 
 with col3:
     st.markdown("**配当・財務指標**")
@@ -370,8 +371,8 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
                     stock_yf = yf.Ticker(ticker)
                     info = stock_yf.info
                     
-                    # Calculate actual revenue growth rate from historical data
-                    actual_revenue_growth = calculate_growth_rate(ticker)
+                    # Calculate actual revenue growth rate using same method as earnings page
+                    actual_revenue_growth = calculate_growth_rate(stock_yf)
                     
                     # Calculate company size (more understandable than raw market cap)
                     market_cap_billion = (auto_data['current_price'] * auto_data['shares_outstanding']) / 1000
@@ -398,6 +399,11 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
                     # ROE (Return on Equity)
                     roe = info.get('returnOnEquity', 0) * 100 if info.get('returnOnEquity') else 0
                     
+                    # Calculate profit margin (same as earnings page)
+                    profit_margin = 0
+                    if auto_data['revenue'] > 0 and auto_data['net_income'] > 0:
+                        profit_margin = (auto_data['net_income'] / auto_data['revenue']) * 100
+                    
                     # Store all metrics including company size
                     result["financial_metrics"] = {
                         "revenue_growth": actual_revenue_growth,
@@ -405,6 +411,7 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
                         "dividend_yield": dividend_yield,
                         "debt_to_equity": debt_to_equity,
                         "roe": roe,
+                        "profit_margin": profit_margin,
                         "company_size": company_size,
                         "market_cap_billion": market_cap_billion
                     }
@@ -466,6 +473,8 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
                             row["負債比率"] = f"{metrics['debt_to_equity']:.2f}" if metrics['debt_to_equity'] > 0 else "N/A"
                         if show_roe:
                             row["ROE"] = f"{metrics['roe']:.1f}%" if metrics['roe'] > 0 else "N/A"
+                        if show_profit_margin:
+                            row["純利益率"] = f"{metrics['profit_margin']:.1f}%" if metrics['profit_margin'] > 0 else "N/A"
                         if show_company_size:
                             row["企業規模"] = metrics['company_size']
                             row["時価総額"] = f"{metrics['market_cap_billion']:.0f}億ドル"
@@ -504,7 +513,8 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
                 <b>PEG</b>: PER÷成長率 (1以下が割安) |
                 <b>配当利回り</b>: 年間配当÷株価×100 |
                 <b>負債比率</b>: 負債÷自己資本 |
-                <b>ROE</b>: 自己資本利益率 (純利益÷自己資本×100)
+                <b>ROE</b>: 自己資本利益率 (純利益÷自己資本×100) |
+                <b>純利益率</b>: 売上に対する純利益の割合
                 </small>
                 </div>
                 """, unsafe_allow_html=True)
@@ -553,8 +563,66 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
                     
                     st.plotly_chart(fig, use_container_width=True)
                 
-
+                # Financial metrics comparison chart
+                st.markdown("<h3>財務指標の比較</h3>", unsafe_allow_html=True)
                 
+                # Prepare financial metrics chart data
+                metrics_chart_data = []
+                
+                for ticker, result in comparison_results.items():
+                    if "financial_metrics" in result:
+                        metrics = result["financial_metrics"]
+                        
+                        if show_revenue_growth:
+                            metrics_chart_data.append({
+                                "ティッカー": ticker,
+                                "指標": "売上成長率 (%)",
+                                "値": metrics['revenue_growth']
+                            })
+                        
+                        if show_profit_margin and metrics['profit_margin'] > 0:
+                            metrics_chart_data.append({
+                                "ティッカー": ticker,
+                                "指標": "純利益率 (%)",
+                                "値": metrics['profit_margin']
+                            })
+                        
+                        if show_roe and metrics['roe'] > 0:
+                            metrics_chart_data.append({
+                                "ティッカー": ticker,
+                                "指標": "ROE (%)",
+                                "値": metrics['roe']
+                            })
+                        
+                        if show_dividend and metrics['dividend_yield'] > 0:
+                            metrics_chart_data.append({
+                                "ティッカー": ticker,
+                                "指標": "配当利回り (%)",
+                                "値": metrics['dividend_yield']
+                            })
+                
+                if metrics_chart_data:
+                    metrics_df = pd.DataFrame(metrics_chart_data)
+                    
+                    # Create grouped bar chart for financial metrics
+                    fig2 = px.bar(
+                        metrics_df,
+                        x="ティッカー",
+                        y="値",
+                        color="指標",
+                        barmode="group",
+                        title="財務指標の比較（%）",
+                        labels={"値": "パーセンテージ (%)"},
+                        height=500
+                    )
+                    
+                    fig2.update_layout(
+                        yaxis_title="パーセンテージ (%)",
+                        xaxis_title="銘柄"
+                    )
+                    
+                    st.plotly_chart(fig2, use_container_width=True)
+
                 st.markdown("</div>", unsafe_allow_html=True)
                 
 
