@@ -319,6 +319,10 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# Initialize session state for page navigation
+if "current_page" not in st.session_state:
+    st.session_state.current_page = "home"
+
 # Enhanced Navigation in Sidebar with Hamburger Menu
 with st.sidebar:
     # Hamburger menu toggle
@@ -340,18 +344,33 @@ with st.sidebar:
     
     # Navigation menu (only show when open)
     if st.session_state.nav_open:
-        st.markdown("""
-        <div style="padding: 15px; margin-bottom: 20px;">
-            <a href="/" target="_self" style="display: block; padding: 15px 20px; margin: 8px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #FFFFFF !important; text-decoration: none; border-radius: 12px; font-weight: 800; text-align: center; transition: all 0.3s ease; font-size: 16px; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); border: 1px solid rgba(255,255,255,0.2);">🏠 ホーム</a>
-            <a href="/企業価値分析" target="_self" style="display: block; padding: 15px 20px; margin: 8px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #FFFFFF !important; text-decoration: none; border-radius: 12px; font-weight: 800; text-align: center; transition: all 0.3s ease; font-size: 16px; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); border: 1px solid rgba(255,255,255,0.2);">💰 企業価値分析</a>
-            <a href="/銘柄比較" target="_self" style="display: block; padding: 15px 20px; margin: 8px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #FFFFFF !important; text-decoration: none; border-radius: 12px; font-weight: 800; text-align: center; transition: all 0.3s ease; font-size: 16px; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); border: 1px solid rgba(255,255,255,0.2);">📈 銘柄比較</a>
-            <a href="/財務諸表" target="_self" style="display: block; padding: 15px 20px; margin: 8px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #FFFFFF !important; text-decoration: none; border-radius: 12px; font-weight: 800; text-align: center; transition: all 0.3s ease; font-size: 16px; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); border: 1px solid rgba(255,255,255,0.2);">📊 財務諸表</a>
-            <a href="/DCF価値計算機" target="_self" style="display: block; padding: 15px 20px; margin: 8px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #FFFFFF !important; text-decoration: none; border-radius: 12px; font-weight: 800; text-align: center; transition: all 0.3s ease; font-size: 16px; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); border: 1px solid rgba(255,255,255,0.2);">🧮 DCF価値計算機</a>
-        </div>
-        """, unsafe_allow_html=True)
+        # Create navigation buttons using Streamlit buttons instead of HTML links
+        st.markdown("---")
+        
+        if st.button("🏠 ホーム", key="nav_home", use_container_width=True):
+            st.session_state.current_page = "home"
+            st.rerun()
+            
+        if st.button("💰 企業価値分析", key="nav_analysis", use_container_width=True):
+            st.session_state.current_page = "analysis"
+            st.rerun()
+            
+        if st.button("📈 銘柄比較", key="nav_compare", use_container_width=True):
+            st.session_state.current_page = "compare"
+            st.rerun()
+            
+        if st.button("📊 財務諸表", key="nav_financial", use_container_width=True):
+            st.session_state.current_page = "financial"
+            st.rerun()
+            
+        if st.button("🧮 DCF価値計算機", key="nav_dcf", use_container_width=True):
+            st.session_state.current_page = "dcf"
+            st.rerun()
 
-# Full-screen Hero section - Based on attached design
-st.markdown("""
+# Page content based on navigation selection
+if st.session_state.current_page == "home":
+    # Full-screen Hero section - Based on attached design
+    st.markdown("""
 <div style="background: linear-gradient(135deg, #e6f3ff 0%, #f0f8ff 100%); padding: 6rem 0; margin: -1rem -6rem 3rem -6rem; min-height: 80vh; display: flex; align-items: center;">
     <div style="max-width: 1400px; margin: 0 auto; padding: 0 2rem; display: flex; align-items: center; gap: 4rem; width: 100%;">
         <div style="flex: 1; max-width: 600px;">
@@ -537,28 +556,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Navigation buttons
-st.markdown("<div style='text-align: center; padding: 2rem;'>", unsafe_allow_html=True)
 
-col1, col2, col3, col4 = st.columns(4)
-
-with col1:
-    if st.button("📊 企業分析", key="nav_analysis", use_container_width=True):
-        st.switch_page("pages/01_企業分析.py")
-
-with col2:
-    if st.button("🔍 銘柄比較", key="nav_compare", use_container_width=True):
-        st.switch_page("pages/02_銘柄比較.py")
-
-with col3:
-    if st.button("🧮 DCF計算機", key="nav_dcf", use_container_width=True):
-        st.switch_page("pages/04_DCF価値計算機.py")
-
-with col4:
-    if st.button("🎯 銘柄スクリーナー", key="nav_screener", use_container_width=True):
-        st.switch_page("pages/03_銘柄スクリーナー.py")
-
-st.markdown("</div>", unsafe_allow_html=True)
 
 # Pricing section with Streamlit columns
 st.markdown("## 💰 料金プラン")
@@ -631,17 +629,49 @@ with col3:
         st.success("企業向け決済ページに移動します...")
         st.info("法人向けプランです。請求書払いにも対応しています。")
 
-# CTA section
-st.markdown("""
-<div class="cta-container">
-    <div class="cta-title">今すぐデータドリブン投資を始めよう</div>
-    <div class="cta-subtitle">感情ではなく数値に基づいた投資判断で、長期的な資産形成を実現</div>
-</div>
-""", unsafe_allow_html=True)
+    # CTA section
+    st.markdown("""
+    <div class="cta-container">
+        <div class="cta-title">今すぐデータドリブン投資を始めよう</div>
+        <div class="cta-subtitle">感情ではなく数値に基づいた投資判断で、長期的な資産形成を実現</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-# Add floating chatbot component
-try:
-    from floating_chatbot import render_floating_chatbot
-    render_floating_chatbot()
-except ImportError:
-    pass
+    # Add floating chatbot component
+    try:
+        from floating_chatbot import render_floating_chatbot
+        render_floating_chatbot()
+    except ImportError:
+        pass
+
+elif st.session_state.current_page == "analysis":
+    # 企業価値分析ページ
+    st.title("💰 企業価値分析")
+    st.markdown("### 企業の本質的価値を分析し、投資判断をサポート")
+    
+    # Execute the analysis page functionality
+    exec(open("pages/01_企業分析.py").read())
+        
+elif st.session_state.current_page == "compare":
+    # 銘柄比較ページ  
+    st.title("📈 銘柄比較")
+    st.markdown("### 複数企業の多角的な価値評価比較")
+    
+    # Execute the compare page functionality
+    exec(open("pages/02_銘柄比較.py").read())
+        
+elif st.session_state.current_page == "financial":
+    # 財務諸表ページ
+    st.title("📊 財務諸表")
+    st.markdown("### 企業の財務状況を詳細に分析")
+    
+    # Execute the financial page functionality
+    exec(open("pages/03_財務諸表.py").read())
+        
+elif st.session_state.current_page == "dcf":
+    # DCF価値計算機ページ
+    st.title("🧮 DCF価値計算機")
+    st.markdown("### 割引キャッシュフロー法による本質的価値計算")
+    
+    # Execute the DCF page functionality
+    exec(open("pages/04_DCF価値計算機.py").read())
