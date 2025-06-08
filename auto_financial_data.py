@@ -3,7 +3,6 @@ import streamlit as st
 from datetime import datetime
 import pandas as pd
 
-@st.cache_data(ttl=300)  # Cache for 5 minutes
 def get_auto_financial_data(ticker):
     """Automatically fetch all financial data for a company"""
     try:

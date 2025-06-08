@@ -4,7 +4,6 @@ import pandas as pd
 from datetime import datetime
 import requests
 
-@st.cache_data(ttl=60)  # Cache for 1 minute
 def fetch_current_stock_price(ticker):
     """Fetch current stock price from Yahoo Finance"""
     try:
@@ -22,7 +21,6 @@ def fetch_current_stock_price(ticker):
     
     return {'success': False}
 
-@st.cache_data(ttl=300)  # Cache for 5 minutes
 def fetch_comprehensive_data(ticker):
     """Fetch comprehensive financial data"""
     try:
