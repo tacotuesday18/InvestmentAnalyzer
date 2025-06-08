@@ -188,6 +188,9 @@ def render_floating_chatbot():
     if "chat_messages" not in st.session_state:
         st.session_state.chat_messages = []
     
+    # Generate unique keys based on current page
+    page_id = st.session_state.get("current_page", "main")
+    
     st.markdown("### 💬 AI金融アシスタント KOJI")
     st.markdown("株式分析とDCF計算に特化したAIアシスタント")
     st.markdown("---")
@@ -201,12 +204,12 @@ def render_floating_chatbot():
             else:
                 st.markdown(f"🤖 **AI:** {message['content'][:100]}...")
         
-        if st.button("チャット履歴をクリア", key="clear_chat"):
+        if st.button("チャット履歴をクリア", key=f"clear_chat_{page_id}"):
             st.session_state.chat_messages = []
             st.rerun()
     
     # Chat input form
-    with st.form("chat_form", clear_on_submit=True):
+    with st.form(f"chat_form_{page_id}", clear_on_submit=True):
         user_input = st.text_area(
             "金融分析について質問してください:", 
             height=80, 

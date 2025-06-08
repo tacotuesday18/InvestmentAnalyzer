@@ -43,8 +43,55 @@ st.markdown("""
     
     /* Enhanced Navigation Styles */
     .stSidebar {
-        background-color: #f8f9fa;
-        border-right: 2px solid #e9ecef;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-right: none;
+        box-shadow: 4px 0 20px rgba(102, 126, 234, 0.15);
+    }
+    
+    /* Sidebar content styling */
+    .stSidebar .stMarkdown, .stSidebar .stButton, .stSidebar .stForm {
+        color: white !important;
+    }
+    
+    .stSidebar .stMarkdown h1, .stSidebar .stMarkdown h2, .stSidebar .stMarkdown h3, .stSidebar .stMarkdown p {
+        color: white !important;
+    }
+    
+    .stSidebar .stButton > button {
+        background: rgba(255, 255, 255, 0.1) !important;
+        color: white !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 10px !important;
+        font-weight: 500 !important;
+        transition: all 0.3s ease !important;
+        width: 100% !important;
+    }
+    
+    .stSidebar .stButton > button:hover {
+        background: rgba(255, 255, 255, 0.2) !important;
+        border-color: rgba(255, 255, 255, 0.4) !important;
+        transform: translateY(-2px) !important;
+    }
+    
+    /* Form elements in sidebar */
+    .stSidebar .stTextArea textarea, .stSidebar .stTextInput input {
+        background: rgba(255, 255, 255, 0.1) !important;
+        color: white !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 8px !important;
+    }
+    
+    .stSidebar .stTextArea textarea::placeholder, .stSidebar .stTextInput input::placeholder {
+        color: rgba(255, 255, 255, 0.7) !important;
+    }
+    
+    /* Sidebar positioning */
+    section[data-testid="stSidebar"] {
+        position: fixed !important;
+        left: 0 !important;
+        top: 0 !important;
+        height: 100vh !important;
+        z-index: 1000 !important;
     }
     
     .stSidebar .stSelectbox > div > div {
