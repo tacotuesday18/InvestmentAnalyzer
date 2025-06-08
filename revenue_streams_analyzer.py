@@ -61,6 +61,18 @@ def get_company_revenue_streams(ticker):
                     'Other Bets': {'percentage': 3, 'description': 'Waymo、Verily等新事業', 'growth_trend': 'experimental'}
                 }
             },
+            'GOOG': {
+                'company_name': 'Alphabet Inc.',
+                'sector': 'Technology',
+                'streams': {
+                    'Google Search': {'percentage': 58, 'description': '検索広告収益', 'growth_trend': 'stable'},
+                    'YouTube': {'percentage': 12, 'description': '動画プラットフォーム広告', 'growth_trend': 'growing'},
+                    'Google Cloud': {'percentage': 11, 'description': 'クラウドサービス', 'growth_trend': 'growing'},
+                    'Google Network': {'percentage': 10, 'description': 'パートナーサイト広告', 'growth_trend': 'stable'},
+                    'Other Google Services': {'percentage': 6, 'description': 'Play Store、Hardware等', 'growth_trend': 'stable'},
+                    'Other Bets': {'percentage': 3, 'description': 'Waymo、Verily等新事業', 'growth_trend': 'experimental'}
+                }
+            },
             'META': {
                 'company_name': 'Meta Platforms Inc.',
                 'sector': 'Technology',
@@ -84,6 +96,28 @@ def get_company_revenue_streams(ticker):
                     'Software & Services': {'percentage': 4, 'description': 'FSD・保険・サービス', 'growth_trend': 'growing'}
                 }
             },
+            'NVDA': {
+                'company_name': 'NVIDIA Corporation',
+                'sector': 'Technology',
+                'streams': {
+                    'Data Center': {'percentage': 78, 'description': 'AI・機械学習向けGPU', 'growth_trend': 'growing'},
+                    'Gaming': {'percentage': 12, 'description': 'ゲーミングGPU', 'growth_trend': 'stable'},
+                    'Professional Visualization': {'percentage': 4, 'description': 'ワークステーション向けGPU', 'growth_trend': 'stable'},
+                    'Automotive': {'percentage': 3, 'description': '自動運転・車載システム', 'growth_trend': 'growing'},
+                    'OEM & Other': {'percentage': 3, 'description': 'その他OEM・IP収益', 'growth_trend': 'stable'}
+                }
+            },
+            'NFLX': {
+                'company_name': 'Netflix Inc.',
+                'sector': 'Communication Services',
+                'streams': {
+                    'Streaming Subscriptions': {'percentage': 85, 'description': '月額サブスクリプション収益', 'growth_trend': 'stable'},
+                    'Advertising': {'percentage': 8, 'description': '広告収入（広告付きプラン）', 'growth_trend': 'growing'},
+                    'Content Licensing': {'percentage': 4, 'description': 'コンテンツライセンス', 'growth_trend': 'stable'},
+                    'Gaming': {'percentage': 2, 'description': 'モバイルゲーム', 'growth_trend': 'experimental'},
+                    'Merchandise': {'percentage': 1, 'description': '関連商品・グッズ', 'growth_trend': 'stable'}
+                }
+            },
             'JPM': {
                 'company_name': 'JPMorgan Chase & Co.',
                 'sector': 'Financials',
@@ -95,13 +129,22 @@ def get_company_revenue_streams(ticker):
                     'Trading & Securities': {'percentage': 4, 'description': 'トレーディング収益', 'growth_trend': 'volatile'}
                 }
             },
+            'BAC': {
+                'company_name': 'Bank of America Corp.',
+                'sector': 'Financials',
+                'streams': {
+                    'Consumer Banking': {'percentage': 48, 'description': '個人向け銀行サービス', 'growth_trend': 'stable'},
+                    'Global Wealth Management': {'percentage': 22, 'description': '富裕層向け資産運用', 'growth_trend': 'growing'},
+                    'Global Banking': {'percentage': 18, 'description': '法人・投資銀行業務', 'growth_trend': 'stable'},
+                    'Global Markets': {'percentage': 12, 'description': 'トレーディング・証券業務', 'growth_trend': 'volatile'}
+                }
+            },
             'JNJ': {
                 'company_name': 'Johnson & Johnson',
                 'sector': 'Healthcare',
                 'streams': {
-                    'Pharmaceuticals': {'percentage': 55, 'description': '医薬品事業', 'growth_trend': 'growing'},
-                    'Medical Devices': {'percentage': 32, 'description': '医療機器事業', 'growth_trend': 'stable'},
-                    'Consumer Health': {'percentage': 13, 'description': '一般消費者向け健康製品', 'growth_trend': 'stable'}
+                    'Pharmaceuticals': {'percentage': 77, 'description': '処方薬事業', 'growth_trend': 'growing'},
+                    'Medical Devices': {'percentage': 23, 'description': '医療機器・診断機器', 'growth_trend': 'stable'}
                 }
             },
             'PFE': {
@@ -115,6 +158,16 @@ def get_company_revenue_streams(ticker):
                     'Consumer Healthcare': {'percentage': 5, 'description': '一般用医薬品', 'growth_trend': 'stable'}
                 }
             },
+            'UNH': {
+                'company_name': 'UnitedHealth Group Inc.',
+                'sector': 'Healthcare',
+                'streams': {
+                    'UnitedHealthcare': {'percentage': 82, 'description': '医療保険事業', 'growth_trend': 'stable'},
+                    'Optum Health': {'percentage': 10, 'description': '医療サービス・ケア提供', 'growth_trend': 'growing'},
+                    'Optum Insight': {'percentage': 4, 'description': '医療データ・IT事業', 'growth_trend': 'growing'},
+                    'Optum Rx': {'percentage': 4, 'description': '薬局給付管理', 'growth_trend': 'stable'}
+                }
+            },
             'DIS': {
                 'company_name': 'The Walt Disney Company',
                 'sector': 'Communication Services',
@@ -125,6 +178,65 @@ def get_company_revenue_streams(ticker):
                     'Content Licensing': {'percentage': 12, 'description': 'コンテンツライセンス', 'growth_trend': 'stable'},
                     'Consumer Products': {'percentage': 8, 'description': 'キャラクター商品・玩具', 'growth_trend': 'stable'},
                     'Theatrical Releases': {'percentage': 2, 'description': '映画興行収入', 'growth_trend': 'volatile'}
+                }
+            },
+            'V': {
+                'company_name': 'Visa Inc.',
+                'sector': 'Financials',
+                'streams': {
+                    'Payment Volume': {'percentage': 68, 'description': '決済処理手数料', 'growth_trend': 'growing'},
+                    'Cross-border Volume': {'percentage': 18, 'description': '国際決済手数料', 'growth_trend': 'growing'},
+                    'Processed Transactions': {'percentage': 10, 'description': '取引処理手数料', 'growth_trend': 'growing'},
+                    'Other Revenues': {'percentage': 4, 'description': 'その他金融サービス', 'growth_trend': 'stable'}
+                }
+            },
+            'MA': {
+                'company_name': 'Mastercard Inc.',
+                'sector': 'Financials',
+                'streams': {
+                    'Domestic Assessments': {'percentage': 42, 'description': '国内決済手数料', 'growth_trend': 'growing'},
+                    'Cross-border Volume': {'percentage': 24, 'description': '国際決済手数料', 'growth_trend': 'growing'},
+                    'Transaction Processing': {'percentage': 18, 'description': '取引処理手数料', 'growth_trend': 'growing'},
+                    'Value-added Services': {'percentage': 16, 'description': '付加価値サービス', 'growth_trend': 'growing'}
+                }
+            },
+            'WMT': {
+                'company_name': 'Walmart Inc.',
+                'sector': 'Consumer Staples',
+                'streams': {
+                    'Walmart U.S.': {'percentage': 67, 'description': '米国小売事業', 'growth_trend': 'stable'},
+                    'Walmart International': {'percentage': 22, 'description': '国際小売事業', 'growth_trend': 'stable'},
+                    'Sam\'s Club': {'percentage': 11, 'description': '会員制倉庫型店舗', 'growth_trend': 'growing'}
+                }
+            },
+            'HD': {
+                'company_name': 'The Home Depot Inc.',
+                'sector': 'Consumer Discretionary',
+                'streams': {
+                    'U.S. Retail': {'percentage': 85, 'description': '米国ホームセンター事業', 'growth_trend': 'stable'},
+                    'Pro Services': {'percentage': 8, 'description': 'プロ向けサービス', 'growth_trend': 'growing'},
+                    'International': {'percentage': 4, 'description': '国際事業', 'growth_trend': 'stable'},
+                    'Online & Digital': {'percentage': 3, 'description': 'オンライン・デジタル', 'growth_trend': 'growing'}
+                }
+            },
+            'CVX': {
+                'company_name': 'Chevron Corporation',
+                'sector': 'Energy',
+                'streams': {
+                    'Upstream': {'percentage': 68, 'description': '石油・ガス探査・生産', 'growth_trend': 'stable'},
+                    'Downstream': {'percentage': 25, 'description': '精製・販売', 'growth_trend': 'stable'},
+                    'Chemical': {'percentage': 4, 'description': '化学製品', 'growth_trend': 'stable'},
+                    'Renewable Energy': {'percentage': 3, 'description': '再生可能エネルギー', 'growth_trend': 'growing'}
+                }
+            },
+            'XOM': {
+                'company_name': 'Exxon Mobil Corporation',
+                'sector': 'Energy',
+                'streams': {
+                    'Upstream': {'percentage': 75, 'description': '石油・ガス探査・生産', 'growth_trend': 'stable'},
+                    'Downstream': {'percentage': 18, 'description': '精製・販売', 'growth_trend': 'stable'},
+                    'Chemical': {'percentage': 5, 'description': '石油化学製品', 'growth_trend': 'stable'},
+                    'Low Carbon Solutions': {'percentage': 2, 'description': '低炭素ソリューション', 'growth_trend': 'experimental'}
                 }
             }
         }
