@@ -231,12 +231,49 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Modern homepage content with customer acquisition focus
+# Hero section - TravelPerk style for Kabu2Easy
 st.markdown("""
-<div class="hero-container">
-    <div class="hero-title">株式投資で失敗していませんか？</div>
-    <div class="hero-subtitle">感情に左右されず、データに基づいた投資判断を</div>
-    <div class="hero-cta">プロレベルの企業価値分析を今すぐ開始</div>
+<div style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); padding: 4rem 2rem; margin: -1rem -1rem 2rem -1rem;">
+    <div style="max-width: 1200px; margin: 0 auto; display: flex; align-items: center; gap: 3rem;">
+        <div style="flex: 1;">
+            <div style="font-size: 3.5rem; font-weight: 700; color: #1a202c; line-height: 1.1; margin-bottom: 1.5rem;">
+                株式投資を<br>
+                <span style="color: #667eea;">もっと簡単に</span><br>
+                <span style="color: #764ba2;">もっとスマートに</span>
+            </div>
+            <div style="font-size: 1.25rem; color: #4a5568; margin-bottom: 2rem; line-height: 1.6;">
+                Kabu2Easyは企業の本質的価値を瞬時に分析し、データに基づいた投資判断をサポートします。
+            </div>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <button style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 16px 32px; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
+                    無料で始める →
+                </button>
+                <button style="background: transparent; color: #4a5568; border: 2px solid #e2e8f0; padding: 14px 28px; border-radius: 8px; font-size: 1rem; font-weight: 500; cursor: pointer;">
+                    デモを見る
+                </button>
+            </div>
+            <div style="margin-top: 2rem; display: flex; align-items: center; gap: 1rem;">
+                <div style="display: flex; align-items: center;">
+                    <span style="color: #f59e0b; font-size: 1.2rem;">★★★★★</span>
+                    <span style="margin-left: 0.5rem; color: #4a5568; font-weight: 600;">4.8</span>
+                    <span style="margin-left: 0.5rem; color: #6b7280;">| 1,500+ レビュー</span>
+                </div>
+            </div>
+        </div>
+        <div style="flex: 1; text-align: center;">
+            <div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 20px 60px rgba(0,0,0,0.1); transform: rotate(5deg);">
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1rem; border-radius: 10px; margin-bottom: 1rem;">
+                    <div style="font-size: 1.5rem; font-weight: bold;">AAPL分析結果</div>
+                </div>
+                <div style="text-align: left; color: #4a5568;">
+                    <div style="margin: 0.5rem 0;"><strong>現在株価:</strong> $175.25</div>
+                    <div style="margin: 0.5rem 0;"><strong>目標株価:</strong> $195.80</div>
+                    <div style="margin: 0.5rem 0; color: #10b981; font-weight: bold;">上昇余地: +11.7%</div>
+                    <div style="margin: 0.5rem 0; background: #10b981; color: white; padding: 0.5rem; border-radius: 5px; text-align: center; font-weight: bold;">買い推奨</div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -404,64 +441,64 @@ with col4:
 
 st.markdown("</div>", unsafe_allow_html=True)
 
-# Pricing section
-st.markdown("""
-<div style="background-color: #f8f9fa; padding: 3rem 2rem; margin: 2rem 0;">
-    <h2 style="text-align: center; margin-bottom: 2rem; color: #222;">💰 料金プラン</h2>
-    <div style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;">
-        
-        <!-- Free Plan -->
-        <div style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 300px; text-align: center;">
-            <h3 style="color: #28a745; margin-bottom: 1rem;">無料プラン</h3>
-            <div style="font-size: 2rem; font-weight: bold; color: #28a745; margin-bottom: 1rem;">¥0<span style="font-size: 1rem;">/月</span></div>
-            <ul style="text-align: left; color: #666; line-height: 1.8;">
-                <li>基本的な企業分析（月3回まで）</li>
-                <li>リアルタイム株価表示</li>
-                <li>PER・PBR・PSR比較</li>
-                <li>財務諸表閲覧</li>
-            </ul>
-            <div style="margin-top: 1.5rem;">
-                <button style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer;">今すぐ開始</button>
-            </div>
-        </div>
-        
-        <!-- Pro Plan -->
-        <div style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 8px 16px rgba(0,0,0,0.15); max-width: 300px; text-align: center; border: 3px solid #007bff;">
-            <div style="background: #007bff; color: white; padding: 0.5rem; margin: -2rem -2rem 1rem -2rem; border-radius: 10px 10px 0 0;">人気No.1</div>
-            <h3 style="color: #007bff; margin-bottom: 1rem;">プロプラン</h3>
-            <div style="font-size: 2rem; font-weight: bold; color: #007bff; margin-bottom: 1rem;">¥2,980<span style="font-size: 1rem;">/月</span></div>
-            <ul style="text-align: left; color: #666; line-height: 1.8;">
-                <li>無制限の企業分析</li>
-                <li>DCF価値計算機</li>
-                <li>決算説明会ハイライト</li>
-                <li>銘柄比較（最大8社）</li>
-                <li>AIチャットボット</li>
-                <li>感度分析</li>
-            </ul>
-            <div style="margin-top: 1.5rem;">
-                <button style="background: #007bff; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer;">7日間無料体験</button>
-            </div>
-        </div>
-        
-        <!-- Premium Plan -->
-        <div style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 300px; text-align: center;">
-            <h3 style="color: #6f42c1; margin-bottom: 1rem;">プレミアムプラン</h3>
-            <div style="font-size: 2rem; font-weight: bold; color: #6f42c1; margin-bottom: 1rem;">¥9,800<span style="font-size: 1rem;">/月</span></div>
-            <ul style="text-align: left; color: #666; line-height: 1.8;">
-                <li>プロプランの全機能</li>
-                <li>カスタム分析レポート</li>
-                <li>アラート機能</li>
-                <li>API連携</li>
-                <li>優先サポート</li>
-                <li>機関投資家レベル分析</li>
-            </ul>
-            <div style="margin-top: 1.5rem;">
-                <button style="background: #6f42c1; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer;">お問い合わせ</button>
-            </div>
-        </div>
+# Pricing section with Streamlit columns
+st.markdown("## 💰 料金プラン")
+st.markdown("全プランで基本機能を体験可能。プレミアム機能で投資効率を最大化")
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.markdown("""
+    <div style="background: white; padding: 2rem; border-radius: 15px; border: 2px solid #e2e8f0; text-align: center; height: 100%;">
+        <h3 style="color: #10b981; margin-bottom: 1rem;">🆓 無料プラン</h3>
+        <div style="font-size: 2.5rem; font-weight: bold; color: #10b981; margin-bottom: 1rem;">¥0<span style="font-size: 1rem; color: #6b7280;">/月</span></div>
+        <div style="color: #6b7280; margin-bottom: 2rem;">まずは試してみたい方に</div>
+        <ul style="text-align: left; color: #4a5568; line-height: 2; list-style: none; padding: 0;">
+            <li>✓ 企業分析（月3回まで）</li>
+            <li>✓ リアルタイム株価表示</li>
+            <li>✓ 基本的なPER・PBR比較</li>
+            <li>✓ 財務諸表閲覧</li>
+            <li>✓ コミュニティサポート</li>
+        </ul>
     </div>
-</div>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
+
+with col2:
+    st.markdown("""
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 2rem; border-radius: 15px; text-align: center; color: white; position: relative; height: 100%;">
+        <div style="background: #fbbf24; color: #1f2937; padding: 0.5rem 1rem; border-radius: 20px; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); font-weight: bold; font-size: 0.9rem;">人気No.1</div>
+        <h3 style="margin-bottom: 1rem; margin-top: 1rem;">🚀 プロプラン</h3>
+        <div style="font-size: 2.5rem; font-weight: bold; margin-bottom: 1rem;">¥2,980<span style="font-size: 1rem; opacity: 0.8;">/月</span></div>
+        <div style="opacity: 0.9; margin-bottom: 2rem;">本格的な投資分析に</div>
+        <ul style="text-align: left; line-height: 2; list-style: none; padding: 0;">
+            <li>✓ 無制限の企業分析</li>
+            <li>✓ DCF価値計算機</li>
+            <li>✓ 決算説明会ハイライト</li>
+            <li>✓ 銘柄比較（最大8社）</li>
+            <li>✓ AIチャットボット</li>
+            <li>✓ 感度分析</li>
+            <li>✓ アラート機能</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col3:
+    st.markdown("""
+    <div style="background: white; padding: 2rem; border-radius: 15px; border: 2px solid #8b5cf6; text-align: center; height: 100%;">
+        <h3 style="color: #8b5cf6; margin-bottom: 1rem;">💎 プレミアムプラン</h3>
+        <div style="font-size: 2.5rem; font-weight: bold; color: #8b5cf6; margin-bottom: 1rem;">¥9,800<span style="font-size: 1rem; color: #6b7280;">/月</span></div>
+        <div style="color: #6b7280; margin-bottom: 2rem;">機関投資家レベルの分析</div>
+        <ul style="text-align: left; color: #4a5568; line-height: 2; list-style: none; padding: 0;">
+            <li>✓ プロプランの全機能</li>
+            <li>✓ カスタム分析レポート</li>
+            <li>✓ リアルタイムアラート</li>
+            <li>✓ API連携</li>
+            <li>✓ 優先サポート</li>
+            <li>✓ ポートフォリオ分析</li>
+            <li>✓ 機関投資家ツール</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
 
 # CTA section
 st.markdown("""

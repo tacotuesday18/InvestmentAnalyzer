@@ -441,6 +441,26 @@ if selected_ticker:
             # 平均株価（3つの方法の平均）
             avg_multiple_price = (per_share_price + psr_share_price + pbr_share_price) / 3
             
+            # 各手法の上昇余地を計算
+            per_upside = ((per_share_price - current_stock_price) / current_stock_price) * 100
+            psr_upside = ((psr_share_price - current_stock_price) / current_stock_price) * 100
+            pbr_upside = ((pbr_share_price - current_stock_price) / current_stock_price) * 100
+            avg_upside = ((avg_multiple_price - current_stock_price) / current_stock_price) * 100
+            
+            # 投資判断の決定
+            if avg_upside > 20:
+                recommendation = "強い買い"
+                rec_color = "#28a745"
+            elif avg_upside > 10:
+                recommendation = "買い"
+                rec_color = "#6f42c1"
+            elif avg_upside > -10:
+                recommendation = "ホールド"
+                rec_color = "#ffc107"
+            else:
+                recommendation = "売り"
+                rec_color = "#dc3545"
+            
             # 現在価値への割引（予測期間分の割引率を適用）
             discounted_multiple_price = avg_multiple_price / ((1 + discount_rate/100) ** forecast_years)
             
@@ -491,7 +511,30 @@ if selected_ticker:
                 <div class='result-card'>
                     <p class='result-value'>${pbr_share_price:.2f}</p>
                     <p class='result-label'>{forecast_years}年後の株価（PBR）</p>
-                    <p class='result-note'>業界平均PBR: {industry_pbr}倍</p>
+                    <p class='result-note'>PBR倍率: {auto_data['pb_ratio']:.1f}倍</p>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            # 平均値と投資判断の表示
+            st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown(f"""
+                <div class='result-card' style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;'>
+                    <p class='result-value'>${avg_multiple_price:.2f}</p>
+                    <p class='result-label'>平均目標株価</p>
+                    <p class='result-note'>PER・PSR・PBRの平均</p>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with col2:
+                st.markdown(f"""
+                <div class='result-card' style='background: {rec_color}; color: white;'>
+                    <p class='result-value'>{avg_upside:+.1f}%</p>
+                    <p class='result-label'>投資判断</p>
+                    <p class='result-note'>{recommendation}</p>
                 </div>
                 """, unsafe_allow_html=True)
                 

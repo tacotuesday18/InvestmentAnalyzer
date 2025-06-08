@@ -332,9 +332,10 @@ if selected_ticker:
                         earnings_summary = financial_chatbot(earnings_query)
                         
                         if earnings_summary and "API key" not in earnings_summary:
+                            formatted_summary = earnings_summary.replace('\n', '<br>')
                             st.markdown(f"""
                             <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin: 10px 0;">
-                            {earnings_summary.replace('\\n', '<br>')}
+                            {formatted_summary}
                             </div>
                             """, unsafe_allow_html=True)
                         else:
