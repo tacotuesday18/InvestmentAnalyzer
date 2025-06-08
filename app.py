@@ -40,6 +40,49 @@ st.markdown("""
         font-size: 16px;
     }
     
+    /* Hide default Streamlit navigation completely */
+    .stSidebar .stRadio > div {
+        display: none !important;
+    }
+    
+    .stSidebar .stSelectbox {
+        display: none !important;
+    }
+    
+    .stSidebar [data-testid="stSidebarNav"] {
+        display: none !important;
+    }
+    
+    .stSidebar .css-1d391kg {
+        display: none !important;
+    }
+    
+    .stSidebar .css-1lcbmhc {
+        display: none !important;
+    }
+    
+    /* Hide page navigation completely */
+    section[data-testid="stSidebarNav"] {
+        display: none !important;
+    }
+    
+    /* Hide all default navigation elements */
+    .stSidebar > div > div:first-child {
+        display: none !important;
+    }
+    
+    [data-testid="stSidebarNav"] ul {
+        display: none !important;
+    }
+    
+    [data-testid="stSidebarNav"] li {
+        display: none !important;
+    }
+    
+    .stSidebar .element-container:has([data-testid="stSidebarNav"]) {
+        display: none !important;
+    }
+    
     .nav-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
@@ -268,11 +311,11 @@ with st.sidebar:
     
     st.markdown("""
     <div style="padding: 15px; margin-bottom: 20px;">
-        <a href="/" target="_self" style="display: block; padding: 12px 15px; margin: 5px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white !important; text-decoration: none; border-radius: 8px; font-weight: 600; text-align: center; transition: all 0.3s ease;">🏠 ホーム</a>
-        <a href="/企業価値分析" target="_self" style="display: block; padding: 12px 15px; margin: 5px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white !important; text-decoration: none; border-radius: 8px; font-weight: 600; text-align: center; transition: all 0.3s ease;">💰 企業価値分析</a>
-        <a href="/銘柄比較" target="_self" style="display: block; padding: 12px 15px; margin: 5px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white !important; text-decoration: none; border-radius: 8px; font-weight: 600; text-align: center; transition: all 0.3s ease;">📈 銘柄比較</a>
-        <a href="/財務諸表" target="_self" style="display: block; padding: 12px 15px; margin: 5px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white !important; text-decoration: none; border-radius: 8px; font-weight: 600; text-align: center; transition: all 0.3s ease;">📊 財務諸表</a>
-        <a href="/DCF価値計算機" target="_self" style="display: block; padding: 12px 15px; margin: 5px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white !important; text-decoration: none; border-radius: 8px; font-weight: 600; text-align: center; transition: all 0.3s ease;">🧮 DCF価値計算機</a>
+        <a href="/" target="_self" style="display: block; padding: 15px 20px; margin: 8px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white !important; text-decoration: none; border-radius: 12px; font-weight: 700; text-align: center; transition: all 0.3s ease; font-size: 16px; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);">🏠 ホーム</a>
+        <a href="/企業価値分析" target="_self" style="display: block; padding: 15px 20px; margin: 8px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white !important; text-decoration: none; border-radius: 12px; font-weight: 700; text-align: center; transition: all 0.3s ease; font-size: 16px; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);">💰 企業価値分析</a>
+        <a href="/銘柄比較" target="_self" style="display: block; padding: 15px 20px; margin: 8px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white !important; text-decoration: none; border-radius: 12px; font-weight: 700; text-align: center; transition: all 0.3s ease; font-size: 16px; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);">📈 銘柄比較</a>
+        <a href="/財務諸表" target="_self" style="display: block; padding: 15px 20px; margin: 8px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white !important; text-decoration: none; border-radius: 12px; font-weight: 700; text-align: center; transition: all 0.3s ease; font-size: 16px; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);">📊 財務諸表</a>
+        <a href="/DCF価値計算機" target="_self" style="display: block; padding: 15px 20px; margin: 8px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white !important; text-decoration: none; border-radius: 12px; font-weight: 700; text-align: center; transition: all 0.3s ease; font-size: 16px; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);">🧮 DCF価値計算機</a>
     </div>
     """, unsafe_allow_html=True)
 
