@@ -88,14 +88,14 @@ def get_auto_financial_data(ticker):
         return get_enhanced_estimates(ticker)
 
 def calculate_growth_rate(stock):
-    """Calculate historical revenue growth rate using proper formula"""
+    """Calculate historical revenue growth rate using most recent 2-3 years only"""
     try:
         financials = stock.financials
         if financials.empty or len(financials.columns) < 2:
             return 5.0
         
         revenues = []
-        for col in financials.columns:  # Get all available years
+        for col in financials.columns[:3]:  # Only use most recent 3 years max
             if 'Total Revenue' in financials.index:
                 rev = financials.loc['Total Revenue'][col]
                 if pd.notna(rev) and rev > 0:
@@ -106,24 +106,25 @@ def calculate_growth_rate(stock):
                     revenues.append(float(rev))
         
         if len(revenues) >= 2:
-            # Sort revenues by year (most recent first in yfinance)
-            revenues = revenues[:4]  # Use up to 4 years of data
-            
-            # Calculate year-over-year growth rates
+            # Calculate recent growth rates (prioritize most recent)
             growth_rates = []
-            for i in range(len(revenues) - 1):
-                current_revenue = revenues[i]      # More recent
-                previous_revenue = revenues[i + 1] # Earlier year
-                
-                # Formula: (Current Period Revenue - Previous Period Revenue) / Previous Period Revenue * 100
-                growth_rate = ((current_revenue - previous_revenue) / previous_revenue) * 100
-                growth_rates.append(growth_rate)
             
-            if growth_rates:
-                # Return average growth rate, with more realistic bounds
-                avg_growth = sum(growth_rates) / len(growth_rates)
-                # Cap realistic growth rates for public companies
-                return max(-30, min(50, avg_growth))
+            # Most recent year-over-year growth (highest weight)
+            if len(revenues) >= 2:
+                recent_growth = ((revenues[0] - revenues[1]) / revenues[1]) * 100
+                growth_rates.append(recent_growth)
+                
+                # If we have 3 years, add the second-most recent growth (lower weight)
+                if len(revenues) >= 3:
+                    second_growth = ((revenues[1] - revenues[2]) / revenues[2]) * 100
+                    growth_rates.append(second_growth)
+                    
+                    # Weighted average: 70% recent, 30% second-most recent
+                    weighted_growth = (recent_growth * 0.7) + (second_growth * 0.3)
+                    return max(-50, min(100, weighted_growth))
+                else:
+                    # Only 2 years available, use recent growth
+                    return max(-50, min(100, recent_growth))
         
         return 5.0
         
@@ -140,7 +141,7 @@ def get_enhanced_estimates(ticker):
             'sector': 'Technology',
             'revenue': 391035,  # 2024 actual
             'net_income': 93736,  # 2024 actual
-            'historical_growth': 2.3,  # Corrected actual growth rate
+            'historical_growth': 0.6,  # Recent weighted growth rate
             'profit_margin': 24.0,
             'pe_ratio': 28.5,
             'pb_ratio': 6.2,
@@ -153,7 +154,7 @@ def get_enhanced_estimates(ticker):
             'sector': 'Technology',
             'revenue': 245122,  # 2024 actual
             'net_income': 88136,  # 2024 actual
-            'historical_growth': 13.5,  # Corrected actual growth rate
+            'historical_growth': 13.0,  # Recent weighted growth rate
             'profit_margin': 36.0,
             'pe_ratio': 32.8,
             'pb_ratio': 11.1,
@@ -166,7 +167,7 @@ def get_enhanced_estimates(ticker):
             'sector': 'Communication Services',
             'revenue': 350018,  # 2024 actual
             'net_income': 73795,  # 2024 actual
-            'historical_growth': 10.8,  # Corrected actual growth rate
+            'historical_growth': 12.3,  # Recent weighted growth rate
             'profit_margin': 21.1,
             'pe_ratio': 25.2,
             'pb_ratio': 5.1,
@@ -179,7 +180,7 @@ def get_enhanced_estimates(ticker):
             'sector': 'Technology',
             'revenue': 130497,  # 2024 actual
             'net_income': 60054,  # 2024 actual
-            'historical_growth': 80.1,  # Corrected actual growth rate - exceptional AI boom growth
+            'historical_growth': 100.0,  # Capped at 100% - exceptional AI boom growth
             'profit_margin': 46.0,
             'pe_ratio': 65.8,
             'pb_ratio': 38.9,
@@ -192,7 +193,7 @@ def get_enhanced_estimates(ticker):
             'sector': 'Consumer Cyclical',
             'revenue': 97690,  # 2024 actual
             'net_income': 15000,  # 2024 estimate
-            'historical_growth': 23.7,  # Corrected actual growth rate
+            'historical_growth': 6.3,  # Weighted: (0.9% * 0.7) + (18.8% * 0.3) = 6.3%
             'profit_margin': 15.4,
             'pe_ratio': 95.2,
             'pb_ratio': 14.8,
@@ -218,7 +219,7 @@ def get_enhanced_estimates(ticker):
             'sector': 'Consumer Cyclical',
             'revenue': 637959,  # 2024 actual
             'net_income': 30425,  # 2024 actual
-            'historical_growth': 10.7,  # Corrected actual growth rate
+            'historical_growth': 11.2,  # Recent weighted growth rate
             'profit_margin': 4.8,
             'pe_ratio': 52.4,
             'pb_ratio': 8.1,
