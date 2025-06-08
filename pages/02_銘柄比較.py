@@ -224,20 +224,22 @@ display_market_status()
 # 入力フォームエリア
 st.markdown("""
 <div class="analysis-card">
-    <div class="card-header">比較する銘柄を選択</div>
+    <div class="card-header">📊 企業選択・比較</div>
 </div>
 """, unsafe_allow_html=True)
 
 # 利用可能なティッカーシンボル（数百銘柄）
 available_tickers = get_all_tickers()
 
-# Enhanced stock selection with unified search
-st.markdown("### 📊 企業選択・比較")
-
-col1, col2, col3 = st.columns([2, 1, 1])
+# Unified search and selection interface
+col1, col2, col3 = st.columns([3, 1, 1])
 
 with col1:
-    search_query = st.text_input("企業名またはティッカーで検索", placeholder="企業名またはティッカーシンボルを入力 (例: Apple, Microsoft, AAPL)")
+    search_query = st.text_input(
+        "企業名またはティッカーで検索", 
+        placeholder="企業名またはティッカーシンボルを入力 (例: Apple, Microsoft, AAPL, MSFT)", 
+        help="企業名の一部またはティッカーシンボルで検索できます"
+    )
 
 with col2:
     categories = ["All"] + get_all_categories()
@@ -277,17 +279,15 @@ for ticker in available_tickers:
 
 st.info(f"選択可能銘柄数: {len(available_tickers)} | 主要指数の銘柄を網羅")
 
-# 銘柄選択（最大8つまで）
-st.markdown("<div class='mobile-card'>", unsafe_allow_html=True)
-st.markdown("<h3>比較銘柄選択</h3>", unsafe_allow_html=True)
-
+# 統合された銘柄選択（最大8つまで）
+st.markdown("**比較銘柄選択**")
 selected_tickers = st.multiselect(
     "比較する銘柄を選択してください（最大8つ）",
     options=list(ticker_options.keys()),
     format_func=lambda x: ticker_options[x],
-    default=list(ticker_options.keys())[:2] if len(ticker_options) >= 2 else []
+    default=list(ticker_options.keys())[:2] if len(ticker_options) >= 2 else [],
+    help="複数の銘柄を選択して財務指標を比較できます"
 )
-st.markdown("</div>", unsafe_allow_html=True)
 
 # Continue with selected tickers for analysis
 
