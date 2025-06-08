@@ -17,7 +17,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from stock_data import get_stock_data, get_available_tickers, compare_valuations, get_industry_average
 from stock_data import update_stock_price, fetch_tradingview_price, refresh_stock_prices
 from stock_data import load_sample_data, ensure_sample_data_dir, SAMPLE_DATA_DIR
-from stock_universe import get_all_available_stocks, get_stocks_by_category, get_stock_categories, search_stocks, get_popular_stocks
+from comprehensive_stock_data import search_stocks_by_name, get_all_tickers, get_stock_info, get_stocks_by_category, get_all_categories
 from real_time_fetcher import fetch_current_stock_price, fetch_comprehensive_data, show_live_price_indicator, display_market_status
 from auto_financial_data import get_auto_financial_data, calculate_growth_rate
 
@@ -433,7 +433,8 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
                         }
                     
                     if "ps_ratio" in valuation_methods and auto_data['revenue'] > 0:
-                        current_ps = market_cap / auto_data['revenue']
+                        market_cap_million = auto_data['current_price'] * auto_data['shares_outstanding']
+                        current_ps = market_cap_million / auto_data['revenue']
                         result["valuation_methods"]["ps_ratio"] = {
                             "current_multiple": current_ps
                         }

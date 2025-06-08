@@ -19,7 +19,7 @@ from real_time_fetcher import fetch_current_stock_price, fetch_comprehensive_dat
 
 # stock_dataモジュールをインポート
 from stock_data import get_stock_data, get_available_tickers
-from stock_universe import get_all_available_stocks, get_stocks_by_category, get_stock_categories, search_stocks, get_popular_stocks
+from comprehensive_stock_data import search_stocks_by_name, get_all_tickers, get_stock_info, get_stocks_by_category, get_all_categories
 from financial_models import calculate_intrinsic_value
 from auto_financial_data import get_auto_financial_data
 
@@ -292,39 +292,38 @@ st.markdown("<div class='card'>", unsafe_allow_html=True)
 st.markdown("<h2 class='card-title'>企業情報と予測パラメータ</h2>", unsafe_allow_html=True)
 
 # 利用可能なティッカーシンボル（数百銘柄）
-available_tickers = get_all_available_stocks()
+available_tickers = get_all_tickers()
 
-# Stock selection with search and category filtering
-st.markdown("### 🔍 銘柄選択")
+# Unified stock selection with company name search
+st.markdown("### 📈 企業選択")
 
-col1, col2, col3 = st.columns([2, 1, 1])
+col1, col2 = st.columns([3, 1])
 
 with col1:
-    # Search functionality
-    search_query = st.text_input("銘柄検索 (例: AAPL, TSLA)", placeholder="ティッカーシンボルを入力...")
+    # Enhanced search functionality - search by company name or ticker
+    search_query = st.text_input("企業名またはティッカーで検索 (例: Apple, Microsoft, AAPL)", placeholder="企業名またはティッカーシンボルを入力...")
     if search_query:
-        search_results = search_stocks(search_query)
+        search_results = search_stocks_by_name(search_query)
         if search_results:
-            available_tickers = search_results[:20]  # Limit to 20 results
+            available_tickers = search_results[:30]  # Limit to 30 results
         else:
             st.warning(f"'{search_query}' に一致する銘柄が見つかりません")
 
 with col2:
     # Category filter
-    categories = ["All"] + get_stock_categories()
+    categories = ["All"] + get_all_categories()
     selected_category = st.selectbox("カテゴリー", categories)
     if selected_category != "All":
         available_tickers = get_stocks_by_category(selected_category)
 
-with col3:
-    # Quick access to popular stocks
-    if st.button("人気銘柄", key="popular_stocks"):
-        available_tickers = get_popular_stocks()
+# Display number of available stocks with company names
+st.info(f"選択可能銘柄数: {len(available_tickers)} | S&P500, NASDAQ, Dow Jones, Russell 2000を含む主要株式")
 
-# Display number of available stocks
-st.info(f"選択可能銘柄数: {len(available_tickers)}")
-
-ticker_options = {ticker: ticker for ticker in available_tickers}
+# Create options with company names for better UX
+ticker_options = {}
+for ticker in available_tickers:
+    stock_info = get_stock_info(ticker)
+    ticker_options[ticker] = f"{ticker} - {stock_info['name']}"
 
 # 企業選択 - Use session state to prevent data persistence issues
 selected_ticker = st.selectbox(
@@ -778,7 +777,7 @@ if selected_ticker:
                     dcf_value_sens = terminal_value_sens * discount_factor_sens
                     
                     # 1株あたり価値
-                    per_share_value_sens = dcf_value_sens / (stock_data['shares_outstanding'] * 1000000)
+                    per_share_value_sens = dcf_value_sens / (auto_data['shares_outstanding'] * 1000000)
                     
                     row.append(per_share_value_sens)
                     
