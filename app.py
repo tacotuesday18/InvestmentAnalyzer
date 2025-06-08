@@ -10,7 +10,7 @@ st.set_page_config(
     page_title="企業価値分析プロ - 株式分析とDCF法による本質的価値計算",
     page_icon="💹",
     layout="wide",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="expanded",
     menu_items={
         'About': "# 企業価値分析プロ\n企業の本質的価値を計算し、投資判断をサポートする分析ツールです。",
     }
@@ -25,6 +25,58 @@ st.markdown("""
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
+    
+    /* Enhanced Navigation Styles */
+    .stSidebar {
+        background-color: #f8f9fa;
+        border-right: 2px solid #e9ecef;
+    }
+    
+    .stSidebar .stSelectbox > div > div {
+        background-color: white;
+        border: 2px solid #667eea;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 16px;
+    }
+    
+    .nav-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        margin: -1rem -1rem 1rem -1rem;
+        border-radius: 0 0 15px 15px;
+        text-align: center;
+        font-weight: 700;
+        font-size: 18px;
+    }
+    
+    .nav-links {
+        background: white;
+        border: 2px solid #667eea;
+        border-radius: 15px;
+        padding: 15px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+    }
+    
+    .nav-links a {
+        display: block;
+        padding: 12px 15px;
+        margin: 5px 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white !important;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 600;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    
+    .nav-links a:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(102, 126, 234, 0.3);
+    }
     
     /* Global styles */
     .main .block-container {
@@ -230,6 +282,27 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
+
+# Enhanced Navigation in Sidebar
+with st.sidebar:
+    st.markdown("""
+    <div class="nav-header">
+        📊 ナビゲーション
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="nav-links">
+        <a href="/" target="_self">🏠 ホーム</a>
+        <a href="/企業価値分析" target="_self">💰 企業価値分析</a>
+        <a href="/銘柄比較" target="_self">📈 銘柄比較</a>
+        <a href="/財務諸表" target="_self">📊 財務諸表</a>
+        <a href="/DCF価値計算機" target="_self">🧮 DCF価値計算機</a>
+        <a href="/ポートフォリオ分析" target="_self">📋 ポートフォリオ分析</a>
+        <a href="/マーケット概要" target="_self">🌐 マーケット概要</a>
+        <a href="/投資戦略" target="_self">🎯 投資戦略</a>
+    </div>
+    """, unsafe_allow_html=True)
 
 # Full-screen Hero section - Based on attached design
 st.markdown("""
