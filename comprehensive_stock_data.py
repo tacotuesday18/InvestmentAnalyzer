@@ -42,6 +42,7 @@ COMPREHENSIVE_STOCKS = {
     "VRTX": {"name": "Vertex Pharmaceuticals", "category": "Healthcare", "index": "S&P500"},
     "REGN": {"name": "Regeneron Pharmaceuticals", "category": "Healthcare", "index": "S&P500"},
     "BIIB": {"name": "Biogen Inc.", "category": "Healthcare", "index": "S&P500"},
+    "HIMS": {"name": "Hims & Hers Health Inc.", "category": "Healthcare", "index": "NYSE"},
     
     # Financial Services
     "JPM": {"name": "JPMorgan Chase & Co.", "category": "Financial", "index": "S&P500"},
