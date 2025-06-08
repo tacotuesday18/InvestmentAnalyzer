@@ -323,22 +323,55 @@ st.markdown("""
 if "current_page" not in st.session_state:
     st.session_state.current_page = "home"
 
-# Enhanced Navigation in Sidebar with Collapsible Menu
+# Enhanced Navigation with Collapsible Sidebar
 # Initialize session states
 if "nav_open" not in st.session_state:
-    st.session_state.nav_open = True
+    st.session_state.nav_open = False
 if "show_chat" not in st.session_state:
     st.session_state.show_chat = False
 
-# Hamburger menu button (always visible)
+# CSS to hide/show sidebar completely
+if st.session_state.nav_open:
+    sidebar_css = ""
+else:
+    sidebar_css = """
+    <style>
+        section[data-testid="stSidebar"] {
+            width: 0px !important;
+            min-width: 0px !important;
+            max-width: 0px !important;
+            transform: translateX(-100%) !important;
+            visibility: hidden !important;
+        }
+        .main .block-container {
+            margin-left: 0px !important;
+        }
+    </style>
+    """
+
+st.markdown(sidebar_css, unsafe_allow_html=True)
+
+# Floating hamburger button when sidebar is closed
+if not st.session_state.nav_open:
+    st.markdown("""
+    <div style="position: fixed; top: 20px; left: 20px; z-index: 999;">
+        <button onclick="window.parent.document.querySelector('[data-testid=\'stSidebar\'] button').click()" 
+                style="background: #667eea; color: white; border: none; padding: 15px; border-radius: 50px; 
+                       font-size: 20px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+            ☰
+        </button>
+    </div>
+    """, unsafe_allow_html=True)
+
+# Sidebar content (only when open)
 with st.sidebar:
-    menu_icon = "✕" if st.session_state.nav_open else "☰"
-    if st.button(menu_icon, key="hamburger_btn", use_container_width=True):
-        st.session_state.nav_open = not st.session_state.nav_open
-        st.rerun()
-    
-    # Navigation menu (only show when open)
     if st.session_state.nav_open:
+        # Close button
+        if st.button("✕", key="close_btn", use_container_width=True):
+            st.session_state.nav_open = False
+            st.session_state.show_chat = False
+            st.rerun()
+        
         st.markdown("---")
         
         if st.button("🏠 ホーム", key="nav_home", use_container_width=True):
@@ -369,15 +402,20 @@ with st.sidebar:
         if st.button("💬 AI金融アシスタント", key="nav_chat", use_container_width=True):
             st.session_state.show_chat = True
             st.rerun()
-    
-    # Show AI chat when selected from menu
-    if st.session_state.show_chat:
-        st.markdown("---")
-        try:
-            from floating_chatbot import render_floating_chatbot
-            render_floating_chatbot()
-        except ImportError:
-            st.error("AIチャット機能は現在利用できません。")
+        
+        # Show AI chat when selected from menu
+        if st.session_state.show_chat:
+            st.markdown("---")
+            try:
+                from floating_chatbot import render_floating_chatbot
+                render_floating_chatbot()
+            except ImportError:
+                st.error("AIチャット機能は現在利用できません。")
+    else:
+        # Open button when sidebar is closed
+        if st.button("☰", key="hamburger_btn", use_container_width=True):
+            st.session_state.nav_open = True
+            st.rerun()
 
 # Page content based on navigation selection
 if st.session_state.current_page == "home":

@@ -248,23 +248,7 @@ with st.expander("🔍 分析手法について詳しく"):
     </ul>
     """, unsafe_allow_html=True)
 
-# サイドバー
-with st.sidebar:
-    st.markdown("### 企業分析ツール")
-    st.markdown("企業のファンダメンタルズを分析し、最新の注目ポイントを提供することで投資判断をサポートします。")
-    
-    st.markdown("---")
-    
-    # ナビゲーション
-    st.markdown("### ナビゲーション")
-    if st.button("ホームに戻る", key="home_btn"):
-        st.switch_page("app.py")
-    
-    if st.button("銘柄比較", key="compare_btn"):
-        st.switch_page("pages/02_銘柄比較.py")
-        
-    if st.button("DCF価値計算機", key="dcf_btn"):
-        st.switch_page("pages/04_DCF価値計算機.py")
+
 
 # Enhanced stock selection with fundamental analysis filter
 st.markdown("<div class='form-section mobile-card'>", unsafe_allow_html=True)

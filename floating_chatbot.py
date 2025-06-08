@@ -182,102 +182,96 @@ def get_current_company_context():
 
 def render_floating_chatbot():
     """
-    Render a financial AI assistant in the sidebar
+    Render AI financial assistant as part of navigation menu
     """
     # Initialize chat history in session state
     if "chat_messages" not in st.session_state:
         st.session_state.chat_messages = []
     
-    if "chatbot_visible" not in st.session_state:
-        st.session_state.chatbot_visible = False
+    st.markdown("### 💬 AI金融アシスタント KOJI")
+    st.markdown("株式分析とDCF計算に特化したAIアシスタント")
+    st.markdown("---")
     
-    # Sidebar-based chatbot
-    with st.sidebar:
-        st.markdown("### 💬 AI金融アシスタント")
+    # Display recent chat messages
+    if st.session_state.chat_messages:
+        st.markdown("**最近のメッセージ:**")
+        for message in st.session_state.chat_messages[-3:]:  # Show last 3 messages
+            if message["role"] == "user":
+                st.markdown(f"👤 **あなた:** {message['content'][:100]}...")
+            else:
+                st.markdown(f"🤖 **AI:** {message['content'][:100]}...")
         
-        # Toggle chatbot visibility
-        chat_button_text = "💬 AIチャットを開く" if not st.session_state.chatbot_visible else "❌ チャットを閉じる"
-        if st.button(chat_button_text, key="toggle_chat"):
-            st.session_state.chatbot_visible = not st.session_state.chatbot_visible
+        if st.button("チャット履歴をクリア", key="clear_chat"):
+            st.session_state.chat_messages = []
             st.rerun()
+    
+    # Chat input form
+    with st.form("chat_form", clear_on_submit=True):
+        user_input = st.text_area(
+            "金融分析について質問してください:", 
+            height=80, 
+            placeholder="例: AAPLの財務状況は？"
+        )
         
-        if st.session_state.chatbot_visible:
-            st.markdown("---")
-            
-            # Display recent chat messages
-            if st.session_state.chat_messages:
-                st.markdown("**最近のメッセージ:**")
-                for message in st.session_state.chat_messages[-3:]:  # Show last 3 messages
-                    if message["role"] == "user":
-                        st.markdown(f"👤 **あなた:** {message['content'][:100]}...")
-                    else:
-                        st.markdown(f"🤖 **AI:** {message['content'][:100]}...")
-                
-                if st.button("チャット履歴をクリア", key="clear_chat"):
-                    st.session_state.chat_messages = []
-                    st.rerun()
-            
-            # Chat input form
-            with st.form("chat_form", clear_on_submit=True):
-                user_input = st.text_area(
-                    "金融分析について質問してください:", 
-                    height=80, 
-                    placeholder="例: AAPLの財務状況は？"
-                )
-                
-                # Specialized quick action buttons for this platform
-                st.markdown("**🚀 クイックアクション:**")
-                
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    if st.form_submit_button("📊 DCF分析"):
-                        user_input = "DCF価値計算機の使い方と、適正株価の算出方法を教えて"
-                        submit = True
-                with col2:
-                    if st.form_submit_button("💰 投資判断"):
-                        user_input = "現在選択中の企業の投資判断をファンダメンタル分析に基づいて教えて"
-                        submit = True
-                with col3:
-                    if st.form_submit_button("📈 成長性分析"):
-                        user_input = "この企業の5年CAGR成長率をどう評価すべきか分析して"
-                        submit = True
-                
-                col4, col5 = st.columns(2)
-                with col4:
-                    if st.form_submit_button("🔍 リスク分析"):
-                        user_input = "この銘柄の主要リスク要因と注意点を教えて"
-                        submit = True
-                with col5:
-                    submit = st.form_submit_button("送信", type="primary")
-            
-            if submit and user_input:
-                # Add user message
-                st.session_state.chat_messages.append({"role": "user", "content": user_input})
-                
-                # Generate AI response
-                try:
-                    if openai_client:
-                        response = process_chat_message(user_input)
-                        st.session_state.chat_messages.append({"role": "assistant", "content": response})
-                        st.success("回答を生成しました！")
-                    else:
-                        # Fallback to specialized platform responses
-                        fallback_response = get_specialized_response(user_input)
-                        st.session_state.chat_messages.append({
-                            "role": "assistant", 
-                            "content": fallback_response
-                        })
-                        st.info("プラットフォーム専用回答")
-                except Exception as e:
-                    # Even if API fails, provide specialized guidance
-                    fallback_response = get_specialized_response(user_input)
-                    st.session_state.chat_messages.append({
-                        "role": "assistant", 
-                        "content": fallback_response
-                    })
-                    st.warning("APIエラーのため、プラットフォーム専用回答を表示")
-                
-                st.rerun()
+        # Specialized quick action buttons for this platform
+        st.markdown("**🚀 クイックアクション:**")
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            dcf_clicked = st.form_submit_button("📊 DCF分析")
+        with col2:
+            invest_clicked = st.form_submit_button("💰 投資判断")
+        with col3:
+            growth_clicked = st.form_submit_button("📈 成長性分析")
+        
+        col4, col5 = st.columns(2)
+        with col4:
+            risk_clicked = st.form_submit_button("🔍 リスク分析")
+        with col5:
+            submit = st.form_submit_button("送信", type="primary")
+        
+        # Handle quick action clicks
+        if dcf_clicked:
+            user_input = "DCF価値計算機の使い方と、適正株価の算出方法を教えて"
+            submit = True
+        elif invest_clicked:
+            user_input = "現在選択中の企業の投資判断をファンダメンタル分析に基づいて教えて"
+            submit = True
+        elif growth_clicked:
+            user_input = "この企業の5年CAGR成長率をどう評価すべきか分析して"
+            submit = True
+        elif risk_clicked:
+            user_input = "この銘柄の主要リスク要因と注意点を教えて"
+            submit = True
+    
+    if submit and user_input:
+        # Add user message
+        st.session_state.chat_messages.append({"role": "user", "content": user_input})
+        
+        # Generate AI response
+        try:
+            if openai_client:
+                response = process_chat_message(user_input)
+                st.session_state.chat_messages.append({"role": "assistant", "content": response})
+                st.success("回答を生成しました！")
+            else:
+                # Fallback to specialized platform responses
+                fallback_response = get_specialized_response(user_input)
+                st.session_state.chat_messages.append({
+                    "role": "assistant", 
+                    "content": fallback_response
+                })
+                st.info("プラットフォーム専用回答")
+        except Exception as e:
+            # Even if API fails, provide specialized guidance
+            fallback_response = get_specialized_response(user_input)
+            st.session_state.chat_messages.append({
+                "role": "assistant", 
+                "content": fallback_response
+            })
+            st.warning("APIエラーのため、プラットフォーム専用回答を表示")
+        
+        st.rerun()
 
 
 def process_chat_message(message):
