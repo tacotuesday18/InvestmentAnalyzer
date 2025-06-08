@@ -351,17 +351,36 @@ else:
 
 st.markdown(sidebar_css, unsafe_allow_html=True)
 
-# Floating hamburger button when sidebar is closed
+# Menu button when sidebar is closed
 if not st.session_state.nav_open:
+    # Position menu button in top left
     st.markdown("""
-    <div style="position: fixed; top: 20px; left: 20px; z-index: 999;">
-        <button onclick="window.parent.document.querySelector('[data-testid=\'stSidebar\'] button').click()" 
-                style="background: #667eea; color: white; border: none; padding: 15px; border-radius: 50px; 
-                       font-size: 20px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-            ☰
-        </button>
-    </div>
+    <style>
+        .menu-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 999;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 50px;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+    </style>
     """, unsafe_allow_html=True)
+    
+    # Create button in container
+    container = st.container()
+    with container:
+        col1, col2 = st.columns([1, 20])
+        with col1:
+            if st.button("☰", key="menu_toggle", help="メニューを開く"):
+                st.session_state.nav_open = True
+                st.rerun()
 
 # Sidebar content (only when open)
 with st.sidebar:
