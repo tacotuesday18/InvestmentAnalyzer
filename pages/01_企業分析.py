@@ -198,7 +198,7 @@ st.markdown("""
 # Page header
 st.markdown("""
 <div class="page-header">
-    <div class="page-title">📊 企業分析</div>
+    <div class="page-title">📊 ビジネスモデル分析</div>
     <div class="page-subtitle">財務データとファンダメンタルズ分析で企業の本質的価値を見極める</div>
 </div>
 """, unsafe_allow_html=True)
