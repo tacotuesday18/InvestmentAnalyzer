@@ -140,10 +140,10 @@ def get_enhanced_estimates(ticker):
             'sector': 'Technology',
             'revenue': 394328,  # 2023 actual
             'net_income': 96995,  # 2023 actual
-            'historical_growth': 8.5,
+            'historical_growth': -2.8,  # 2023: -2.8% revenue decline
             'profit_margin': 24.6,
             'pe_ratio': 28.5,
-            'pb_ratio': 45.2,
+            'pb_ratio': 6.2,  # Corrected PBR for Apple
             'roe': 52.9,
             'shares_outstanding': 15441.0
         },

@@ -231,45 +231,45 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Hero section - TravelPerk style for Kabu2Easy
+# Full-screen Hero section - Based on attached design
 st.markdown("""
-<div style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); padding: 4rem 2rem; margin: -1rem -1rem 2rem -1rem;">
-    <div style="max-width: 1200px; margin: 0 auto; display: flex; align-items: center; gap: 3rem;">
-        <div style="flex: 1;">
-            <div style="font-size: 3.5rem; font-weight: 700; color: #1a202c; line-height: 1.1; margin-bottom: 1.5rem;">
+<div style="background: linear-gradient(135deg, #e6f3ff 0%, #f0f8ff 100%); padding: 6rem 0; margin: -1rem -6rem 3rem -6rem; min-height: 80vh; display: flex; align-items: center;">
+    <div style="max-width: 1400px; margin: 0 auto; padding: 0 2rem; display: flex; align-items: center; gap: 4rem; width: 100%;">
+        <div style="flex: 1; max-width: 600px;">
+            <div style="font-size: 4rem; font-weight: 700; color: #1a202c; line-height: 1.1; margin-bottom: 2rem;">
                 株式投資を<br>
                 <span style="color: #667eea;">もっと簡単に</span><br>
                 <span style="color: #764ba2;">もっとスマートに</span>
             </div>
-            <div style="font-size: 1.25rem; color: #4a5568; margin-bottom: 2rem; line-height: 1.6;">
+            <div style="font-size: 1.4rem; color: #4a5568; margin-bottom: 3rem; line-height: 1.6;">
                 Kabu2Easyは企業の本質的価値を瞬時に分析し、データに基づいた投資判断をサポートします。
             </div>
-            <div style="display: flex; gap: 1rem; align-items: center;">
-                <button style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 16px 32px; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
+            <div style="display: flex; gap: 1.5rem; align-items: center; margin-bottom: 3rem;">
+                <button style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 20px 40px; border-radius: 12px; font-size: 1.2rem; font-weight: 600; cursor: pointer; box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);">
                     無料で始める →
                 </button>
-                <button style="background: transparent; color: #4a5568; border: 2px solid #e2e8f0; padding: 14px 28px; border-radius: 8px; font-size: 1rem; font-weight: 500; cursor: pointer;">
+                <button style="background: transparent; color: #4a5568; border: 2px solid #e2e8f0; padding: 18px 36px; border-radius: 12px; font-size: 1.1rem; font-weight: 500; cursor: pointer;">
                     デモを見る
                 </button>
             </div>
-            <div style="margin-top: 2rem; display: flex; align-items: center; gap: 1rem;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
                 <div style="display: flex; align-items: center;">
-                    <span style="color: #f59e0b; font-size: 1.2rem;">★★★★★</span>
-                    <span style="margin-left: 0.5rem; color: #4a5568; font-weight: 600;">4.8</span>
-                    <span style="margin-left: 0.5rem; color: #6b7280;">| 1,500+ レビュー</span>
+                    <span style="color: #f59e0b; font-size: 1.4rem;">★★★★★</span>
+                    <span style="margin-left: 0.75rem; color: #4a5568; font-weight: 700; font-size: 1.2rem;">4.8</span>
+                    <span style="margin-left: 0.75rem; color: #6b7280; font-size: 1.1rem;">| 1,500+ レビュー</span>
                 </div>
             </div>
         </div>
-        <div style="flex: 1; text-align: center;">
-            <div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 20px 60px rgba(0,0,0,0.1); transform: rotate(5deg);">
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1rem; border-radius: 10px; margin-bottom: 1rem;">
-                    <div style="font-size: 1.5rem; font-weight: bold;">AAPL分析結果</div>
+        <div style="flex: 1; text-align: center; max-width: 500px;">
+            <div style="background: white; border-radius: 25px; padding: 2.5rem; box-shadow: 0 25px 80px rgba(0,0,0,0.15); transform: rotate(3deg);">
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem; border-radius: 15px; margin-bottom: 1.5rem;">
+                    <div style="font-size: 1.8rem; font-weight: bold;">AAPL分析結果</div>
                 </div>
-                <div style="text-align: left; color: #4a5568;">
-                    <div style="margin: 0.5rem 0;"><strong>現在株価:</strong> $175.25</div>
-                    <div style="margin: 0.5rem 0;"><strong>目標株価:</strong> $195.80</div>
-                    <div style="margin: 0.5rem 0; color: #10b981; font-weight: bold;">上昇余地: +11.7%</div>
-                    <div style="margin: 0.5rem 0; background: #10b981; color: white; padding: 0.5rem; border-radius: 5px; text-align: center; font-weight: bold;">買い推奨</div>
+                <div style="text-align: left; color: #4a5568; font-size: 1.1rem;">
+                    <div style="margin: 1rem 0;"><strong>現在株価:</strong> $175.25</div>
+                    <div style="margin: 1rem 0;"><strong>目標株価:</strong> $195.80</div>
+                    <div style="margin: 1rem 0; color: #10b981; font-weight: bold; font-size: 1.2rem;">上昇余地: +11.7%</div>
+                    <div style="margin: 1rem 0; background: #10b981; color: white; padding: 1rem; border-radius: 10px; text-align: center; font-weight: bold; font-size: 1.2rem;">買い推奨</div>
                 </div>
             </div>
         </div>
@@ -308,7 +308,7 @@ st.markdown("""
 # Solution section
 st.markdown("""
 <div style="background-color: #d1ecf1; padding: 2rem; margin: 2rem 0; border-left: 4px solid #17a2b8;">
-    <h2 style="color: #0c5460; margin-bottom: 1rem;">✅ 1000xStocksが解決します</h2>
+    <h2 style="color: #0c5460; margin-bottom: 1rem;">✅ Kabu2Easyが解決します</h2>
     <div style="color: #0c5460;">
         🧮 <strong>プロ級DCF計算</strong>→ 企業の本質的価値を数値で明確化<br>
         📊 <strong>自動財務分析</strong>→ Yahoo Financeから最新データを自動取得<br>

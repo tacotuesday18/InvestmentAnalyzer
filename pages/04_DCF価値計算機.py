@@ -449,7 +449,7 @@ if selected_ticker:
             # 業界平均倍率を使った企業価値評価
             per_valuation = final_year_net_income * industry_per
             psr_valuation = final_year_revenue * psr_ratio
-            pbr_valuation = estimated_equity * auto_data['pb_ratio']
+            pbr_valuation = estimated_equity * pbr_ratio
             
             # 倍率ベースの株価
             per_share_price = per_valuation / (auto_data['shares_outstanding'] * 1000000)
@@ -642,8 +642,8 @@ if selected_ticker:
                 <p>2. {forecast_years}年後の予測企業価値（各倍率ベース）:</p>
                 <ul>
                     <li>PERベース: {format_currency(final_year_net_income, '$')} × {industry_per} = {format_currency(future_per_market_cap, '$')}</li>
-                    <li>PSRベース: {format_currency(final_year_revenue, '$')} × {industry_psr} = {format_currency(future_psr_market_cap, '$')}</li>
-                    <li>PBRベース: {format_currency(estimated_equity, '$')} × {industry_pbr} = {format_currency(future_pbr_market_cap, '$')}</li>
+                    <li>PSRベース: {format_currency(final_year_revenue, '$')} × {psr_ratio} = {format_currency(future_psr_market_cap, '$')}</li>
+                    <li>PBRベース: {format_currency(estimated_equity, '$')} × {pbr_ratio} = {format_currency(future_pbr_market_cap, '$')}</li>
                 </ul>
                 
                 <p>3. {forecast_years}年後の予測1株価値:</p>
