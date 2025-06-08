@@ -262,7 +262,8 @@ with col3:
         available_tickers = get_popular_stocks()
 
 st.info(f"選択可能銘柄数: {len(available_tickers)}")
-ticker_options = {ticker: f"{ticker} - {get_stock_data(ticker)['name']}" for ticker in available_tickers}
+# Create safe ticker options without calling get_stock_data for each ticker
+ticker_options = {ticker: ticker for ticker in available_tickers}
 
 # Auto-refreshed live data display
 st.markdown("### 📊 Live Financial Data - Auto Updated")
@@ -277,7 +278,7 @@ with col2:
         st.rerun()
 
 # マルチセレクト用のオプション
-ticker_select_options = [f"{ticker} - {get_stock_data(ticker)['name']}" for ticker in available_tickers]
+ticker_select_options = available_tickers
 
 # 複数銘柄の同時比較機能を強化
 st.markdown("<div class='mobile-card'>", unsafe_allow_html=True)
@@ -340,6 +341,7 @@ with col3:
     show_dividend = st.checkbox("配当利回り", value=True)
     show_debt_ratio = st.checkbox("負債比率", value=True)
     show_eps = st.checkbox("EPS (1株利益)", value=True)
+    show_company_size = st.checkbox("企業規模", value=True)
 
 # 評価方法を配列に格納
 valuation_methods = []
@@ -382,8 +384,16 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
                     # Calculate actual revenue growth rate from historical data
                     actual_revenue_growth = calculate_growth_rate(ticker)
                     
-                    # Calculate additional metrics
-                    market_cap = auto_data['current_price'] * auto_data['shares_outstanding']
+                    # Calculate company size (more understandable than raw market cap)
+                    market_cap_billion = (auto_data['current_price'] * auto_data['shares_outstanding']) / 1000
+                    if market_cap_billion >= 100:
+                        company_size = "超大型株"
+                    elif market_cap_billion >= 10:
+                        company_size = "大型株"
+                    elif market_cap_billion >= 2:
+                        company_size = "中型株"
+                    else:
+                        company_size = "小型株"
                     
                     # PEG ratio (PE / Growth rate)
                     current_pe = auto_data['current_price'] / auto_data['eps'] if auto_data['eps'] > 0 else 0
@@ -399,13 +409,15 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
                     # ROE (Return on Equity)
                     roe = info.get('returnOnEquity', 0) * 100 if info.get('returnOnEquity') else 0
                     
-                    # Store all metrics
+                    # Store all metrics including company size
                     result["financial_metrics"] = {
                         "revenue_growth": actual_revenue_growth,
                         "peg_ratio": peg_ratio,
                         "dividend_yield": dividend_yield,
                         "debt_to_equity": debt_to_equity,
-                        "roe": roe
+                        "roe": roe,
+                        "company_size": company_size,
+                        "market_cap_billion": market_cap_billion
                     }
                     
                     # Calculate current trading multiples (no intrinsic value calculations)
@@ -464,6 +476,9 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
                             row["負債比率"] = f"{metrics['debt_to_equity']:.2f}" if metrics['debt_to_equity'] > 0 else "N/A"
                         if show_roe:
                             row["ROE"] = f"{metrics['roe']:.1f}%" if metrics['roe'] > 0 else "N/A"
+                        if show_company_size:
+                            row["企業規模"] = metrics['company_size']
+                            row["時価総額"] = f"{metrics['market_cap_billion']:.0f}億ドル"
                     
                     # 各評価方法の結果を追加
                     for method in valuation_methods:
@@ -495,7 +510,7 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
                 <b>指標説明:</b>
                 <b>PER</b>: 株価収益率 (株価÷1株利益) |
                 <b>PBR</b>: 株価純資産倍率 (株価÷1株純資産) |
-                <b>PSR</b>: 株価売上高倍率 (時価総額÷売上高) |
+                <b>PSR</b>: 株価売上高倍率 (株価÷1株売上高) |
                 <b>PEG</b>: PER÷成長率 (1以下が割安) |
                 <b>配当利回り</b>: 年間配当÷株価×100 |
                 <b>負債比率</b>: 負債÷自己資本 |
