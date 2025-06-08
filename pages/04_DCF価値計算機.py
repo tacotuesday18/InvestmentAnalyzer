@@ -342,6 +342,7 @@ if selected_ticker:
             current_market_cap = auto_data['current_price'] * auto_data['shares_outstanding']
             current_psr = current_market_cap / auto_data['revenue'] if auto_data['revenue'] > 0 else 5.0
             psr_ratio = st.number_input("PSR倍率", min_value=0.1, max_value=50.0, value=current_psr, step=0.1, format="%.1f")
+            pbr_ratio = st.number_input("PBR倍率", min_value=0.1, max_value=50.0, value=auto_data['pb_ratio'], step=0.1, format="%.1f")
         
         # Use live data for calculations
         revenue = auto_data['revenue'] * 1_000_000  # Convert back to actual USD
@@ -609,8 +610,8 @@ if selected_ticker:
                 <h4>使用している主な倍率</h4>
                 <ul>
                     <li><strong>PER（株価収益率）</strong>：純利益に対する倍率。{industry_per}倍を使用</li>
-                    <li><strong>PSR（株価売上高倍率）</strong>：売上高に対する倍率。{industry_psr}倍を使用</li>
-                    <li><strong>PBR（株価純資産倍率）</strong>：純資産に対する倍率。{industry_pbr}倍を使用</li>
+                    <li><strong>PSR（株価売上高倍率）</strong>：売上高に対する倍率。{psr_ratio}倍を使用</li>
+                    <li><strong>PBR（株価純資産倍率）</strong>：純資産に対する倍率。{pbr_ratio}倍を使用</li>
                 </ul>
                 
                 <h4>計算方法</h4>

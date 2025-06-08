@@ -89,29 +89,46 @@ def get_auto_financial_data(ticker):
         return get_enhanced_estimates(ticker)
 
 def calculate_growth_rate(stock):
-    """Calculate historical revenue growth rate"""
+    """Calculate historical revenue growth rate using proper formula"""
     try:
         financials = stock.financials
         if financials.empty or len(financials.columns) < 2:
-            return 10.0
+            return 5.0
         
         revenues = []
-        for col in financials.columns[:3]:  # Last 3 years
+        for col in financials.columns:  # Get all available years
             if 'Total Revenue' in financials.index:
                 rev = financials.loc['Total Revenue'][col]
-                if pd.notna(rev):
+                if pd.notna(rev) and rev > 0:
+                    revenues.append(float(rev))
+            elif 'Revenue' in financials.index:
+                rev = financials.loc['Revenue'][col]
+                if pd.notna(rev) and rev > 0:
                     revenues.append(float(rev))
         
         if len(revenues) >= 2:
-            # Calculate CAGR
-            years = len(revenues) - 1
-            cagr = ((revenues[0] / revenues[-1]) ** (1/years) - 1) * 100
-            return max(-20, min(50, cagr))  # Cap between -20% and 50%
+            # Sort revenues by year (most recent first in yfinance)
+            revenues = revenues[:4]  # Use up to 4 years of data
+            
+            # Calculate year-over-year growth rates
+            growth_rates = []
+            for i in range(len(revenues) - 1):
+                current_revenue = revenues[i]      # More recent
+                previous_revenue = revenues[i + 1] # Earlier year
+                
+                # Formula: (Current Period Revenue - Previous Period Revenue) / Previous Period Revenue * 100
+                growth_rate = ((current_revenue - previous_revenue) / previous_revenue) * 100
+                growth_rates.append(growth_rate)
+            
+            if growth_rates:
+                # Return average growth rate
+                avg_growth = sum(growth_rates) / len(growth_rates)
+                return max(-50, min(100, avg_growth))  # Cap between -50% and 100%
         
-        return 10.0
+        return 5.0
         
-    except Exception:
-        return 10.0
+    except Exception as e:
+        return 5.0
 
 def get_enhanced_estimates(ticker):
     """Get enhanced estimates for companies when live data is limited"""

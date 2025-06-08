@@ -198,11 +198,28 @@ with st.sidebar:
     if st.button("企業分析", key="analysis_btn"):
         st.switch_page("pages/01_企業分析.py")
 
-# Page header
+# Hero section - TravelPerk style
 st.markdown("""
-<div class="page-header">
-    <div class="page-title">🔍 銘柄比較</div>
-    <div class="page-subtitle">複数企業の多角的な価値評価と投資判断の比較分析</div>
+<div style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); padding: 3rem 2rem; margin: -1rem -1rem 2rem -1rem; border-radius: 0 0 20px 20px;">
+    <div style="text-align: center;">
+        <div style="font-size: 2.8rem; font-weight: 700; color: #1a202c; margin-bottom: 1rem;">
+            🔍 企業価値比較分析
+        </div>
+        <div style="font-size: 1.3rem; color: #4a5568; margin-bottom: 2rem; max-width: 800px; margin-left: auto; margin-right: auto;">
+            複数企業の財務指標をリアルタイムで比較し、データに基づいた投資判断をサポート
+        </div>
+        <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+            <div style="background: white; padding: 1rem 1.5rem; border-radius: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                <span style="color: #667eea; font-weight: 600;">📊 リアルタイム財務データ</span>
+            </div>
+            <div style="background: white; padding: 1rem 1.5rem; border-radius: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                <span style="color: #764ba2; font-weight: 600;">⚡ 瞬時比較分析</span>
+            </div>
+            <div style="background: white; padding: 1rem 1.5rem; border-radius: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                <span style="color: #10b981; font-weight: 600;">🎯 投資判断支援</span>
+            </div>
+        </div>
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
