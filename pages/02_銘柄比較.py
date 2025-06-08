@@ -235,35 +235,34 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # 利用可能なティッカーシンボル（数百銘柄）
-available_tickers = get_all_available_stocks()
+available_tickers = get_all_tickers()
 
-# Stock selection with search and category filtering
-st.markdown("### 🔍 銘柄選択・検索")
+# Enhanced stock selection with company name search
+st.markdown("### 📊 企業選択・比較")
 
-col1, col2, col3 = st.columns([2, 1, 1])
+col1, col2 = st.columns([3, 1])
 
 with col1:
-    search_query = st.text_input("銘柄検索", placeholder="ティッカーシンボルを入力 (例: AAPL, MSFT)")
+    search_query = st.text_input("企業名またはティッカーで検索", placeholder="企業名またはティッカーシンボルを入力 (例: Apple, Microsoft, AAPL)")
     if search_query:
-        search_results = search_stocks(search_query)
+        search_results = search_stocks_by_name(search_query)
         if search_results:
             available_tickers = search_results[:50]
         else:
             st.warning(f"'{search_query}' に一致する銘柄が見つかりません")
 
 with col2:
-    categories = ["All"] + get_stock_categories()
+    categories = ["All"] + get_all_categories()
     selected_category = st.selectbox("カテゴリー", categories)
     if selected_category != "All":
         available_tickers = get_stocks_by_category(selected_category)
 
-with col3:
-    if st.button("人気銘柄", key="popular_stocks_comparison"):
-        available_tickers = get_popular_stocks()
-
-st.info(f"選択可能銘柄数: {len(available_tickers)}")
-# Create safe ticker options without calling get_stock_data for each ticker
-ticker_options = {ticker: ticker for ticker in available_tickers}
+st.info(f"選択可能銘柄数: {len(available_tickers)} | 主要指数の銘柄を網羅")
+# Create ticker options with company names for better user experience
+ticker_select_options = []
+for ticker in available_tickers:
+    stock_info = get_stock_info(ticker)
+    ticker_select_options.append(f"{ticker} - {stock_info['name']}")
 
 # Auto-refreshed live data display
 st.markdown("### 📊 Live Financial Data - Auto Updated")
