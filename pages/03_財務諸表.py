@@ -404,7 +404,7 @@ if selected_ticker:
                         
                         earnings_summary = financial_chatbot(earnings_query)
                         
-                        if earnings_summary and "API key" not in earnings_summary:
+                        if earnings_summary and "API key" not in earnings_summary and "quota" not in earnings_summary and "insufficient" not in earnings_summary:
                             formatted_summary = earnings_summary.replace('\n', '<br>')
                             st.markdown(f"""
                             <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin: 10px 0;">
@@ -412,7 +412,7 @@ if selected_ticker:
                             </div>
                             """, unsafe_allow_html=True)
                         else:
-                            st.info("決算説明会の詳細な分析を表示するには、OpenAI APIキーが必要です。")
+                            st.info("決算説明会の詳細な分析を表示するには、有効なOpenAI APIキーが必要です。")
                             
                             # Fallback: Show basic earnings information
                             stock_info = yf.Ticker(selected_ticker).info

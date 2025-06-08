@@ -17,6 +17,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from stock_data import get_stock_data, get_available_tickers, compare_valuations, get_industry_average
 from stock_data import update_stock_price, fetch_tradingview_price, refresh_stock_prices
 from stock_data import load_sample_data, ensure_sample_data_dir, SAMPLE_DATA_DIR
+from stock_universe import get_all_available_stocks, get_stocks_by_category, get_stock_categories, search_stocks, get_popular_stocks
 from real_time_fetcher import fetch_current_stock_price, fetch_comprehensive_data, show_live_price_indicator, display_market_status
 from auto_financial_data import get_auto_financial_data, calculate_growth_rate
 
@@ -233,8 +234,34 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# 利用可能なティッカーシンボル（先に取得）
-available_tickers = get_available_tickers()
+# 利用可能なティッカーシンボル（数百銘柄）
+available_tickers = get_all_available_stocks()
+
+# Stock selection with search and category filtering
+st.markdown("### 🔍 銘柄選択・検索")
+
+col1, col2, col3 = st.columns([2, 1, 1])
+
+with col1:
+    search_query = st.text_input("銘柄検索", placeholder="ティッカーシンボルを入力 (例: AAPL, MSFT)")
+    if search_query:
+        search_results = search_stocks(search_query)
+        if search_results:
+            available_tickers = search_results[:50]
+        else:
+            st.warning(f"'{search_query}' に一致する銘柄が見つかりません")
+
+with col2:
+    categories = ["All"] + get_stock_categories()
+    selected_category = st.selectbox("カテゴリー", categories)
+    if selected_category != "All":
+        available_tickers = get_stocks_by_category(selected_category)
+
+with col3:
+    if st.button("人気銘柄", key="popular_stocks_comparison"):
+        available_tickers = get_popular_stocks()
+
+st.info(f"選択可能銘柄数: {len(available_tickers)}")
 ticker_options = {ticker: f"{ticker} - {get_stock_data(ticker)['name']}" for ticker in available_tickers}
 
 # Auto-refreshed live data display

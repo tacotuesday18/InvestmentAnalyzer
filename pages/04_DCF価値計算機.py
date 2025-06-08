@@ -19,6 +19,7 @@ from real_time_fetcher import fetch_current_stock_price, fetch_comprehensive_dat
 
 # stock_dataモジュールをインポート
 from stock_data import get_stock_data, get_available_tickers
+from stock_universe import get_all_available_stocks, get_stocks_by_category, get_stock_categories, search_stocks, get_popular_stocks
 from financial_models import calculate_intrinsic_value
 from auto_financial_data import get_auto_financial_data
 
@@ -290,9 +291,40 @@ with st.expander("🔍 DCF計算方法について詳しく"):
 st.markdown("<div class='card'>", unsafe_allow_html=True)
 st.markdown("<h2 class='card-title'>企業情報と予測パラメータ</h2>", unsafe_allow_html=True)
 
-# 利用可能なティッカーシンボル
-available_tickers = get_available_tickers()
-ticker_options = {ticker: f"{ticker} - {get_stock_data(ticker)['name']}" for ticker in available_tickers}
+# 利用可能なティッカーシンボル（数百銘柄）
+available_tickers = get_all_available_stocks()
+
+# Stock selection with search and category filtering
+st.markdown("### 🔍 銘柄選択")
+
+col1, col2, col3 = st.columns([2, 1, 1])
+
+with col1:
+    # Search functionality
+    search_query = st.text_input("銘柄検索 (例: AAPL, TSLA)", placeholder="ティッカーシンボルを入力...")
+    if search_query:
+        search_results = search_stocks(search_query)
+        if search_results:
+            available_tickers = search_results[:20]  # Limit to 20 results
+        else:
+            st.warning(f"'{search_query}' に一致する銘柄が見つかりません")
+
+with col2:
+    # Category filter
+    categories = ["All"] + get_stock_categories()
+    selected_category = st.selectbox("カテゴリー", categories)
+    if selected_category != "All":
+        available_tickers = get_stocks_by_category(selected_category)
+
+with col3:
+    # Quick access to popular stocks
+    if st.button("人気銘柄", key="popular_stocks"):
+        available_tickers = get_popular_stocks()
+
+# Display number of available stocks
+st.info(f"選択可能銘柄数: {len(available_tickers)}")
+
+ticker_options = {ticker: ticker for ticker in available_tickers}
 
 # 企業選択
 selected_ticker = st.selectbox(
@@ -354,7 +386,7 @@ if selected_ticker:
         
         with col2:
             net_margin = st.number_input("目標純利益率（%）", min_value=0.0, max_value=100.0, value=auto_data['profit_margin'], step=0.1, format="%.1f")
-            industry_per = st.number_input("業界平均PER", min_value=1.0, max_value=100.0, value=auto_data['pe_ratio'], step=1.0)
+            industry_per = st.number_input("PER倍率", min_value=1.0, max_value=100.0, value=auto_data['pe_ratio'], step=1.0)
             # Calculate PSR ratio from current data
             current_market_cap = auto_data['current_price'] * auto_data['shares_outstanding']
             current_psr = current_market_cap / auto_data['revenue'] if auto_data['revenue'] > 0 else 5.0
@@ -648,17 +680,17 @@ if selected_ticker:
                 
                 <p>3. {forecast_years}年後の予測1株価値:</p>
                 <ul>
-                    <li>PERベース: {format_currency(future_per_market_cap, '$')} ÷ {format_large_number(stock_data['shares_outstanding'] * 1000000)}株 = ${future_per_price:.2f}</li>
-                    <li>PSRベース: {format_currency(future_psr_market_cap, '$')} ÷ {format_large_number(stock_data['shares_outstanding'] * 1000000)}株 = ${future_psr_price:.2f}</li>
-                    <li>PBRベース: {format_currency(future_pbr_market_cap, '$')} ÷ {format_large_number(stock_data['shares_outstanding'] * 1000000)}株 = ${future_pbr_price:.2f}</li>
+                    <li>PERベース: {format_currency(future_per_market_cap, '$')} ÷ {format_large_number(auto_data['shares_outstanding'] * 1000000)}株 = ${per_share_price:.2f}</li>
+                    <li>PSRベース: {format_currency(future_psr_market_cap, '$')} ÷ {format_large_number(auto_data['shares_outstanding'] * 1000000)}株 = ${psr_share_price:.2f}</li>
+                    <li>PBRベース: {format_currency(future_pbr_market_cap, '$')} ÷ {format_large_number(auto_data['shares_outstanding'] * 1000000)}株 = ${pbr_share_price:.2f}</li>
                 </ul>
                 
-                <p>4. {forecast_years}年後の予測平均株価: (${future_per_price:.2f} + ${future_psr_price:.2f} + ${future_pbr_price:.2f}) ÷ 3 = ${future_avg_price:.2f}</p>
+                <p>4. {forecast_years}年後の予測平均株価: (${per_share_price:.2f} + ${psr_share_price:.2f} + ${pbr_share_price:.2f}) ÷ 3 = ${avg_multiple_price:.2f}</p>
                 
-                <p>5. 現在価値への割引: ${future_avg_price:.2f} ÷ (1 + {discount_rate/100})<sup>{forecast_years}</sup> = ${discounted_multiple_price:.2f}</p>
+                <p>5. 現在価値への割引: ${avg_multiple_price:.2f} ÷ (1 + {discount_rate/100})<sup>{forecast_years}</sup> = ${discounted_multiple_price:.2f}</p>
                 <p>※ 割引係数: 1 ÷ (1 + {discount_rate/100})<sup>{forecast_years}</sup> = {1/((1 + discount_rate/100) ** forecast_years):.4f}</p>
                 
-                <p>6. 上昇余地の計算: (${discounted_multiple_price:.2f} ÷ ${current_stock_price:.2f} - 1) × 100 = {multiple_upside:.1f}%</p>
+                <p>6. 上昇余地の計算: (${discounted_multiple_price:.2f} ÷ ${current_stock_price:.2f} - 1) × 100 = {avg_upside:.1f}%</p>
                 """, unsafe_allow_html=True)
             
             # DCF計算の説明
