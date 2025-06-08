@@ -42,10 +42,14 @@ st.markdown("""
     section[data-testid="stSidebar"] button[title*="Sidebar"] {display: none !important;}
     
     /* Enhanced Navigation Styles */
-    .stSidebar {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-right: none;
-        box-shadow: 4px 0 20px rgba(102, 126, 234, 0.15);
+    .stSidebar, section[data-testid="stSidebar"] {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        border-right: none !important;
+        box-shadow: 4px 0 20px rgba(102, 126, 234, 0.15) !important;
+    }
+    
+    .stSidebar > div {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
     }
     
     /* Sidebar content styling */
@@ -58,31 +62,21 @@ st.markdown("""
     }
     
     .stSidebar .stButton > button {
-        background: rgba(255, 255, 255, 0.1) !important;
+        background: rgba(255, 255, 255, 0.15) !important;
         color: white !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
         border-radius: 10px !important;
         font-weight: 500 !important;
         transition: all 0.3s ease !important;
         width: 100% !important;
+        margin: 5px 0 !important;
     }
     
     .stSidebar .stButton > button:hover {
-        background: rgba(255, 255, 255, 0.2) !important;
-        border-color: rgba(255, 255, 255, 0.4) !important;
+        background: rgba(255, 255, 255, 0.25) !important;
+        border-color: rgba(255, 255, 255, 0.5) !important;
         transform: translateY(-2px) !important;
-    }
-    
-    /* Form elements in sidebar */
-    .stSidebar .stTextArea textarea, .stSidebar .stTextInput input {
-        background: rgba(255, 255, 255, 0.1) !important;
-        color: white !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
-        border-radius: 8px !important;
-    }
-    
-    .stSidebar .stTextArea textarea::placeholder, .stSidebar .stTextInput input::placeholder {
-        color: rgba(255, 255, 255, 0.7) !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
     }
     
     /* Sidebar positioning */
@@ -415,34 +409,41 @@ st.markdown(sidebar_css, unsafe_allow_html=True)
 
 # Menu button when sidebar is closed
 if not st.session_state.nav_open:
-    # Position menu button in top left
+    # Add floating menu button with improved styling
     st.markdown("""
     <style>
-        .menu-button {
+        .floating-menu-btn {
             position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 999;
-            background: #667eea;
+            top: 1rem;
+            left: 1rem;
+            z-index: 9999;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 15px;
+            padding: 12px 16px;
             border-radius: 50px;
-            font-size: 20px;
+            font-size: 18px;
+            font-weight: 600;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+        }
+        .floating-menu-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
         }
     </style>
+    <div style="position: fixed; top: 1rem; left: 1rem; z-index: 9999;">
+        <div class="floating-menu-btn">☰</div>
+    </div>
     """, unsafe_allow_html=True)
     
-    # Create button in container
-    container = st.container()
-    with container:
-        col1, col2 = st.columns([1, 20])
-        with col1:
-            if st.button("☰", key="menu_toggle", help="メニューを開く"):
-                st.session_state.nav_open = True
-                st.rerun()
+    # Place the actual button in a column for clicking
+    col1, col2, col3 = st.columns([0.08, 0.02, 0.9])
+    with col1:
+        if st.button("", key="menu_toggle", help="メニューを開く"):
+            st.session_state.nav_open = True
+            st.rerun()
 
 # Sidebar content (only when open)
 with st.sidebar:
@@ -458,26 +459,31 @@ with st.sidebar:
         if st.button("🏠 ホーム", key="nav_home", use_container_width=True):
             st.session_state.current_page = "home"
             st.session_state.show_chat = False
+            st.session_state.nav_open = False
             st.rerun()
             
         if st.button("📊 ビジネスモデル分析", key="nav_analysis", use_container_width=True):
             st.session_state.current_page = "analysis"
             st.session_state.show_chat = False
+            st.session_state.nav_open = False
             st.rerun()
             
         if st.button("📈 銘柄比較", key="nav_compare", use_container_width=True):
             st.session_state.current_page = "compare"
             st.session_state.show_chat = False
+            st.session_state.nav_open = False
             st.rerun()
             
         if st.button("📊 財務諸表", key="nav_financial", use_container_width=True):
             st.session_state.current_page = "financial"
             st.session_state.show_chat = False
+            st.session_state.nav_open = False
             st.rerun()
             
         if st.button("🧮 DCF価値計算機", key="nav_dcf", use_container_width=True):
             st.session_state.current_page = "dcf"
             st.session_state.show_chat = False
+            st.session_state.nav_open = False
             st.rerun()
             
 
