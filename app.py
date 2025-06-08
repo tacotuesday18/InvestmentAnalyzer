@@ -323,53 +323,61 @@ st.markdown("""
 if "current_page" not in st.session_state:
     st.session_state.current_page = "home"
 
-# Enhanced Navigation in Sidebar with Hamburger Menu
+# Enhanced Navigation in Sidebar with Collapsible Menu
+# Initialize session states
+if "nav_open" not in st.session_state:
+    st.session_state.nav_open = True
+if "show_chat" not in st.session_state:
+    st.session_state.show_chat = False
+
+# Hamburger menu button (always visible)
 with st.sidebar:
-    # Hamburger menu toggle
-    if "nav_open" not in st.session_state:
-        st.session_state.nav_open = True
-    
-    # Hamburger button with visual state indicator
-    col1, col2 = st.columns([1, 4])
-    with col1:
-        menu_icon = "✕" if st.session_state.nav_open else "☰"
-        button_help = "メニューを閉じる" if st.session_state.nav_open else "メニューを開く"
-        if st.button(menu_icon, key="hamburger_btn", help=button_help):
-            st.session_state.nav_open = not st.session_state.nav_open
-            st.rerun()
-    
-    with col2:
-        menu_status = "開いています" if st.session_state.nav_open else "閉じています"
-        st.markdown(f"""
-        <div style="padding: 10px 0; color: #667eea; font-weight: 700; font-size: 18px;">
-            メニュー <span style="font-size: 12px; opacity: 0.7;">({menu_status})</span>
-        </div>
-        """, unsafe_allow_html=True)
+    menu_icon = "✕" if st.session_state.nav_open else "☰"
+    if st.button(menu_icon, key="hamburger_btn", use_container_width=True):
+        st.session_state.nav_open = not st.session_state.nav_open
+        st.rerun()
     
     # Navigation menu (only show when open)
     if st.session_state.nav_open:
-        # Create navigation buttons using Streamlit buttons instead of HTML links
         st.markdown("---")
         
         if st.button("🏠 ホーム", key="nav_home", use_container_width=True):
             st.session_state.current_page = "home"
+            st.session_state.show_chat = False
             st.rerun()
             
         if st.button("📊 ビジネスモデル分析", key="nav_analysis", use_container_width=True):
             st.session_state.current_page = "analysis"
+            st.session_state.show_chat = False
             st.rerun()
             
         if st.button("📈 銘柄比較", key="nav_compare", use_container_width=True):
             st.session_state.current_page = "compare"
+            st.session_state.show_chat = False
             st.rerun()
             
         if st.button("📊 財務諸表", key="nav_financial", use_container_width=True):
             st.session_state.current_page = "financial"
+            st.session_state.show_chat = False
             st.rerun()
             
         if st.button("🧮 DCF価値計算機", key="nav_dcf", use_container_width=True):
             st.session_state.current_page = "dcf"
+            st.session_state.show_chat = False
             st.rerun()
+            
+        if st.button("💬 AI金融アシスタント", key="nav_chat", use_container_width=True):
+            st.session_state.show_chat = True
+            st.rerun()
+    
+    # Show AI chat when selected from menu
+    if st.session_state.show_chat:
+        st.markdown("---")
+        try:
+            from floating_chatbot import render_floating_chatbot
+            render_floating_chatbot()
+        except ImportError:
+            st.error("AIチャット機能は現在利用できません。")
 
 # Page content based on navigation selection
 if st.session_state.current_page == "home":
@@ -639,12 +647,7 @@ if st.session_state.current_page == "home":
     </div>
     """, unsafe_allow_html=True)
     
-    # Add floating chatbot component
-    try:
-        from floating_chatbot import render_floating_chatbot
-        render_floating_chatbot()
-    except ImportError:
-        pass
+
 
 elif st.session_state.current_page == "analysis":
     # ビジネスモデル分析ページ
