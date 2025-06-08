@@ -779,11 +779,13 @@ def display_fundamental_analysis(ticker):
         with tab4:
             st.markdown("#### 📈 成長性指標")
             
+            st.info("💡 CAGR（年平均成長率）は過去5年間の複利成長率を示します。例えば7.8%のCAGRは、毎年平均7.8%ずつ成長していることを意味します。")
+            
             growth_data = [
-                ("5年売上成長率", f"{fundamental_data['growth_metrics']['revenue_growth_5y']:.1f}%"),
-                ("5年利益成長率", f"{fundamental_data['growth_metrics']['earnings_growth_5y']:.1f}%"),
-                ("5年配当成長率", f"{fundamental_data['growth_metrics']['dividend_growth_5y']:.1f}%" if fundamental_data['growth_metrics']['dividend_growth_5y'] > 0 else "配当なし"),
-                ("5年簿価成長率", f"{fundamental_data['growth_metrics']['book_value_growth_5y']:.1f}%")
+                ("売上高CAGR（5年）", f"{fundamental_data['growth_metrics']['revenue_growth_5y']:.1f}%"),
+                ("利益CAGR（5年）", f"{fundamental_data['growth_metrics']['earnings_growth_5y']:.1f}%"),
+                ("配当CAGR（5年）", f"{fundamental_data['growth_metrics']['dividend_growth_5y']:.1f}%" if fundamental_data['growth_metrics']['dividend_growth_5y'] > 0 else "配当なし"),
+                ("簿価CAGR（5年）", f"{fundamental_data['growth_metrics']['book_value_growth_5y']:.1f}%")
             ]
             
             for metric, value in growth_data:
