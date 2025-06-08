@@ -409,10 +409,23 @@ if selected_ticker:
                     # Calculate revenue growth rate
                     try:
                         import yfinance as yf
-                        from auto_financial_data import calculate_growth_rate
+                        from auto_financial_data import calculate_growth_rate, get_revenue_growth_details
                         stock = yf.Ticker(selected_ticker)
                         revenue_growth = calculate_growth_rate(stock)
                         st.metric("売上成長率", f"{revenue_growth:.1f}%")
+                        
+                        # Get detailed breakdown for verification
+                        growth_details = get_revenue_growth_details(stock)
+                        if "error" not in growth_details:
+                            with st.expander("計算詳細を表示"):
+                                st.write(f"**使用年度:** {', '.join(map(str, growth_details['years_used']))}")
+                                for i, (year, revenue) in enumerate(zip(growth_details['years_used'], growth_details['revenues_billions'])):
+                                    st.write(f"**{year}年売上:** ${revenue:.1f}B")
+                                st.write(f"**計算式:** {growth_details['calculation']}")
+                                if growth_details['is_2024_data']:
+                                    st.success("✓ 2024年データを使用")
+                                else:
+                                    st.info(f"最新データ: {growth_details['years_used'][0]}年")
                     except:
                         st.metric("売上成長率", "N/A")
                     st.markdown("</div>", unsafe_allow_html=True)

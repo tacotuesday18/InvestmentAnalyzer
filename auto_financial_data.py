@@ -88,48 +88,124 @@ def get_auto_financial_data(ticker):
         return get_enhanced_estimates(ticker)
 
 def calculate_growth_rate(stock):
-    """Calculate historical revenue growth rate using most recent 2-3 years only"""
+    """Calculate historical revenue growth rate focusing on the most recent year (2024)"""
     try:
         financials = stock.financials
         if financials.empty or len(financials.columns) < 2:
             return 5.0
         
-        revenues = []
-        for col in financials.columns[:3]:  # Only use most recent 3 years max
+        # Get column dates and sort to ensure most recent first
+        columns_with_dates = []
+        for col in financials.columns:
+            try:
+                year = col.year if hasattr(col, 'year') else int(str(col)[:4])
+                columns_with_dates.append((col, year))
+            except:
+                continue
+        
+        # Sort by year descending (most recent first)
+        columns_with_dates.sort(key=lambda x: x[1], reverse=True)
+        
+        revenues_with_years = []
+        for col, year in columns_with_dates[:3]:  # Only use most recent 3 years max
             if 'Total Revenue' in financials.index:
                 rev = financials.loc['Total Revenue'][col]
                 if pd.notna(rev) and rev > 0:
-                    revenues.append(float(rev))
+                    revenues_with_years.append((float(rev), year))
             elif 'Revenue' in financials.index:
                 rev = financials.loc['Revenue'][col]
                 if pd.notna(rev) and rev > 0:
-                    revenues.append(float(rev))
+                    revenues_with_years.append((float(rev), year))
         
-        if len(revenues) >= 2:
-            # Calculate recent growth rates (prioritize most recent)
-            growth_rates = []
+        if len(revenues_with_years) >= 2:
+            # Most recent year should be 2024 or latest available
+            most_recent_revenue, most_recent_year = revenues_with_years[0]
+            previous_revenue, previous_year = revenues_with_years[1]
             
-            # Most recent year-over-year growth (highest weight)
-            if len(revenues) >= 2:
-                recent_growth = ((revenues[0] - revenues[1]) / revenues[1]) * 100
-                growth_rates.append(recent_growth)
+            # Calculate the most recent year-over-year growth (2024 vs 2023, or latest available)
+            recent_growth = ((most_recent_revenue - previous_revenue) / previous_revenue) * 100
+            
+            # If we have a third year for additional context
+            if len(revenues_with_years) >= 3:
+                second_prev_revenue, second_prev_year = revenues_with_years[2]
+                second_growth = ((previous_revenue - second_prev_revenue) / second_prev_revenue) * 100
                 
-                # If we have 3 years, add the second-most recent growth (lower weight)
-                if len(revenues) >= 3:
-                    second_growth = ((revenues[1] - revenues[2]) / revenues[2]) * 100
-                    growth_rates.append(second_growth)
-                    
-                    # Weighted average: 70% recent, 30% second-most recent
-                    weighted_growth = (recent_growth * 0.7) + (second_growth * 0.3)
-                    return max(-50, min(100, weighted_growth))
+                # Give more weight to the most recent growth (2024), especially if it's actually 2024
+                if most_recent_year >= 2024:
+                    # Heavily weight the 2024 growth: 85% recent, 15% previous
+                    weighted_growth = (recent_growth * 0.85) + (second_growth * 0.15)
                 else:
-                    # Only 2 years available, use recent growth
-                    return max(-50, min(100, recent_growth))
+                    # Standard weighting: 70% recent, 30% previous
+                    weighted_growth = (recent_growth * 0.7) + (second_growth * 0.3)
+                
+                return max(-50, min(100, weighted_growth))
+            else:
+                # Only 2 years available, use the most recent growth
+                return max(-50, min(100, recent_growth))
         
         return 5.0
         
     except Exception as e:
         return 5.0
+
+def get_revenue_growth_details(stock):
+    """Get detailed information about which years are being used for revenue growth calculation"""
+    try:
+        financials = stock.financials
+        if financials.empty or len(financials.columns) < 2:
+            return {"error": "Insufficient financial data"}
+        
+        # Get column dates and sort to ensure most recent first
+        columns_with_dates = []
+        for col in financials.columns:
+            try:
+                year = col.year if hasattr(col, 'year') else int(str(col)[:4])
+                columns_with_dates.append((col, year))
+            except:
+                continue
+        
+        # Sort by year descending (most recent first)
+        columns_with_dates.sort(key=lambda x: x[1], reverse=True)
+        
+        revenues_with_years = []
+        for col, year in columns_with_dates[:3]:  # Only use most recent 3 years max
+            if 'Total Revenue' in financials.index:
+                rev = financials.loc['Total Revenue'][col]
+                if pd.notna(rev) and rev > 0:
+                    revenues_with_years.append((float(rev), year, rev/1e9))  # Also store in billions
+            elif 'Revenue' in financials.index:
+                rev = financials.loc['Revenue'][col]
+                if pd.notna(rev) and rev > 0:
+                    revenues_with_years.append((float(rev), year, rev/1e9))
+        
+        if len(revenues_with_years) >= 2:
+            most_recent_revenue, most_recent_year, most_recent_billions = revenues_with_years[0]
+            previous_revenue, previous_year, previous_billions = revenues_with_years[1]
+            
+            recent_growth = ((most_recent_revenue - previous_revenue) / previous_revenue) * 100
+            
+            result = {
+                "years_used": [most_recent_year, previous_year],
+                "revenues_billions": [most_recent_billions, previous_billions],
+                "growth_rate": recent_growth,
+                "calculation": f"{most_recent_year} vs {previous_year}: {recent_growth:.1f}%",
+                "is_2024_data": most_recent_year >= 2024
+            }
+            
+            if len(revenues_with_years) >= 3:
+                second_prev_revenue, second_prev_year, second_prev_billions = revenues_with_years[2]
+                second_growth = ((previous_revenue - second_prev_revenue) / second_prev_revenue) * 100
+                result["years_used"].append(second_prev_year)
+                result["revenues_billions"].append(second_prev_billions)
+                result["second_growth"] = second_growth
+                result["calculation"] += f" and {previous_year} vs {second_prev_year}: {second_growth:.1f}%"
+            
+            return result
+        
+        return {"error": "Insufficient revenue data for calculation"}
+        
+    except Exception as e:
+        return {"error": f"Error analyzing revenue data: {str(e)}"}
 
 def get_enhanced_estimates(ticker):
     """Get enhanced estimates for companies when live data is limited"""
