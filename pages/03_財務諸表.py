@@ -391,10 +391,10 @@ if selected_ticker:
                         from real_time_data import financial_chatbot
                         
                         earnings_query = f"""
-                        {selected_ticker}の最新の決算説明会について、以下の観点から日本語で要約してください：
+                        {selected_ticker}の最新の決算説明会について、以下の観点から日本語で要約してください。
                         
                         1. CEOやCFOからの重要な発言
-                        2. 今四半期の業績ハイライト
+                        2. 今四半期の業績ハイライト  
                         3. 来四半期・来年の見通し
                         4. 投資家からの主要な質問とその回答
                         5. 事業戦略の変更や新たな取り組み

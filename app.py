@@ -462,6 +462,10 @@ with col1:
         </ul>
     </div>
     """, unsafe_allow_html=True)
+    
+    if st.button("無料で始める", key="free_plan", use_container_width=True):
+        st.success("無料アカウントを作成しました！")
+        st.info("月3回まで企業分析をお試しいただけます。")
 
 with col2:
     st.markdown("""
@@ -481,6 +485,10 @@ with col2:
         </ul>
     </div>
     """, unsafe_allow_html=True)
+    
+    if st.button("プロプランを申し込む", key="pro_plan", type="primary", use_container_width=True):
+        st.success("決済ページに移動します...")
+        st.info("クレジットカード決済またはPayPalで簡単にお申し込みいただけます。")
 
 with col3:
     st.markdown("""
@@ -499,6 +507,10 @@ with col3:
         </ul>
     </div>
     """, unsafe_allow_html=True)
+    
+    if st.button("プレミアムプランを申し込む", key="premium_plan", use_container_width=True):
+        st.success("企業向け決済ページに移動します...")
+        st.info("法人向けプランです。請求書払いにも対応しています。")
 
 # CTA section
 st.markdown("""

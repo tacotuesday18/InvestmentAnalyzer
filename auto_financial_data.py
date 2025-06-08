@@ -121,9 +121,10 @@ def calculate_growth_rate(stock):
                 growth_rates.append(growth_rate)
             
             if growth_rates:
-                # Return average growth rate
+                # Return average growth rate, with more realistic bounds
                 avg_growth = sum(growth_rates) / len(growth_rates)
-                return max(-50, min(100, avg_growth))  # Cap between -50% and 100%
+                # Cap realistic growth rates for public companies
+                return max(-30, min(50, avg_growth))
         
         return 5.0
         
