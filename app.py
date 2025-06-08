@@ -404,11 +404,70 @@ with col4:
 
 st.markdown("</div>", unsafe_allow_html=True)
 
+# Pricing section
+st.markdown("""
+<div style="background-color: #f8f9fa; padding: 3rem 2rem; margin: 2rem 0;">
+    <h2 style="text-align: center; margin-bottom: 2rem; color: #222;">💰 料金プラン</h2>
+    <div style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;">
+        
+        <!-- Free Plan -->
+        <div style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 300px; text-align: center;">
+            <h3 style="color: #28a745; margin-bottom: 1rem;">無料プラン</h3>
+            <div style="font-size: 2rem; font-weight: bold; color: #28a745; margin-bottom: 1rem;">¥0<span style="font-size: 1rem;">/月</span></div>
+            <ul style="text-align: left; color: #666; line-height: 1.8;">
+                <li>基本的な企業分析（月3回まで）</li>
+                <li>リアルタイム株価表示</li>
+                <li>PER・PBR・PSR比較</li>
+                <li>財務諸表閲覧</li>
+            </ul>
+            <div style="margin-top: 1.5rem;">
+                <button style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer;">今すぐ開始</button>
+            </div>
+        </div>
+        
+        <!-- Pro Plan -->
+        <div style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 8px 16px rgba(0,0,0,0.15); max-width: 300px; text-align: center; border: 3px solid #007bff;">
+            <div style="background: #007bff; color: white; padding: 0.5rem; margin: -2rem -2rem 1rem -2rem; border-radius: 10px 10px 0 0;">人気No.1</div>
+            <h3 style="color: #007bff; margin-bottom: 1rem;">プロプラン</h3>
+            <div style="font-size: 2rem; font-weight: bold; color: #007bff; margin-bottom: 1rem;">¥2,980<span style="font-size: 1rem;">/月</span></div>
+            <ul style="text-align: left; color: #666; line-height: 1.8;">
+                <li>無制限の企業分析</li>
+                <li>DCF価値計算機</li>
+                <li>決算説明会ハイライト</li>
+                <li>銘柄比較（最大8社）</li>
+                <li>AIチャットボット</li>
+                <li>感度分析</li>
+            </ul>
+            <div style="margin-top: 1.5rem;">
+                <button style="background: #007bff; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer;">7日間無料体験</button>
+            </div>
+        </div>
+        
+        <!-- Premium Plan -->
+        <div style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 300px; text-align: center;">
+            <h3 style="color: #6f42c1; margin-bottom: 1rem;">プレミアムプラン</h3>
+            <div style="font-size: 2rem; font-weight: bold; color: #6f42c1; margin-bottom: 1rem;">¥9,800<span style="font-size: 1rem;">/月</span></div>
+            <ul style="text-align: left; color: #666; line-height: 1.8;">
+                <li>プロプランの全機能</li>
+                <li>カスタム分析レポート</li>
+                <li>アラート機能</li>
+                <li>API連携</li>
+                <li>優先サポート</li>
+                <li>機関投資家レベル分析</li>
+            </ul>
+            <div style="margin-top: 1.5rem;">
+                <button style="background: #6f42c1; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer;">お問い合わせ</button>
+            </div>
+        </div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
 # CTA section
 st.markdown("""
 <div class="cta-container">
-    <div class="cta-title">投資判断を科学的に</div>
-    <div class="cta-subtitle">感情ではなくデータに基づいた投資戦略を構築しましょう</div>
+    <div class="cta-title">今すぐデータドリブン投資を始めよう</div>
+    <div class="cta-subtitle">感情ではなく数値に基づいた投資判断で、長期的な資産形成を実現</div>
 </div>
 """, unsafe_allow_html=True)
 
