@@ -293,14 +293,7 @@ filtered_tickers = available_tickers
 # Use simple ticker options without calling get_stock_data
 ticker_select_options = filtered_tickers
 
-# 銘柄検索 (モバイルフレンドリー)
-search_term = st.text_input("銘柄を検索 (ティッカーまたは企業名)", "")
-if search_term:
-    search_term = search_term.lower()
-    ticker_select_options = [
-        option for option in ticker_select_options 
-        if search_term in option.lower()
-    ]
+# Remove duplicate search - use the search above
 
 # 銘柄選択（最大8つまで - 複数企業の比較を強化）
 selected_ticker_options = st.multiselect(

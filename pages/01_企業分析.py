@@ -16,6 +16,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # stock_dataモジュールをインポート
 from stock_data import get_stock_data, update_stock_price, fetch_tradingview_price
 from real_time_fetcher import fetch_current_stock_price, fetch_comprehensive_data, show_live_price_indicator, display_market_status
+from comprehensive_stock_data import search_stocks_by_name, get_all_tickers, get_stock_info, get_stocks_by_category, get_all_categories
 
 # ページ設定
 st.set_page_config(
@@ -271,89 +272,57 @@ with st.sidebar:
     if st.button("DCF価値計算機", key="dcf_btn"):
         st.switch_page("pages/04_DCF価値計算機.py")
 
-# 企業選択フォーム
+# Enhanced stock selection using comprehensive database
 st.markdown("<div class='form-section mobile-card'>", unsafe_allow_html=True)
-st.markdown("<h2>企業を選択</h2>", unsafe_allow_html=True)
+st.markdown("<h2>📊 企業を選択</h2>", unsafe_allow_html=True)
 
-# 人気企業リストを作成
-popular_companies = {
-    "テクノロジー": [
-        {"name": "Apple Inc.", "ticker": "AAPL", "country": "アメリカ", "industry": "テクノロジー"},
-        {"name": "Microsoft Corporation", "ticker": "MSFT", "country": "アメリカ", "industry": "テクノロジー"},
-        {"name": "Amazon.com Inc.", "ticker": "AMZN", "country": "アメリカ", "industry": "テクノロジー"},
-        {"name": "Google (Alphabet Inc.)", "ticker": "GOOGL", "country": "アメリカ", "industry": "テクノロジー"},
-        {"name": "Meta Platforms Inc.", "ticker": "META", "country": "アメリカ", "industry": "テクノロジー"},
-        {"name": "NVIDIA Corporation", "ticker": "NVDA", "country": "アメリカ", "industry": "テクノロジー"},
-        {"name": "Taiwan Semiconductor", "ticker": "TSM", "country": "台湾", "industry": "テクノロジー"},
-        {"name": "Samsung Electronics", "ticker": "005930.KS", "country": "韓国", "industry": "テクノロジー"},
-    ],
-    "消費財": [
-        {"name": "Coca-Cola Company", "ticker": "KO", "country": "アメリカ", "industry": "消費財"},
-        {"name": "Nike Inc.", "ticker": "NKE", "country": "アメリカ", "industry": "消費財"},
-        {"name": "McDonald's Corporation", "ticker": "MCD", "country": "アメリカ", "industry": "消費財"},
-        {"name": "Starbucks Corporation", "ticker": "SBUX", "country": "アメリカ", "industry": "消費財"},
-    ],
-    "金融": [
-        {"name": "JPMorgan Chase & Co.", "ticker": "JPM", "country": "アメリカ", "industry": "金融"},
-        {"name": "Bank of America Corp.", "ticker": "BAC", "country": "アメリカ", "industry": "金融"},
-        {"name": "Visa Inc.", "ticker": "V", "country": "アメリカ", "industry": "金融"},
-        {"name": "Mastercard Inc.", "ticker": "MA", "country": "アメリカ", "industry": "金融"},
-    ],
-    "日本企業": [
-        {"name": "トヨタ自動車", "ticker": "7203.T", "country": "日本", "industry": "自動車"},
-        {"name": "ソニーグループ", "ticker": "6758.T", "country": "日本", "industry": "テクノロジー"},
-        {"name": "日本電信電話", "ticker": "9432.T", "country": "日本", "industry": "通信"},
-        {"name": "三菱UFJフィナンシャルグループ", "ticker": "8306.T", "country": "日本", "industry": "金融"},
-        {"name": "ソフトバンクグループ", "ticker": "9984.T", "country": "日本", "industry": "テクノロジー"},
-    ]
-}
+# Get all available tickers from comprehensive database
+available_tickers = get_all_tickers()
 
-# タブでカテゴリを分ける
-tab1, tab2 = st.tabs(["人気企業から選ぶ", "企業名で検索"])
+col1, col2 = st.columns([3, 1])
 
-with tab1:
-    # サブタブでさらに分類
-    category_tabs = st.tabs(list(popular_companies.keys()))
-    
-    selected_company = None
-    
-    for i, category in enumerate(popular_companies.keys()):
-        with category_tabs[i]:
-            # カテゴリごとのリスト表示
-            for company in popular_companies[category]:
-                if st.button(f"{company['name']} ({company['ticker']})", key=f"{company['ticker']}_btn"):
-                    selected_company = company
-                    # セッション状態に保存
-                    st.session_state.selected_company = company
-    
-    # セッション状態から選択された企業を取得
-    if 'selected_company' in st.session_state:
-        selected_company = st.session_state.selected_company
-        st.success(f"{selected_company['name']} ({selected_company['ticker']})を選択しました。")
-
-with tab2:
-    # 検索機能
-    search_query = st.text_input("企業名またはティッカーで検索", placeholder="例: Apple, AAPL, アップル")
-    
+with col1:
+    search_query = st.text_input("企業名またはティッカーで検索", placeholder="企業名またはティッカーシンボルを入力 (例: Apple, Chipotle, AAPL, CMG)")
     if search_query:
-        st.info("実際のアプリでは、ここで企業データベースから検索結果が表示されます。")
-        search_results = []
-        
-        # デモ用の簡易検索ロジック
-        for category in popular_companies:
-            for company in popular_companies[category]:
-                if (search_query.lower() in company['name'].lower() or 
-                    search_query.upper() in company['ticker']):
-                    search_results.append(company)
-        
+        search_results = search_stocks_by_name(search_query)
         if search_results:
-            st.write("検索結果:")
-            for result in search_results:
-                if st.button(f"{result['name']} ({result['ticker']})", key=f"search_{result['ticker']}"):
-                    st.session_state.selected_company = result
-                    st.rerun()
+            available_tickers = search_results[:30]
         else:
-            st.warning("検索結果が見つかりませんでした。別のキーワードで試してください。")
+            st.warning(f"'{search_query}' に一致する銘柄が見つかりません")
+
+with col2:
+    categories = ["All"] + get_all_categories()
+    selected_category = st.selectbox("カテゴリー", categories)
+    if selected_category != "All":
+        available_tickers = get_stocks_by_category(selected_category)
+
+st.info(f"選択可能銘柄数: {len(available_tickers)} | 全主要指数をカバー")
+
+# Create options with company names for better UX
+ticker_options = {}
+for ticker in available_tickers:
+    stock_info = get_stock_info(ticker)
+    ticker_options[ticker] = f"{ticker} - {stock_info['name']}"
+
+selected_ticker = st.selectbox(
+    "企業を選択してください",
+    options=available_tickers,
+    index=0,
+    format_func=lambda x: ticker_options.get(x, x),
+    key="fundamental_ticker_selection"
+)
+
+# Convert to the format expected by the rest of the code
+if selected_ticker:
+    stock_info = get_stock_info(selected_ticker)
+    selected_company = {
+        "name": stock_info['name'],
+        "ticker": selected_ticker,
+        "country": "アメリカ" if stock_info['index'] in ["NYSE", "NASDAQ"] else "その他",
+        "industry": stock_info['category']
+    }
+    st.session_state.selected_company = selected_company
+    st.success(f"{selected_company['name']} ({selected_company['ticker']})を選択しました。")
 
 # 選択された企業情報を変数に格納
 if 'selected_company' in st.session_state:
