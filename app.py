@@ -27,8 +27,13 @@ st.markdown("""
     .stDeployButton {display: none;}
     .stDecoration {display: none;}
     
-    /* Style the sidebar toggle button with more specific selectors */
-    button[kind="header"], .st-emotion-cache-1rs6os, .st-emotion-cache-17eq0hr {
+    /* Style ALL possible sidebar control elements */
+    button[kind="header"], 
+    [data-testid="collapsedControl"],
+    .st-emotion-cache-1rs6os, 
+    .st-emotion-cache-17eq0hr,
+    section[data-testid="stSidebar"] > div > button,
+    .stSidebar > div > button {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
         border: none !important;
         border-radius: 50% !important;
@@ -40,24 +45,41 @@ st.markdown("""
         left: 20px !important;
         z-index: 9999 !important;
         transition: all 0.3s ease !important;
-        color: white !important;
-        font-size: 24px !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
+        cursor: pointer !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
     
-    button[kind="header"]:hover, .st-emotion-cache-1rs6os:hover, .st-emotion-cache-17eq0hr:hover {
+    button[kind="header"]:hover, 
+    [data-testid="collapsedControl"]:hover,
+    .st-emotion-cache-1rs6os:hover, 
+    .st-emotion-cache-17eq0hr:hover,
+    section[data-testid="stSidebar"] > div > button:hover,
+    .stSidebar > div > button:hover {
         transform: translateY(-2px) !important;
         box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6) !important;
     }
     
-    /* Hide the original SVG icon and replace with hamburger */
-    button[kind="header"] svg, .st-emotion-cache-1rs6os svg, .st-emotion-cache-17eq0hr svg {
+    /* Hide ALL original icons */
+    button[kind="header"] svg, 
+    [data-testid="collapsedControl"] svg,
+    .st-emotion-cache-1rs6os svg, 
+    .st-emotion-cache-17eq0hr svg,
+    section[data-testid="stSidebar"] > div > button svg,
+    .stSidebar > div > button svg {
         display: none !important;
     }
     
-    button[kind="header"]::before, .st-emotion-cache-1rs6os::before, .st-emotion-cache-17eq0hr::before {
+    /* Add hamburger icon to ALL buttons */
+    button[kind="header"]::after, 
+    [data-testid="collapsedControl"]::after,
+    .st-emotion-cache-1rs6os::after, 
+    .st-emotion-cache-17eq0hr::after,
+    section[data-testid="stSidebar"] > div > button::after,
+    .stSidebar > div > button::after {
         content: "☰" !important;
         color: white !important;
         font-size: 24px !important;
@@ -66,23 +88,9 @@ st.markdown("""
         top: 50% !important;
         left: 50% !important;
         transform: translate(-50%, -50%) !important;
-    }
-    
-    /* Make sure the button is visible and clickable */
-    [data-testid="collapsedControl"] {
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-        border: none !important;
-        border-radius: 50% !important;
-        width: 60px !important;
-        height: 60px !important;
-        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4) !important;
-        position: fixed !important;
-        top: 20px !important;
-        left: 20px !important;
-        z-index: 9999 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
     
     /* Enhanced Navigation Styles */
