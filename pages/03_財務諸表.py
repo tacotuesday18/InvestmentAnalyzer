@@ -8,11 +8,7 @@ import numpy as np
 import requests
 import trafilatura
 
-st.set_page_config(
-    page_title="財務諸表分析 - Kabu2Easy",
-    page_icon="📊",
-    layout="wide"
-)
+# ページ設定は main app.py で処理済み
 
 # TravelPerk-style CSS for consistent design
 st.markdown("""

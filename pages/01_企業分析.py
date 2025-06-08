@@ -18,13 +18,7 @@ from stock_data import get_stock_data, update_stock_price, fetch_tradingview_pri
 from real_time_fetcher import fetch_current_stock_price, fetch_comprehensive_data, show_live_price_indicator, display_market_status
 from comprehensive_stock_data import search_stocks_by_name, get_all_tickers, get_stock_info, get_stocks_by_category, get_all_categories
 
-# ページ設定
-st.set_page_config(
-    page_title="企業分析 - 企業価値分析プロ",
-    page_icon="📊",
-    layout="wide",
-    initial_sidebar_state="collapsed"
-)
+# ページ設定は main app.py で処理済み
 
 # Modern design CSS consistent with homepage
 st.markdown("""

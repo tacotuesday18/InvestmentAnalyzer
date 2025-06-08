@@ -23,13 +23,7 @@ from comprehensive_stock_data import search_stocks_by_name, get_all_tickers, get
 from financial_models import calculate_intrinsic_value
 from auto_financial_data import get_auto_financial_data
 
-# ページ設定
-st.set_page_config(
-    page_title="DCF価値計算機 - Kabu2Easy",
-    page_icon="🧮",
-    layout="wide",
-    initial_sidebar_state="collapsed"
-)
+# ページ設定は main app.py で処理済み
 
 # Modern design CSS consistent with homepage
 st.markdown("""

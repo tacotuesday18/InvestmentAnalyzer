@@ -21,13 +21,7 @@ from comprehensive_stock_data import search_stocks_by_name, get_all_tickers, get
 from real_time_fetcher import fetch_current_stock_price, fetch_comprehensive_data, show_live_price_indicator, display_market_status
 from auto_financial_data import get_auto_financial_data, calculate_growth_rate
 
-# ページ設定
-st.set_page_config(
-    page_title="銘柄比較 - 企業価値分析プロ",
-    page_icon="🔍",
-    layout="wide",
-    initial_sidebar_state="collapsed"
-)
+# ページ設定は main app.py で処理済み
 
 # Modern design CSS consistent with homepage
 st.markdown("""
