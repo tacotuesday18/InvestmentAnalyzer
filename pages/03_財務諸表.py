@@ -432,6 +432,12 @@ if selected_ticker:
                 
                 st.markdown("</div>", unsafe_allow_html=True)
                 
+                # Revenue Streams Analysis
+                st.markdown("<div class='card'>", unsafe_allow_html=True)
+                from revenue_streams_analyzer import display_revenue_streams_analysis
+                display_revenue_streams_analysis(selected_ticker)
+                st.markdown("</div>", unsafe_allow_html=True)
+                
                 # 最新決算説明会の内容
                 st.markdown("<div class='card'>", unsafe_allow_html=True)
                 st.markdown("### 💬 最新決算説明会ハイライト")
