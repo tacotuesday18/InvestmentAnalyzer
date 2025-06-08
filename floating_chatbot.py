@@ -9,6 +9,177 @@ if OPENAI_API_KEY:
 else:
     openai_client = None
 
+def get_platform_context():
+    """Get current platform context for personalized responses"""
+    context = []
+    
+    # Check what page user is currently on
+    if hasattr(st, 'session_state'):
+        if 'selected_company' in st.session_state:
+            company = st.session_state.selected_company
+            context.append(f"現在選択企業: {company.get('name', 'N/A')} ({company.get('ticker', 'N/A')})")
+        
+        if 'current_price' in st.session_state:
+            context.append(f"最新株価データ: 利用可能")
+        
+        if 'live_data' in st.session_state:
+            context.append(f"リアルタイムデータ: 取得済み")
+    
+    # Available analysis features
+    context.append("ファンダメンタル分析対応: AAPL, MSFT, AMZN, GOOGL, META, TSLA, NVDA")
+    
+    context.append("利用可能機能: DCF計算、財務諸表分析、銘柄比較、決算分析")
+    
+    return "\n".join(context) if context else "プラットフォーム準備完了"
+
+def get_specialized_response(user_input):
+    """Provide specialized platform responses without API dependency"""
+    input_lower = user_input.lower()
+    
+    # DCF Analysis responses
+    if "dcf" in input_lower or "割引" in input_lower or "価値計算" in input_lower:
+        return """📊 **DCF価値計算機の使用方法**
+
+1. **04_DCF価値計算機** ページにアクセス
+2. 企業を選択（AAPL, MSFT, AMZN等対応）
+3. 以下のパラメータを調整：
+   - 売上成長率（5-15%が一般的）
+   - 純利益率（業界平均を参考）
+   - 割引率（7-10%が標準）
+   - 予測期間（5-10年）
+
+**重要ポイント：**
+- 成長率は過去実績と業界トレンドを考慮
+- 割引率はリスクフリーレート+リスクプレミアム
+- 複数シナリオで感度分析を実施
+
+現在の企業データがあれば、具体的な数値で分析可能です。"""
+
+    # Investment decision responses
+    elif "投資判断" in input_lower or "買い" in input_lower or "売り" in input_lower:
+        current_company = get_current_company_context()
+        return f"""💰 **投資判断フレームワーク**
+
+{current_company}
+
+**判断基準：**
+1. **ファンダメンタル分析**
+   - PER: 業界平均と比較
+   - 成長率: 5年CAGR 10%以上が理想
+   - ROE: 15%以上が優良
+
+2. **ビジネスモデル評価**
+   - 競争優位性（モート）の強さ
+   - 収益の安定性・成長性
+   - 市場シェアと拡大可能性
+
+3. **リスク要因**
+   - 業界トレンド変化
+   - 規制リスク
+   - 地政学リスク
+
+**推奨アクション：**
+ビジネスモデル分析ページで詳細なSWOT分析を確認してください。"""
+
+    # Growth analysis responses
+    elif "成長" in input_lower or "cagr" in input_lower:
+        return """📈 **CAGR成長率評価ガイド**
+
+**優秀な成長率基準：**
+- 売上CAGR: 10-20%（テック企業）
+- 利益CAGR: 15-25%（理想的）
+- 配当CAGR: 5-10%（安定企業）
+
+**業界別ベンチマーク：**
+- テクノロジー: 売上15%+
+- ヘルスケア: 売上8-12%
+- 金融: 売上5-10%
+- 消費財: 売上3-8%
+
+**注意点：**
+- 単年度の異常値に注意
+- 市場成熟度を考慮
+- 競合他社との比較必須
+
+財務諸表ページで具体的な数値を確認し、業界平均と比較してください。"""
+
+    # Risk analysis responses
+    elif "リスク" in input_lower or "危険" in input_lower or "注意" in input_lower:
+        return """🔍 **投資リスク分析チェックリスト**
+
+**市場リスク：**
+- 金利変動の影響
+- 為替リスク（海外企業）
+- 景気サイクルの影響
+
+**企業固有リスク：**
+- 売上集中度（特定顧客・製品）
+- 競合他社の脅威
+- 技術革新による陳腐化
+
+**財務リスク：**
+- 債務比率の高さ
+- キャッシュフロー不安定
+- 資金調達能力
+
+**評価方法：**
+1. SWOT分析で脅威を特定
+2. 財務指標で健全性確認
+3. 業界動向との照合
+
+決算分析ページで最新の業績トレンドも確認することをお勧めします。"""
+
+    # Company-specific responses
+    elif any(ticker in input_lower for ticker in ["aapl", "apple", "アップル"]):
+        return """🍎 **Apple (AAPL) 分析サマリー**
+
+**強み：**
+- エコシステムによる顧客囲い込み
+- 高い利益率（純利益率25%+）
+- 強固なブランド力
+
+**注意点：**
+- iPhone依存度（売上の50%）
+- 中国市場リスク
+- 成長率鈍化の可能性
+
+**推奨分析：**
+1. ビジネスモデル分析で詳細SWOT確認
+2. DCF計算機でサービス事業成長を織り込んだ価値算出
+3. 財務諸表で最新の収益構造確認
+
+プラットフォーム内で包括的な分析データが利用できます。"""
+
+    # General platform guidance
+    else:
+        return """💡 **1000x Stocks プラットフォーム活用ガイド**
+
+**利用可能な分析ツール：**
+1. **ビジネスモデル分析** - SWOT・競争優位性
+2. **銘柄比較** - 複数企業の並列分析
+3. **財務諸表** - 詳細な財務指標
+4. **DCF価値計算機** - 本質的価値算出
+5. **決算分析** - 事業セグメント別分析
+
+**対応企業：**
+AAPL, MSFT, AMZN, GOOGL, META, TSLA, NVDA等
+
+**投資分析の流れ：**
+1. ビジネスモデル理解
+2. 財務健全性確認  
+3. 成長性評価
+4. 適正価値算出
+5. リスク要因検討
+
+具体的な企業名やティッカーをお教えいただければ、より詳細な分析をご案内します。"""
+
+def get_current_company_context():
+    """Get current company context for responses"""
+    if hasattr(st, 'session_state') and 'selected_company' in st.session_state:
+        company = st.session_state.selected_company
+        return f"**現在選択中企業:** {company.get('name', 'N/A')} ({company.get('ticker', 'N/A')})"
+    return "**企業選択:** まず分析したい企業を選択してください"
+
 def render_floating_chatbot():
     """
     Render a financial AI assistant in the sidebar
@@ -54,13 +225,30 @@ def render_floating_chatbot():
                     placeholder="例: AAPLの財務状況は？"
                 )
                 
-                col1, col2 = st.columns(2)
+                # Specialized quick action buttons for this platform
+                st.markdown("**🚀 クイックアクション:**")
+                
+                col1, col2, col3 = st.columns(3)
                 with col1:
-                    submit = st.form_submit_button("送信", type="primary")
-                with col2:
-                    if st.form_submit_button("DCFヘルプ"):
-                        user_input = "DCF計算について教えて"
+                    if st.form_submit_button("📊 DCF分析"):
+                        user_input = "DCF価値計算機の使い方と、適正株価の算出方法を教えて"
                         submit = True
+                with col2:
+                    if st.form_submit_button("💰 投資判断"):
+                        user_input = "現在選択中の企業の投資判断をファンダメンタル分析に基づいて教えて"
+                        submit = True
+                with col3:
+                    if st.form_submit_button("📈 成長性分析"):
+                        user_input = "この企業の5年CAGR成長率をどう評価すべきか分析して"
+                        submit = True
+                
+                col4, col5 = st.columns(2)
+                with col4:
+                    if st.form_submit_button("🔍 リスク分析"):
+                        user_input = "この銘柄の主要リスク要因と注意点を教えて"
+                        submit = True
+                with col5:
+                    submit = st.form_submit_button("送信", type="primary")
             
             if submit and user_input:
                 # Add user message
@@ -73,18 +261,21 @@ def render_floating_chatbot():
                         st.session_state.chat_messages.append({"role": "assistant", "content": response})
                         st.success("回答を生成しました！")
                     else:
+                        # Fallback to specialized platform responses
+                        fallback_response = get_specialized_response(user_input)
                         st.session_state.chat_messages.append({
                             "role": "assistant", 
-                            "content": "AI回答にはOpenAI APIキーが必要です。チャットボット機能を使用するには適切なAPI設定が必要です。"
+                            "content": fallback_response
                         })
-                        st.warning("APIキーが必要です")
+                        st.info("プラットフォーム専用回答")
                 except Exception as e:
-                    error_msg = f"チャットエラー: {str(e)}"
+                    # Even if API fails, provide specialized guidance
+                    fallback_response = get_specialized_response(user_input)
                     st.session_state.chat_messages.append({
                         "role": "assistant", 
-                        "content": error_msg
+                        "content": fallback_response
                     })
-                    st.error("回答の生成に失敗しました")
+                    st.warning("APIエラーのため、プラットフォーム専用回答を表示")
                 
                 st.rerun()
 
@@ -107,17 +298,29 @@ def process_chat_message(message):
     try:
         st.session_state.last_api_call = current_time
         
-        # Create context about the financial analysis platform
-        system_prompt = """あなたは日本の株式分析プラットフォームのAI金融アシスタントです。
-        ユーザーを以下の点でサポートしてください：
-        - 株式分析と企業価値評価の質問
-        - DCF計算と財務モデリング
-        - 市場データの解釈
-        - 投資戦略のアドバイス
-        - 財務比率と指標の説明
+        # Get context from current session for personalized responses
+        context_info = get_platform_context()
         
-        常に日本語で回答してください。簡潔でありながら情報量の多い回答を心がけ、実用的な金融アドバイスに焦点を当ててください。
-        専門用語を使う場合は、分かりやすく説明を加えてください。"""
+        # Create specialized system prompt with platform integration
+        system_prompt = f"""あなたは「1000x Stocks」プラットフォームの専門AI金融アシスタント「KOJI」です。
+
+以下の特別な機能を持っています：
+- プラットフォーム内の分析データとの連携
+- 日本市場に特化した投資アドバイス
+- リアルタイム財務データの解釈
+- DCF、ファンダメンタル分析の専門サポート
+
+現在のプラットフォーム状況：
+{context_info}
+
+回答ルール：
+1. 常に日本語で実用的なアドバイスを提供
+2. 具体的な数値や計算式を含める
+3. リスク要因も必ず言及
+4. プラットフォーム内の他のページへの誘導も行う
+5. 一般的な金融知識ではなく、実際の投資判断に役立つ情報を優先
+
+ユーザーが企業名やティッカーを言及した場合、そのデータがプラットフォームにあるかを確認し、具体的な分析を提案してください。"""
         
         response = openai_client.chat.completions.create(
             model="gpt-4o",  # the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
@@ -132,4 +335,10 @@ def process_chat_message(message):
         return response.choices[0].message.content
         
     except Exception as e:
-        return f"申し訳ございませんが、リクエストの処理中にエラーが発生しました: {str(e)}"
+        error_msg = str(e)
+        if "quota" in error_msg or "429" in error_msg:
+            return "現在、OpenAI APIの利用枠に制限があります。APIキーの課金設定をご確認ください。詳細については OpenAI のドキュメントをご参照ください。"
+        elif "401" in error_msg or "invalid" in error_msg:
+            return "APIキーが無効です。正しいOpenAI APIキーを設定してください。"
+        else:
+            return f"申し訳ございませんが、リクエストの処理中にエラーが発生しました: {error_msg}"
