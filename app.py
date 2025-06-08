@@ -329,16 +329,20 @@ with st.sidebar:
     if "nav_open" not in st.session_state:
         st.session_state.nav_open = True
     
-    # Hamburger button
+    # Hamburger button with visual state indicator
     col1, col2 = st.columns([1, 4])
     with col1:
-        if st.button("☰", key="hamburger_btn", help="メニューを開く/閉じる"):
+        menu_icon = "✕" if st.session_state.nav_open else "☰"
+        button_help = "メニューを閉じる" if st.session_state.nav_open else "メニューを開く"
+        if st.button(menu_icon, key="hamburger_btn", help=button_help):
             st.session_state.nav_open = not st.session_state.nav_open
+            st.rerun()
     
     with col2:
-        st.markdown("""
+        menu_status = "開いています" if st.session_state.nav_open else "閉じています"
+        st.markdown(f"""
         <div style="padding: 10px 0; color: #667eea; font-weight: 700; font-size: 18px;">
-            メニュー
+            メニュー <span style="font-size: 12px; opacity: 0.7;">({menu_status})</span>
         </div>
         """, unsafe_allow_html=True)
     
