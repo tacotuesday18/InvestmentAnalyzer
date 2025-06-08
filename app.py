@@ -27,30 +27,42 @@ st.markdown("""
     .stDeployButton {display: none;}
     .stDecoration {display: none;}
     
-    /* Hide Streamlit's built-in sidebar toggle and arrows completely */
-    button[kind="header"] {display: none !important;}
-    .css-1rs6os .css-17eq0hr {display: none !important;}
-    [data-testid="collapsedControl"] {display: none !important;}
-    [data-testid="stSidebarNav"] {display: none !important;}
-    .css-1544g2n {display: none !important;}
-    .css-1d391kg {display: none !important;}
-    .st-emotion-cache-1rs6os {display: none !important;}
-    .st-emotion-cache-17eq0hr {display: none !important;}
-    .st-emotion-cache-1544g2n {display: none !important;}
-    .st-emotion-cache-1d391kg {display: none !important;}
+    /* Transform the default sidebar arrow into purple hamburger menu */
+    [data-testid="collapsedControl"] {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        border: none !important;
+        border-radius: 50% !important;
+        width: 60px !important;
+        height: 60px !important;
+        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4) !important;
+        position: fixed !important;
+        top: 20px !important;
+        left: 20px !important;
+        z-index: 9999 !important;
+        transition: all 0.3s ease !important;
+    }
     
-    /* Remove ALL sidebar control buttons including the arrow */
-    section[data-testid="stSidebar"] button[aria-label*="Sidebar"] {display: none !important;}
-    section[data-testid="stSidebar"] button[title*="Sidebar"] {display: none !important;}
-    section[data-testid="stSidebar"] button[aria-label*="sidebar"] {display: none !important;}
-    section[data-testid="stSidebar"] button[title*="sidebar"] {display: none !important;}
-    button[aria-label*="sidebar"] {display: none !important;}
-    button[title*="sidebar"] {display: none !important;}
+    [data-testid="collapsedControl"]:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6) !important;
+    }
     
-    /* Hide the built-in collapse button completely */
-    .stSidebar [data-testid="collapsedControl"] {display: none !important;}
-    [aria-label*="collapse"] {display: none !important;}
-    [aria-label*="expand"] {display: none !important;}
+    /* Replace arrow with hamburger lines */
+    [data-testid="collapsedControl"] svg {
+        display: none !important;
+    }
+    
+    [data-testid="collapsedControl"]::after {
+        content: "☰" !important;
+        color: white !important;
+        font-size: 24px !important;
+        font-weight: 600 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 100% !important;
+        height: 100% !important;
+    }
     
     /* Enhanced Navigation Styles */
     .stSidebar, section[data-testid="stSidebar"] {
@@ -418,77 +430,7 @@ else:
 
 st.markdown(sidebar_css, unsafe_allow_html=True)
 
-# Menu button when sidebar is closed
-if not st.session_state.nav_open:
-    # Position button in the light blue section at top left
-    st.markdown("""
-    <style>
-        .menu-toggle-container {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 9999;
-        }
-        
-        .purple-menu-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 15px;
-            border-radius: 50%;
-            font-size: 20px;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
-            transition: all 0.3s ease;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .purple-menu-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
-        }
-    </style>
-    """, unsafe_allow_html=True)
-    
-    # Apply purple styling to the button
-    st.markdown("""
-    <style>
-        div[data-testid="column"] button[kind="primary"] {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-            color: white !important;
-            border: none !important;
-            border-radius: 50% !important;
-            width: 60px !important;
-            height: 60px !important;
-            font-size: 24px !important;
-            font-weight: 600 !important;
-            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4) !important;
-            transition: all 0.3s ease !important;
-            margin: 20px 0 0 20px !important;
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            z-index: 9999 !important;
-        }
-        
-        div[data-testid="column"] button[kind="primary"]:hover {
-            transform: translateY(-2px) !important;
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6) !important;
-        }
-    </style>
-    """, unsafe_allow_html=True)
-    
-    # Create container for the menu button
-    col1, col2 = st.columns([1, 20])
-    with col1:
-        if st.button("☰", key="menu_toggle", help="メニューを開く", type="primary"):
-            st.session_state.nav_open = True
-            st.rerun()
+# The default Streamlit sidebar button is now transformed into our purple hamburger menu
 
 # Sidebar content (only when open)
 with st.sidebar:
