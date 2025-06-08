@@ -121,22 +121,44 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# 企業選択
-available_tickers = [
-    "AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "META", "NFLX", "NVDA", 
-    "CRM", "ADBE", "PYPL", "INTC", "CSCO", "ORCL", "IBM", "UBER",
-    "COIN", "SHOP", "SQ", "ZM", "DOCU", "OKTA", "SNOW", "PLTR"
-]
+# Import comprehensive stock database
+from stock_universe import get_all_available_stocks, get_stocks_by_category, get_stock_categories, search_stocks, get_popular_stocks
 
-col1, col2 = st.columns([3, 1])
+# 企業選択（数百銘柄対応）
+available_tickers = get_all_available_stocks()
+
+# Stock selection interface
+st.markdown("### 🔍 銘柄選択")
+
+col1, col2, col3 = st.columns([2, 1, 1])
 
 with col1:
-    selected_ticker = st.selectbox(
-        "企業を選択してください",
-        options=available_tickers,
-        index=0,
-        format_func=lambda x: f"{x}"
-    )
+    search_query = st.text_input("銘柄検索", placeholder="ティッカーシンボルを入力")
+    if search_query:
+        search_results = search_stocks(search_query)
+        if search_results:
+            available_tickers = search_results[:30]
+        else:
+            st.warning(f"'{search_query}' に一致する銘柄が見つかりません")
+
+with col2:
+    categories = ["All"] + get_stock_categories()
+    selected_category = st.selectbox("カテゴリー", categories)
+    if selected_category != "All":
+        available_tickers = get_stocks_by_category(selected_category)
+
+with col3:
+    if st.button("人気銘柄表示", key="popular_financial"):
+        available_tickers = get_popular_stocks()
+
+st.info(f"選択可能銘柄数: {len(available_tickers)}")
+
+selected_ticker = st.selectbox(
+    "企業を選択してください",
+    options=available_tickers,
+    index=0,
+    format_func=lambda x: f"{x}"
+)
 
 with col2:
     if st.button("🔄 データ更新", use_container_width=True):
