@@ -3,7 +3,10 @@ import pandas as pd
 import yfinance as yf
 from auto_financial_data import get_auto_financial_data
 from format_helpers import format_currency, format_large_number
+from earnings_scraper import get_website_text_content, analyze_earnings_call
 import numpy as np
+import requests
+import trafilatura
 
 st.set_page_config(
     page_title="財務諸表分析 - 1000xStocks",
@@ -302,6 +305,68 @@ if selected_ticker:
                     else:
                         st.metric("純利益率", "N/A")
                     st.markdown("</div>", unsafe_allow_html=True)
+                
+                st.markdown("</div>", unsafe_allow_html=True)
+                
+                # 最新決算説明会の内容
+                st.markdown("<div class='card'>", unsafe_allow_html=True)
+                st.markdown("### 💬 最新決算説明会ハイライト")
+                
+                with st.spinner("最新の決算説明会情報を取得中..."):
+                    try:
+                        # Get earnings call highlights using OpenAI
+                        from real_time_data import financial_chatbot
+                        
+                        earnings_query = f"""
+                        {selected_ticker}の最新の決算説明会について、以下の観点から日本語で要約してください：
+                        
+                        1. CEOやCFOからの重要な発言
+                        2. 今四半期の業績ハイライト
+                        3. 来四半期・来年の見通し
+                        4. 投資家からの主要な質問とその回答
+                        5. 事業戦略の変更や新たな取り組み
+                        
+                        情報は簡潔で読みやすい形式で提供してください。
+                        """
+                        
+                        earnings_summary = financial_chatbot(earnings_query)
+                        
+                        if earnings_summary and "API key" not in earnings_summary:
+                            st.markdown(f"""
+                            <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                            {earnings_summary.replace('\\n', '<br>')}
+                            </div>
+                            """, unsafe_allow_html=True)
+                        else:
+                            st.info("決算説明会の詳細な分析を表示するには、OpenAI APIキーが必要です。")
+                            
+                            # Fallback: Show basic earnings information
+                            stock_info = yf.Ticker(selected_ticker).info
+                            if 'earningsDate' in stock_info:
+                                st.write(f"**次回決算発表予定**: {stock_info.get('earningsDate', 'N/A')}")
+                            if 'earningsQuarterlyGrowth' in stock_info:
+                                growth = stock_info.get('earningsQuarterlyGrowth', 0) * 100
+                                st.write(f"**四半期利益成長率**: {growth:.1f}%")
+                                
+                    except Exception as e:
+                        st.warning("決算説明会情報の取得中にエラーが発生しました。基本的な決算情報のみ表示します。")
+                        
+                        # Show basic earnings data
+                        try:
+                            stock_info = yf.Ticker(selected_ticker).info
+                            col1, col2 = st.columns(2)
+                            
+                            with col1:
+                                if 'earningsDate' in stock_info and stock_info['earningsDate']:
+                                    st.metric("次回決算発表", "未定" if not stock_info['earningsDate'] else str(stock_info['earningsDate']))
+                                
+                            with col2:
+                                if 'earningsQuarterlyGrowth' in stock_info:
+                                    growth = stock_info.get('earningsQuarterlyGrowth', 0) * 100
+                                    st.metric("四半期利益成長率", f"{growth:.1f}%")
+                                    
+                        except:
+                            st.info("決算関連の詳細情報は現在利用できません。")
                 
                 st.markdown("</div>", unsafe_allow_html=True)
                 

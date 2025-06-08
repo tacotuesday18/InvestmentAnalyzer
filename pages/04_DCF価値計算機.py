@@ -482,7 +482,7 @@ if selected_ticker:
                 <div class='result-card'>
                     <p class='result-value'>${psr_share_price:.2f}</p>
                     <p class='result-label'>{forecast_years}年後の株価（PSR）</p>
-                    <p class='result-note'>業界平均PSR: {industry_psr}倍</p>
+                    <p class='result-note'>PSR倍率: {psr_ratio}倍</p>
                 </div>
                 """, unsafe_allow_html=True)
             

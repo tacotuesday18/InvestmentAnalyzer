@@ -231,12 +231,54 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Modern homepage content
+# Modern homepage content with customer acquisition focus
 st.markdown("""
 <div class="hero-container">
-    <div class="hero-title">企業価値分析プロ</div>
-    <div class="hero-subtitle">DCF法と財務分析で企業の本質的価値を見極める</div>
-    <div class="hero-cta">無料で分析を開始</div>
+    <div class="hero-title">株式投資で失敗していませんか？</div>
+    <div class="hero-subtitle">感情に左右されず、データに基づいた投資判断を</div>
+    <div class="hero-cta">プロレベルの企業価値分析を今すぐ開始</div>
+</div>
+""", unsafe_allow_html=True)
+
+# Pain points section
+st.markdown("""
+<div style="background-color: #fff3cd; padding: 2rem; margin: 2rem 0; border-left: 4px solid #ffc107;">
+    <h2 style="color: #856404; margin-bottom: 1rem;">🔥 こんな投資の悩みはありませんか？</h2>
+    <div style="color: #856404;">
+        ✗ 株価チャートだけを見て感情的に売買してしまう<br>
+        ✗ 企業の本当の価値が分からず、割高な株を掴んでしまう<br>
+        ✗ 決算書の読み方が分からず、表面的な情報だけで判断<br>
+        ✗ いつも「買い」推奨ばかりのアナリストレポートに騙される<br>
+        ✗ 複雑なExcelでDCF計算を試みるも、結果に確信が持てない
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# Agitation section  
+st.markdown("""
+<div style="background-color: #f8d7da; padding: 2rem; margin: 2rem 0; border-left: 4px solid #dc3545;">
+    <h2 style="color: #721c24; margin-bottom: 1rem;">⚠️ そのまま投資を続けると...</h2>
+    <div style="color: #721c24;">
+        📉 <strong>市場の暴落時にパニック売り</strong>→ 大きな損失を確定<br>
+        💸 <strong>割高な成長株を高値掴み</strong>→ 数年間含み損を抱える<br>
+        🎯 <strong>投資根拠が曖昧</strong>→ いつ売買すべきか分からず機会損失<br>
+        📊 <strong>感情的な投資判断</strong>→ 長期的な資産形成に失敗<br>
+        🔄 <strong>同じ失敗を繰り返す</strong>→ 投資資金が減り続ける
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# Solution section
+st.markdown("""
+<div style="background-color: #d1ecf1; padding: 2rem; margin: 2rem 0; border-left: 4px solid #17a2b8;">
+    <h2 style="color: #0c5460; margin-bottom: 1rem;">✅ 1000xStocksが解決します</h2>
+    <div style="color: #0c5460;">
+        🧮 <strong>プロ級DCF計算</strong>→ 企業の本質的価値を数値で明確化<br>
+        📊 <strong>自動財務分析</strong>→ Yahoo Financeから最新データを自動取得<br>
+        🔍 <strong>包括的企業評価</strong>→ PER・PBR・PSRを同時比較<br>
+        📈 <strong>リアルタイム更新</strong>→ 常に最新の市場データで分析<br>
+        🎯 <strong>明確な投資根拠</strong>→ 感情ではなくデータに基づく判断
+    </div>
 </div>
 """, unsafe_allow_html=True)
 

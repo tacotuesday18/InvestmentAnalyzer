@@ -272,15 +272,30 @@ st.markdown("</div>", unsafe_allow_html=True)
 # 選択された銘柄からティッカーシンボルを抽出
 selected_tickers = [option.split(" - ")[0] for option in selected_ticker_options]
 
-# 評価方法の選択 (モバイルフレンドリー)
+# 評価方法の選択とメトリクス表示
 st.markdown("<div class='mobile-card'>", unsafe_allow_html=True)
-st.markdown("<h3>評価方法</h3>", unsafe_allow_html=True)
+st.markdown("<h3>表示する指標を選択</h3>", unsafe_allow_html=True)
 
-# レスポンシブなレイアウト
-# モバイル向けレイアウト（縦に並べる）
-use_pe = st.checkbox("PER (株価収益率)", value=True)
-use_pb = st.checkbox("PBR (株価純資産倍率)", value=True)
-use_ps = st.checkbox("PSR (株価売上高倍率)", value=True)
+# メトリクス選択用のチェックボックス
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.markdown("**基本指標**")
+    use_pe = st.checkbox("PER (株価収益率)", value=True)
+    use_pb = st.checkbox("PBR (株価純資産倍率)", value=True)
+    use_ps = st.checkbox("PSR (株価売上高倍率)", value=True)
+
+with col2:
+    st.markdown("**成長・効率指標**")
+    show_revenue_growth = st.checkbox("売上成長率", value=True)
+    show_peg = st.checkbox("PEG倍率", value=True)
+    show_roe = st.checkbox("ROE (自己資本利益率)", value=True)
+
+with col3:
+    st.markdown("**配当・財務指標**")
+    show_dividend = st.checkbox("配当利回り", value=True)
+    show_debt_ratio = st.checkbox("負債比率", value=True)
+    show_eps = st.checkbox("EPS (1株利益)", value=True)
 
 # 評価方法を配列に格納
 valuation_methods = []
@@ -330,8 +345,9 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
                     current_pe = auto_data['current_price'] / auto_data['eps'] if auto_data['eps'] > 0 else 0
                     peg_ratio = current_pe / actual_revenue_growth if actual_revenue_growth > 0 else 0
                     
-                    # Dividend yield
-                    dividend_yield = info.get('dividendYield', 0) * 100 if info.get('dividendYield') else 0
+                    # Dividend yield - calculate from annual dividend and current price
+                    annual_dividend = info.get('dividendRate', 0)  # Annual dividend per share
+                    dividend_yield = (annual_dividend / auto_data['current_price']) * 100 if annual_dividend and auto_data['current_price'] > 0 else 0
                     
                     # Debt-to-equity ratio
                     debt_to_equity = info.get('debtToEquity', 0) / 100 if info.get('debtToEquity') else 0
@@ -390,14 +406,20 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
                         "現在株価": f"${result['current_price']:.2f}"
                     }
                     
-                    # Add financial metrics
+                    # Add financial metrics based on user selection
                     if "financial_metrics" in result:
                         metrics = result["financial_metrics"]
-                        row["売上成長率"] = f"{metrics['revenue_growth']:.1f}%"
-                        row["PEG倍率"] = f"{metrics['peg_ratio']:.2f}" if metrics['peg_ratio'] > 0 else "N/A"
-                        row["配当利回り"] = f"{metrics['dividend_yield']:.2f}%" if metrics['dividend_yield'] > 0 else "0.00%"
-                        row["負債比率"] = f"{metrics['debt_to_equity']:.2f}" if metrics['debt_to_equity'] > 0 else "N/A"
-                        row["ROE"] = f"{metrics['roe']:.1f}%" if metrics['roe'] > 0 else "N/A"
+                        
+                        if show_revenue_growth:
+                            row["売上成長率"] = f"{metrics['revenue_growth']:.1f}%"
+                        if show_peg:
+                            row["PEG倍率"] = f"{metrics['peg_ratio']:.2f}" if metrics['peg_ratio'] > 0 else "N/A"
+                        if show_dividend:
+                            row["配当利回り"] = f"{metrics['dividend_yield']:.2f}%" if metrics['dividend_yield'] > 0 else "0.00%"
+                        if show_debt_ratio:
+                            row["負債比率"] = f"{metrics['debt_to_equity']:.2f}" if metrics['debt_to_equity'] > 0 else "N/A"
+                        if show_roe:
+                            row["ROE"] = f"{metrics['roe']:.1f}%" if metrics['roe'] > 0 else "N/A"
                     
                     # 各評価方法の結果を追加
                     for method in valuation_methods:
@@ -408,7 +430,8 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
                             if method == "pe_ratio":
                                 method_name = "PER"
                                 row[f"{method_name}"] = f"{method_result['current_multiple']:.2f}倍"
-                                row["EPS"] = f"${method_result['eps']:.2f}"
+                                if show_eps:
+                                    row["EPS"] = f"${method_result['eps']:.2f}"
                             elif method == "pb_ratio":
                                 method_name = "PBR"
                                 row[f"{method_name}"] = f"{method_result['current_multiple']:.2f}倍"
