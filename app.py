@@ -409,39 +409,45 @@ st.markdown(sidebar_css, unsafe_allow_html=True)
 
 # Menu button when sidebar is closed
 if not st.session_state.nav_open:
-    # Add floating menu button with improved styling
+    # Position button in the light blue section at top left
     st.markdown("""
     <style>
-        .floating-menu-btn {
+        .menu-toggle-container {
             position: fixed;
-            top: 1rem;
-            left: 1rem;
+            top: 20px;
+            left: 20px;
             z-index: 9999;
+        }
+        
+        .purple-menu-btn {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 12px 16px;
-            border-radius: 50px;
-            font-size: 18px;
+            padding: 15px;
+            border-radius: 50%;
+            font-size: 20px;
             font-weight: 600;
             cursor: pointer;
             box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
             transition: all 0.3s ease;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .floating-menu-btn:hover {
+        
+        .purple-menu-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
         }
     </style>
-    <div style="position: fixed; top: 1rem; left: 1rem; z-index: 9999;">
-        <div class="floating-menu-btn">☰</div>
-    </div>
     """, unsafe_allow_html=True)
     
-    # Place the actual button in a column for clicking
-    col1, col2, col3 = st.columns([0.08, 0.02, 0.9])
+    # Create container for the menu button
+    col1, col2 = st.columns([1, 20])
     with col1:
-        if st.button("", key="menu_toggle", help="メニューを開く"):
+        if st.button("☰", key="menu_toggle", help="メニューを開く"):
             st.session_state.nav_open = True
             st.rerun()
 
@@ -488,10 +494,8 @@ with st.sidebar:
             
 
     else:
-        # Open button when sidebar is closed
-        if st.button("☰", key="hamburger_btn", use_container_width=True):
-            st.session_state.nav_open = True
-            st.rerun()
+        # Sidebar is closed - no content needed
+        pass
 
 # Page content based on navigation selection
 if st.session_state.current_page == "home":
