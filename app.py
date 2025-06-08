@@ -10,7 +10,7 @@ st.set_page_config(
     page_title="企業価値分析プロ - 株式分析とDCF法による本質的価値計算",
     page_icon="💹",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="auto",
     menu_items=None
 )
 
@@ -431,81 +431,29 @@ st.markdown("""
 if "current_page" not in st.session_state:
     st.session_state.current_page = "home"
 
-# Enhanced Navigation with Collapsible Sidebar
-# Initialize session states - start with sidebar open to work with Streamlit's default behavior
-if "nav_open" not in st.session_state:
-    st.session_state.nav_open = True
-if "show_chat" not in st.session_state:
-    st.session_state.show_chat = False
-
-# CSS to hide/show sidebar completely
-if st.session_state.nav_open:
-    sidebar_css = ""
-else:
-    sidebar_css = """
-    <style>
-        section[data-testid="stSidebar"] {
-            width: 0px !important;
-            min-width: 0px !important;
-            max-width: 0px !important;
-            transform: translateX(-100%) !important;
-            visibility: hidden !important;
-        }
-        .main .block-container {
-            margin-left: 0px !important;
-        }
-    </style>
-    """
-
-st.markdown(sidebar_css, unsafe_allow_html=True)
-
-# The default Streamlit sidebar button is now transformed into our purple hamburger menu
-
-# Sidebar content (only when open)
+# Enhanced Navigation with Sidebar
 with st.sidebar:
-    if st.session_state.nav_open:
-        # Close button
-        if st.button("✕", key="close_btn", use_container_width=True):
-            st.session_state.nav_open = False
-            st.session_state.show_chat = False
-            st.rerun()
+    st.markdown("### メニュー")
+    
+    if st.button("🏠 ホーム", key="nav_home", use_container_width=True):
+        st.session_state.current_page = "home"
+        st.rerun()
         
-        st.markdown("---")
+    if st.button("📊 ビジネスモデル分析", key="nav_analysis", use_container_width=True):
+        st.session_state.current_page = "analysis"
+        st.rerun()
         
-        if st.button("🏠 ホーム", key="nav_home", use_container_width=True):
-            st.session_state.current_page = "home"
-            st.session_state.show_chat = False
-            st.session_state.nav_open = False
-            st.rerun()
-            
-        if st.button("📊 ビジネスモデル分析", key="nav_analysis", use_container_width=True):
-            st.session_state.current_page = "analysis"
-            st.session_state.show_chat = False
-            st.session_state.nav_open = False
-            st.rerun()
-            
-        if st.button("📈 銘柄比較", key="nav_compare", use_container_width=True):
-            st.session_state.current_page = "compare"
-            st.session_state.show_chat = False
-            st.session_state.nav_open = False
-            st.rerun()
-            
-        if st.button("📊 財務諸表", key="nav_financial", use_container_width=True):
-            st.session_state.current_page = "financial"
-            st.session_state.show_chat = False
-            st.session_state.nav_open = False
-            st.rerun()
-            
-        if st.button("🧮 DCF価値計算機", key="nav_dcf", use_container_width=True):
-            st.session_state.current_page = "dcf"
-            st.session_state.show_chat = False
-            st.session_state.nav_open = False
-            st.rerun()
-            
-
-    else:
-        # Sidebar is closed - no content needed
-        pass
+    if st.button("📈 銘柄比較", key="nav_compare", use_container_width=True):
+        st.session_state.current_page = "compare"
+        st.rerun()
+        
+    if st.button("📊 財務諸表", key="nav_financial", use_container_width=True):
+        st.session_state.current_page = "financial"
+        st.rerun()
+        
+    if st.button("🧮 DCF価値計算機", key="nav_dcf", use_container_width=True):
+        st.session_state.current_page = "dcf"
+        st.rerun()
 
 # Page content based on navigation selection
 if st.session_state.current_page == "home":
