@@ -10,7 +10,7 @@ st.set_page_config(
     page_title="企業価値分析プロ - 株式分析とDCF法による本質的価値計算",
     page_icon="💹",
     layout="wide",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="expanded",
     menu_items=None
 )
 
@@ -27,8 +27,8 @@ st.markdown("""
     .stDeployButton {display: none;}
     .stDecoration {display: none;}
     
-    /* Transform the default sidebar arrow into purple hamburger menu */
-    [data-testid="collapsedControl"] {
+    /* Style the sidebar toggle button with more specific selectors */
+    button[kind="header"], .st-emotion-cache-1rs6os, .st-emotion-cache-17eq0hr {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
         border: none !important;
         border-radius: 50% !important;
@@ -40,28 +40,49 @@ st.markdown("""
         left: 20px !important;
         z-index: 9999 !important;
         transition: all 0.3s ease !important;
+        color: white !important;
+        font-size: 24px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
     
-    [data-testid="collapsedControl"]:hover {
+    button[kind="header"]:hover, .st-emotion-cache-1rs6os:hover, .st-emotion-cache-17eq0hr:hover {
         transform: translateY(-2px) !important;
         box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6) !important;
     }
     
-    /* Replace arrow with hamburger lines */
-    [data-testid="collapsedControl"] svg {
+    /* Hide the original SVG icon and replace with hamburger */
+    button[kind="header"] svg, .st-emotion-cache-1rs6os svg, .st-emotion-cache-17eq0hr svg {
         display: none !important;
     }
     
-    [data-testid="collapsedControl"]::after {
+    button[kind="header"]::before, .st-emotion-cache-1rs6os::before, .st-emotion-cache-17eq0hr::before {
         content: "☰" !important;
         color: white !important;
         font-size: 24px !important;
         font-weight: 600 !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        width: 100% !important;
-        height: 100% !important;
+        position: absolute !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+    }
+    
+    /* Make sure the button is visible and clickable */
+    [data-testid="collapsedControl"] {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        border: none !important;
+        border-radius: 50% !important;
+        width: 60px !important;
+        height: 60px !important;
+        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4) !important;
+        position: fixed !important;
+        top: 20px !important;
+        left: 20px !important;
+        z-index: 9999 !important;
     }
     
     /* Enhanced Navigation Styles */
@@ -403,9 +424,9 @@ if "current_page" not in st.session_state:
     st.session_state.current_page = "home"
 
 # Enhanced Navigation with Collapsible Sidebar
-# Initialize session states
+# Initialize session states - start with sidebar open to work with Streamlit's default behavior
 if "nav_open" not in st.session_state:
-    st.session_state.nav_open = False
+    st.session_state.nav_open = True
 if "show_chat" not in st.session_state:
     st.session_state.show_chat = False
 
