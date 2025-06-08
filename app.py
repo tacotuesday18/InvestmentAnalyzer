@@ -94,6 +94,24 @@ st.markdown("""
         font-size: 18px;
     }
     
+    /* Hamburger Button Styling */
+    .stSidebar .stButton > button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 8px !important;
+        font-size: 18px !important;
+        font-weight: 700 !important;
+        padding: 8px 12px !important;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3) !important;
+    }
+    
+    .stSidebar .stButton > button:hover {
+        background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%) !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4) !important;
+    }
+    
 
     
     /* Global styles */
@@ -301,23 +319,36 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Enhanced Navigation in Sidebar
+# Enhanced Navigation in Sidebar with Hamburger Menu
 with st.sidebar:
-    st.markdown("""
-    <div class="nav-header">
-        📊 ナビゲーション
-    </div>
-    """, unsafe_allow_html=True)
+    # Hamburger menu toggle
+    if "nav_open" not in st.session_state:
+        st.session_state.nav_open = True
     
-    st.markdown("""
-    <div style="padding: 15px; margin-bottom: 20px;">
-        <a href="/" target="_self" style="display: block; padding: 15px 20px; margin: 8px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white !important; text-decoration: none; border-radius: 12px; font-weight: 700; text-align: center; transition: all 0.3s ease; font-size: 16px; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);">🏠 ホーム</a>
-        <a href="/企業価値分析" target="_self" style="display: block; padding: 15px 20px; margin: 8px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white !important; text-decoration: none; border-radius: 12px; font-weight: 700; text-align: center; transition: all 0.3s ease; font-size: 16px; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);">💰 企業価値分析</a>
-        <a href="/銘柄比較" target="_self" style="display: block; padding: 15px 20px; margin: 8px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white !important; text-decoration: none; border-radius: 12px; font-weight: 700; text-align: center; transition: all 0.3s ease; font-size: 16px; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);">📈 銘柄比較</a>
-        <a href="/財務諸表" target="_self" style="display: block; padding: 15px 20px; margin: 8px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white !important; text-decoration: none; border-radius: 12px; font-weight: 700; text-align: center; transition: all 0.3s ease; font-size: 16px; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);">📊 財務諸表</a>
-        <a href="/DCF価値計算機" target="_self" style="display: block; padding: 15px 20px; margin: 8px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white !important; text-decoration: none; border-radius: 12px; font-weight: 700; text-align: center; transition: all 0.3s ease; font-size: 16px; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);">🧮 DCF価値計算機</a>
-    </div>
-    """, unsafe_allow_html=True)
+    # Hamburger button
+    col1, col2 = st.columns([1, 4])
+    with col1:
+        if st.button("☰", key="hamburger_btn", help="メニューを開く/閉じる"):
+            st.session_state.nav_open = not st.session_state.nav_open
+    
+    with col2:
+        st.markdown("""
+        <div style="padding: 10px 0; color: #667eea; font-weight: 700; font-size: 18px;">
+            メニュー
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Navigation menu (only show when open)
+    if st.session_state.nav_open:
+        st.markdown("""
+        <div style="padding: 15px; margin-bottom: 20px;">
+            <a href="/" target="_self" style="display: block; padding: 15px 20px; margin: 8px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #FFFFFF !important; text-decoration: none; border-radius: 12px; font-weight: 800; text-align: center; transition: all 0.3s ease; font-size: 16px; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); border: 1px solid rgba(255,255,255,0.2);">🏠 ホーム</a>
+            <a href="/企業価値分析" target="_self" style="display: block; padding: 15px 20px; margin: 8px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #FFFFFF !important; text-decoration: none; border-radius: 12px; font-weight: 800; text-align: center; transition: all 0.3s ease; font-size: 16px; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); border: 1px solid rgba(255,255,255,0.2);">💰 企業価値分析</a>
+            <a href="/銘柄比較" target="_self" style="display: block; padding: 15px 20px; margin: 8px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #FFFFFF !important; text-decoration: none; border-radius: 12px; font-weight: 800; text-align: center; transition: all 0.3s ease; font-size: 16px; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); border: 1px solid rgba(255,255,255,0.2);">📈 銘柄比較</a>
+            <a href="/財務諸表" target="_self" style="display: block; padding: 15px 20px; margin: 8px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #FFFFFF !important; text-decoration: none; border-radius: 12px; font-weight: 800; text-align: center; transition: all 0.3s ease; font-size: 16px; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); border: 1px solid rgba(255,255,255,0.2);">📊 財務諸表</a>
+            <a href="/DCF価値計算機" target="_self" style="display: block; padding: 15px 20px; margin: 8px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #FFFFFF !important; text-decoration: none; border-radius: 12px; font-weight: 800; text-align: center; transition: all 0.3s ease; font-size: 16px; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); border: 1px solid rgba(255,255,255,0.2);">🧮 DCF価値計算機</a>
+        </div>
+        """, unsafe_allow_html=True)
 
 # Full-screen Hero section - Based on attached design
 st.markdown("""
