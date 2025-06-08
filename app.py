@@ -351,7 +351,7 @@ with st.sidebar:
             st.session_state.current_page = "home"
             st.rerun()
             
-        if st.button("💰 企業価値分析", key="nav_analysis", use_container_width=True):
+        if st.button("📊 ビジネスモデル分析", key="nav_analysis", use_container_width=True):
             st.session_state.current_page = "analysis"
             st.rerun()
             
@@ -643,12 +643,12 @@ if st.session_state.current_page == "home":
         pass
 
 elif st.session_state.current_page == "analysis":
-    # 企業価値分析ページ
-    st.title("💰 企業価値分析")
+    # ビジネスモデル分析ページ
+    st.title("📊 ビジネスモデル分析")
     st.markdown("### 企業の本質的価値を分析し、投資判断をサポート")
     
     # Execute the analysis page functionality
-    exec(open("pages/01_企業分析.py").read())
+    exec(open("pages/01_📊 ビジネスモデル分析.py").read())
         
 elif st.session_state.current_page == "compare":
     # 銘柄比較ページ  
