@@ -792,12 +792,25 @@ def display_fundamental_analysis(ticker):
             col1, col2 = st.columns(2)
             
             with col1:
-                # Financial ratios
+                # Financial ratios with null handling
+                def format_metric(value, format_type="float", suffix=""):
+                    if value is None:
+                        return "N/A"
+                    try:
+                        if format_type == "percent":
+                            return f"{float(value):.1f}%"
+                        elif format_type == "ratio":
+                            return f"{float(value):.2f}"
+                        else:
+                            return f"{float(value):.2f}{suffix}"
+                    except:
+                        return "N/A"
+                
                 financial_metrics = [
-                    ("負債比率", f"{fundamental_data['financial_health']['debt_to_equity']:.2f}"),
-                    ("流動比率", f"{fundamental_data['financial_health']['current_ratio']:.2f}"),
-                    ("売上総利益率", f"{fundamental_data['financial_health']['gross_margin']:.1f}%"),
-                    ("営業利益率", f"{fundamental_data['financial_health']['operating_margin']:.1f}%")
+                    ("負債比率", format_metric(fundamental_data['financial_health']['debt_to_equity'], "ratio")),
+                    ("流動比率", format_metric(fundamental_data['financial_health']['current_ratio'], "ratio")),
+                    ("売上総利益率", format_metric(fundamental_data['financial_health']['gross_margin'], "percent")),
+                    ("営業利益率", format_metric(fundamental_data['financial_health']['operating_margin'], "percent"))
                 ]
                 
                 for metric, value in financial_metrics:
@@ -805,14 +818,30 @@ def display_fundamental_analysis(ticker):
             
             with col2:
                 financial_metrics_2 = [
-                    ("純利益率", f"{fundamental_data['financial_health']['net_margin']:.1f}%"),
-                    ("ROE", f"{fundamental_data['financial_health']['roe']:.1f}%"),
-                    ("ROA", f"{fundamental_data['financial_health']['roa']:.1f}%"),
-                    ("総資産回転率", f"{fundamental_data['financial_health']['asset_turnover']:.2f}")
+                    ("純利益率", format_metric(fundamental_data['financial_health']['net_margin'], "percent")),
+                    ("ROE", format_metric(fundamental_data['financial_health']['roe'], "percent")),
+                    ("ROA", format_metric(fundamental_data['financial_health']['roa'], "percent")),
+                    ("総資産回転率", format_metric(fundamental_data['financial_health']['asset_turnover'], "ratio"))
                 ]
                 
                 for metric, value in financial_metrics_2:
                     st.write(f"**{metric}:** {value}")
+            
+            # Key financial data from Yahoo Finance
+            st.markdown("#### 主要財務データ")
+            col3, col4, col5 = st.columns(3)
+            
+            with col3:
+                st.metric("現在株価", f"${format_metric(fundamental_data['financial_health']['current_price'], 'ratio')}")
+                st.metric("時価総額", f"${format_metric(fundamental_data['financial_health']['market_cap'], 'ratio')}M")
+            
+            with col4:
+                st.metric("売上高", f"${format_metric(fundamental_data['financial_health']['revenue'], 'ratio')}M")
+                st.metric("純利益", f"${format_metric(fundamental_data['financial_health']['net_income'], 'ratio')}M")
+            
+            with col5:
+                st.metric("EPS", f"${format_metric(fundamental_data['financial_health']['eps'], 'ratio')}")
+                st.metric("PER", format_metric(fundamental_data['financial_health']['pe_ratio'], 'ratio'))
         
         with tab2:
             st.markdown("#### 🏆 競争優位性 (モート)")
@@ -888,6 +917,11 @@ def display_fundamental_analysis(ticker):
 
 def get_supported_tickers():
     """
-    Return list of tickers that have comprehensive fundamental analysis data
+    Return list of tickers that have live financial data available from Yahoo Finance
+    Now supports any ticker with Yahoo Finance data
     """
-    return ['AAPL', 'MSFT', 'AMZN', 'GOOGL', 'META', 'TSLA', 'NVDA']
+    # Import comprehensive stock data to get all available tickers
+    from comprehensive_stock_data import get_all_tickers
+    
+    # Return all available tickers since we can now analyze any company with live Yahoo Finance data
+    return get_all_tickers()
