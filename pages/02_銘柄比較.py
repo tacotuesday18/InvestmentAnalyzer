@@ -352,16 +352,10 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
                         "valuation_methods": {}
                     }
                     
-                    # Get additional financial metrics using yfinance
-                    import yfinance as yf
-                    stock_yf = yf.Ticker(ticker)
-                    info = stock_yf.info
-                    
-                    # Calculate actual revenue growth rate using same method as earnings page
-                    actual_revenue_growth = calculate_growth_rate(stock_yf)
+                    # Use the enhanced auto_data which already contains accurate Yahoo Finance metrics
                     
                     # Calculate company size (more understandable than raw market cap)
-                    market_cap_billion = (auto_data['current_price'] * auto_data['shares_outstanding']) / 1000
+                    market_cap_billion = auto_data.get('market_cap', 0) / 1000 if auto_data.get('market_cap') else 0
                     if market_cap_billion >= 100:
                         company_size = "超大型株"
                     elif market_cap_billion >= 10:
@@ -371,33 +365,33 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
                     else:
                         company_size = "小型株"
                     
-                    # PEG ratio (PE / Growth rate)
-                    current_pe = auto_data['current_price'] / auto_data['eps'] if auto_data['eps'] > 0 else 0
-                    peg_ratio = current_pe / actual_revenue_growth if actual_revenue_growth > 0 else 0
+                    # PEG ratio (PE / Growth rate) - only if both values are available
+                    peg_ratio = None
+                    if auto_data.get('pe_ratio') and auto_data.get('historical_growth') and auto_data['historical_growth'] > 0:
+                        peg_ratio = auto_data['pe_ratio'] / auto_data['historical_growth']
                     
-                    # Dividend yield - calculate from annual dividend and current price
-                    annual_dividend = info.get('dividendRate', 0)  # Annual dividend per share
-                    dividend_yield = (annual_dividend / auto_data['current_price']) * 100 if annual_dividend and auto_data['current_price'] > 0 else 0
+                    # Get dividend yield from Yahoo Finance
+                    import yfinance as yf
+                    stock_yf = yf.Ticker(ticker)
+                    info = stock_yf.info
+                    annual_dividend = info.get('dividendRate', 0)
+                    dividend_yield = None
+                    if annual_dividend and auto_data['current_price'] > 0:
+                        dividend_yield = (annual_dividend / auto_data['current_price']) * 100
                     
-                    # Debt-to-equity ratio
-                    debt_to_equity = info.get('debtToEquity', 0) / 100 if info.get('debtToEquity') else 0
-                    
-                    # ROE (Return on Equity)
-                    roe = info.get('returnOnEquity', 0) * 100 if info.get('returnOnEquity') else 0
-                    
-                    # Calculate profit margin (same as earnings page)
-                    profit_margin = 0
-                    if auto_data['revenue'] > 0 and auto_data['net_income'] > 0:
-                        profit_margin = (auto_data['net_income'] / auto_data['revenue']) * 100
-                    
-                    # Store all metrics including company size
+                    # Store all metrics - use None for unavailable data instead of 0
                     result["financial_metrics"] = {
-                        "revenue_growth": actual_revenue_growth,
+                        "revenue_growth": auto_data.get('historical_growth'),
                         "peg_ratio": peg_ratio,
                         "dividend_yield": dividend_yield,
-                        "debt_to_equity": debt_to_equity,
-                        "roe": roe,
-                        "profit_margin": profit_margin,
+                        "debt_to_equity": auto_data.get('debt_to_equity'),
+                        "roe": auto_data.get('roe'),
+                        "roa": auto_data.get('roa'),
+                        "profit_margin": auto_data.get('profit_margin'),
+                        "gross_margin": auto_data.get('gross_margin'),
+                        "operating_margin": auto_data.get('operating_margin'),
+                        "current_ratio": auto_data.get('current_ratio'),
+                        "asset_turnover": auto_data.get('asset_turnover'),
                         "company_size": company_size,
                         "market_cap_billion": market_cap_billion
                     }

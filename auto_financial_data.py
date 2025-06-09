@@ -51,7 +51,7 @@ def get_auto_financial_data(ticker):
             except:
                 pass
         
-        # Calculate metrics
+        # Calculate metrics with proper validation
         shares_outstanding = info.get('sharesOutstanding', 0) / 1_000_000 if info.get('sharesOutstanding') else 0
         market_cap = info.get('marketCap', 0) / 1_000_000 if info.get('marketCap') else 0
         book_value_per_share = (total_equity * 1_000_000) / (shares_outstanding * 1_000_000) if shares_outstanding > 0 else 0
@@ -59,25 +59,94 @@ def get_auto_financial_data(ticker):
         # Calculate growth rate
         growth_rate = calculate_growth_rate(stock)
         
+        # Get accurate financial ratios directly from Yahoo Finance
+        trailing_eps = info.get('trailingEps')
+        trailing_pe = info.get('trailingPE') 
+        price_to_book = info.get('priceToBook')
+        price_to_sales = info.get('priceToSalesTrailing12Months')
+        return_on_equity = info.get('returnOnEquity')
+        
+        # Calculate ROA from balance sheet data
+        roa = None
+        if net_income > 0 and total_assets > 0:
+            roa = (net_income / total_assets) * 100
+        elif info.get('returnOnAssets') is not None:
+            return_on_assets = info.get('returnOnAssets')
+            if return_on_assets is not None:
+                roa = return_on_assets * 100
+        
+        # Calculate current ratio from balance sheet
+        current_ratio = None
+        if not balance_sheet.empty:
+            try:
+                current_assets = balance_sheet.loc['Current Assets'].iloc[0] if 'Current Assets' in balance_sheet.index else None
+                current_liabilities = balance_sheet.loc['Current Liabilities'].iloc[0] if 'Current Liabilities' in balance_sheet.index else None
+                if current_assets and current_liabilities and current_liabilities != 0:
+                    current_ratio = current_assets / current_liabilities
+            except:
+                pass
+        
+        # Calculate debt to equity ratio
+        debt_to_equity = None
+        if not balance_sheet.empty:
+            try:
+                total_debt = balance_sheet.loc['Total Debt'].iloc[0] if 'Total Debt' in balance_sheet.index else None
+                if not total_debt:
+                    # Try alternative debt fields
+                    long_term_debt = balance_sheet.loc['Long Term Debt'].iloc[0] if 'Long Term Debt' in balance_sheet.index else 0
+                    short_term_debt = balance_sheet.loc['Current Debt'].iloc[0] if 'Current Debt' in balance_sheet.index else 0
+                    total_debt = (long_term_debt or 0) + (short_term_debt or 0)
+                
+                if total_debt and total_equity and total_equity != 0:
+                    debt_to_equity = (total_debt / (total_equity * 1_000_000))
+            except:
+                pass
+        
+        # Use Yahoo Finance data for debt-to-equity as fallback
+        if debt_to_equity is None:
+            debt_to_equity = info.get('debtToEquity', 0) / 100 if info.get('debtToEquity') else None
+        
+        # Calculate asset turnover
+        asset_turnover = None
+        if revenue > 0 and total_assets > 0:
+            asset_turnover = revenue / total_assets
+        
+        # Gross margin and operating margin
+        gross_margins = info.get('grossMargins')
+        gross_margin = None
+        if gross_margins is not None and isinstance(gross_margins, (int, float)):
+            gross_margin = gross_margins * 100
+        
+        operating_margins = info.get('operatingMargins')
+        operating_margin = None
+        if operating_margins is not None and isinstance(operating_margins, (int, float)):
+            operating_margin = operating_margins * 100
+        
         return {
             'ticker': ticker,
             'name': info.get('longName', ticker),
-            'industry': info.get('industry', 'Technology'),
-            'sector': info.get('sector', 'Technology'),
+            'industry': info.get('industry', 'Unknown'),
+            'sector': info.get('sector', 'Unknown'),
             'country': info.get('country', 'US'),
             'current_price': current_price,
             'market_cap': market_cap,
             'revenue': revenue,
             'net_income': net_income,
-            'eps': info.get('trailingEps', 0),
-            'pe_ratio': info.get('trailingPE', 25.0),
-            'pb_ratio': info.get('priceToBook', 3.0),
-            'ps_ratio': info.get('priceToSalesTrailing12Months', 5.0),
-            'roe': (info.get('returnOnEquity', 0.15) * 100) if info.get('returnOnEquity') else 15.0,
+            'eps': trailing_eps,
+            'pe_ratio': trailing_pe,
+            'pb_ratio': price_to_book,
+            'ps_ratio': price_to_sales,
+            'roe': (return_on_equity * 100) if return_on_equity else None,
+            'roa': roa,
             'shares_outstanding': shares_outstanding,
             'book_value_per_share': book_value_per_share,
             'historical_growth': growth_rate,
-            'profit_margin': (net_income / revenue * 100) if revenue > 0 else 25.0,
+            'profit_margin': (net_income / revenue * 100) if revenue > 0 else None,
+            'gross_margin': gross_margin,
+            'operating_margin': operating_margin,
+            'current_ratio': current_ratio,
+            'debt_to_equity': debt_to_equity,
+            'asset_turnover': asset_turnover,
             'is_live': True,
             'last_updated': datetime.now().isoformat()
         }
