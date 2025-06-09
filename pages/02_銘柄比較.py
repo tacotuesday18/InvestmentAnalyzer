@@ -231,8 +231,15 @@ st.markdown("""
 # 利用可能なティッカーシンボル（数百銘柄）
 available_tickers = get_all_tickers()
 
-# Unified search and selection interface
-col1, col2, col3 = st.columns([3, 1, 1])
+# データ更新ボタン
+if st.button("🔄 データ更新", key="refresh_all_data"):
+    st.cache_data.clear()
+    st.cache_resource.clear()
+    st.success("データを更新しました！")
+    st.rerun()
+
+# Search and filter interface
+col1, col2 = st.columns([3, 1])
 
 with col1:
     search_query = st.text_input(
@@ -244,13 +251,6 @@ with col1:
 with col2:
     categories = ["All"] + get_all_categories()
     selected_category = st.selectbox("カテゴリー", categories)
-
-with col3:
-    if st.button("🔄 データ更新", key="refresh_all_data"):
-        st.cache_data.clear()
-        st.cache_resource.clear()
-        st.success("データを更新しました！")
-        st.rerun()
 
 # Apply search and category filters
 if search_query:
