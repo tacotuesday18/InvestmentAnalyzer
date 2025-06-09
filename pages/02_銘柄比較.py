@@ -310,12 +310,17 @@ with col2:
     show_revenue_growth = st.checkbox("売上成長率", value=True)
     show_peg = st.checkbox("PEG倍率", value=True)
     show_roe = st.checkbox("ROE (自己資本利益率)", value=True)
+    show_roa = st.checkbox("ROA (総資産利益率)", value=True)
     show_profit_margin = st.checkbox("純利益率", value=True)
+    show_gross_margin = st.checkbox("売上総利益率", value=False)
+    show_operating_margin = st.checkbox("営業利益率", value=False)
 
 with col3:
-    st.markdown("**配当・財務指標**")
+    st.markdown("**財務健全性指標**")
     show_dividend = st.checkbox("配当利回り", value=True)
     show_debt_ratio = st.checkbox("負債比率", value=True)
+    show_current_ratio = st.checkbox("流動比率", value=True)
+    show_asset_turnover = st.checkbox("総資産回転率", value=False)
     show_eps = st.checkbox("EPS (1株利益)", value=True)
     show_company_size = st.checkbox("企業規模", value=True)
 
@@ -444,17 +449,27 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
                         metrics = result["financial_metrics"]
                         
                         if show_revenue_growth:
-                            row["売上成長率"] = f"{metrics['revenue_growth']:.1f}%"
+                            row["売上成長率"] = f"{metrics['revenue_growth']:.1f}%" if metrics['revenue_growth'] is not None else "N/A"
                         if show_peg:
-                            row["PEG倍率"] = f"{metrics['peg_ratio']:.2f}" if metrics['peg_ratio'] > 0 else "N/A"
+                            row["PEG倍率"] = f"{metrics['peg_ratio']:.2f}" if metrics['peg_ratio'] is not None else "N/A"
                         if show_dividend:
-                            row["配当利回り"] = f"{metrics['dividend_yield']:.2f}%" if metrics['dividend_yield'] > 0 else "0.00%"
+                            row["配当利回り"] = f"{metrics['dividend_yield']:.2f}%" if metrics['dividend_yield'] is not None else "N/A"
                         if show_debt_ratio:
-                            row["負債比率"] = f"{metrics['debt_to_equity']:.2f}" if metrics['debt_to_equity'] > 0 else "N/A"
+                            row["負債比率"] = f"{metrics['debt_to_equity']:.2f}" if metrics['debt_to_equity'] is not None else "N/A"
                         if show_roe:
-                            row["ROE"] = f"{metrics['roe']:.1f}%" if metrics['roe'] > 0 else "N/A"
+                            row["ROE"] = f"{metrics['roe']:.1f}%" if metrics['roe'] is not None else "N/A"
+                        if show_roa:
+                            row["ROA"] = f"{metrics['roa']:.1f}%" if metrics['roa'] is not None else "N/A"
                         if show_profit_margin:
-                            row["純利益率"] = f"{metrics['profit_margin']:.1f}%" if metrics['profit_margin'] > 0 else "N/A"
+                            row["純利益率"] = f"{metrics['profit_margin']:.1f}%" if metrics['profit_margin'] is not None else "N/A"
+                        if show_gross_margin:
+                            row["売上総利益率"] = f"{metrics['gross_margin']:.1f}%" if metrics['gross_margin'] is not None else "N/A"
+                        if show_operating_margin:
+                            row["営業利益率"] = f"{metrics['operating_margin']:.1f}%" if metrics['operating_margin'] is not None else "N/A"
+                        if show_current_ratio:
+                            row["流動比率"] = f"{metrics['current_ratio']:.2f}" if metrics['current_ratio'] is not None else "N/A"
+                        if show_asset_turnover:
+                            row["総資産回転率"] = f"{metrics['asset_turnover']:.2f}" if metrics['asset_turnover'] is not None else "N/A"
                         if show_company_size:
                             row["企業規模"] = metrics['company_size']
                             row["時価総額"] = f"{metrics['market_cap_billion']:.0f}億ドル"
@@ -494,12 +509,69 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
                 <b>配当利回り</b>: 年間配当÷株価×100 |
                 <b>負債比率</b>: 負債÷自己資本 |
                 <b>ROE</b>: 自己資本利益率 (純利益÷自己資本×100) |
-                <b>純利益率</b>: 売上に対する純利益の割合
+                <b>ROA</b>: 総資産利益率 (純利益÷総資産×100) |
+                <b>純利益率</b>: 売上に対する純利益の割合 |
+                <b>売上総利益率</b>: 売上総利益÷売上×100 |
+                <b>営業利益率</b>: 営業利益÷売上×100 |
+                <b>流動比率</b>: 流動資産÷流動負債 (2.0以上が理想) |
+                <b>総資産回転率</b>: 売上÷総資産 (効率性指標)
+                <br><i>※全データはYahoo Financeから取得した最新の財務諸表に基づきます</i>
                 </small>
                 </div>
                 """, unsafe_allow_html=True)
                 
                 st.dataframe(summary_df, use_container_width=True)
+                
+                # Financial Health Scorecard
+                st.markdown("<h3>財務健全性指標</h3>", unsafe_allow_html=True)
+                
+                # Create financial health comparison
+                health_cols = st.columns(len(selected_tickers))
+                
+                for i, ticker in enumerate(selected_tickers):
+                    if ticker in comparison_results:
+                        result = comparison_results[ticker]
+                        metrics = result.get("financial_metrics", {})
+                        
+                        with health_cols[i]:
+                            st.markdown(f"""
+                            <div class="metric-container">
+                                <h4 style="text-align: center; color: #667eea; margin-bottom: 15px;">{ticker}</h4>
+                                <div style="background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            """, unsafe_allow_html=True)
+                            
+                            # Key financial health metrics
+                            if metrics.get('debt_to_equity') is not None:
+                                debt_color = "green" if metrics['debt_to_equity'] < 0.5 else "orange" if metrics['debt_to_equity'] < 1.0 else "red"
+                                st.markdown(f"**負債比率:** <span style='color: {debt_color}'>{metrics['debt_to_equity']:.2f}</span>", unsafe_allow_html=True)
+                            else:
+                                st.markdown("**負債比率:** N/A")
+                            
+                            if metrics.get('current_ratio') is not None:
+                                current_color = "green" if metrics['current_ratio'] >= 2.0 else "orange" if metrics['current_ratio'] >= 1.0 else "red"
+                                st.markdown(f"**流動比率:** <span style='color: {current_color}'>{metrics['current_ratio']:.2f}</span>", unsafe_allow_html=True)
+                            else:
+                                st.markdown("**流動比率:** N/A")
+                            
+                            if metrics.get('roe') is not None:
+                                roe_color = "green" if metrics['roe'] >= 15 else "orange" if metrics['roe'] >= 10 else "red"
+                                st.markdown(f"**ROE:** <span style='color: {roe_color}'>{metrics['roe']:.1f}%</span>", unsafe_allow_html=True)
+                            else:
+                                st.markdown("**ROE:** N/A")
+                            
+                            if metrics.get('roa') is not None:
+                                roa_color = "green" if metrics['roa'] >= 5 else "orange" if metrics['roa'] >= 2 else "red"
+                                st.markdown(f"**ROA:** <span style='color: {roa_color}'>{metrics['roa']:.1f}%</span>", unsafe_allow_html=True)
+                            else:
+                                st.markdown("**ROA:** N/A")
+                            
+                            if metrics.get('profit_margin') is not None:
+                                margin_color = "green" if metrics['profit_margin'] >= 20 else "orange" if metrics['profit_margin'] >= 10 else "red"
+                                st.markdown(f"**純利益率:** <span style='color: {margin_color}'>{metrics['profit_margin']:.1f}%</span>", unsafe_allow_html=True)
+                            else:
+                                st.markdown("**純利益率:** N/A")
+                            
+                            st.markdown("</div></div>", unsafe_allow_html=True)
                 
                 # 取引倍率チャート
                 st.markdown("<h3>取引倍率の比較</h3>", unsafe_allow_html=True)
