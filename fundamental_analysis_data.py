@@ -7,10 +7,18 @@ import plotly.graph_objects as go
 
 def get_comprehensive_fundamental_data(ticker):
     """
-    Get comprehensive fundamental analysis data for a company
+    Get comprehensive fundamental analysis data for a company using live Yahoo Finance data
     """
     try:
-        # Define comprehensive fundamental data for major companies
+        # Import auto_financial_data to get live data
+        from auto_financial_data import get_auto_financial_data
+        
+        # Get live financial data first
+        live_data = get_auto_financial_data(ticker)
+        if not live_data:
+            return None
+        
+        # Define comprehensive fundamental analysis templates for major companies
         fundamental_data = {
             'AAPL': {
                 'company_name': 'Apple Inc.',
@@ -541,27 +549,90 @@ def get_comprehensive_fundamental_data(ticker):
             }
         }
         
-        # Get live financial data if available
-        try:
-            stock = yf.Ticker(ticker)
-            info = stock.info
+        # Merge live financial data with fundamental analysis template
+        if ticker in fundamental_data:
+            template = fundamental_data[ticker].copy()
             
-            # Update some financial metrics with live data if available
-            if ticker in fundamental_data:
-                live_data = fundamental_data[ticker]
-                if info.get('trailingPE'):
-                    live_data['financial_health']['pe_ratio'] = info['trailingPE']
-                if info.get('priceToBook'):
-                    live_data['financial_health']['pb_ratio'] = info['priceToBook']
-                if info.get('returnOnEquity'):
-                    live_data['financial_health']['roe'] = info['returnOnEquity'] * 100
-                
-                return live_data
-        except:
-            pass
+            # Replace financial_health with live data from Yahoo Finance
+            template['financial_health'] = {
+                'debt_to_equity': live_data.get('debt_to_equity'),
+                'current_ratio': live_data.get('current_ratio'),
+                'gross_margin': live_data.get('gross_margin'),
+                'operating_margin': live_data.get('operating_margin'),
+                'net_margin': live_data.get('profit_margin'),
+                'roe': live_data.get('roe'),
+                'roa': live_data.get('roa'),
+                'asset_turnover': live_data.get('asset_turnover'),
+                'pe_ratio': live_data.get('pe_ratio'),
+                'pb_ratio': live_data.get('pb_ratio'),
+                'ps_ratio': live_data.get('ps_ratio'),
+                'market_cap': live_data.get('market_cap'),
+                'revenue': live_data.get('revenue'),
+                'net_income': live_data.get('net_income'),
+                'eps': live_data.get('eps'),
+                'current_price': live_data.get('current_price')
+            }
+            
+            # Update growth metrics with live data if available
+            if live_data.get('historical_growth'):
+                template['growth_metrics']['revenue_growth_latest'] = live_data['historical_growth']
+            
+            # Add live data indicators
+            template['data_source'] = 'Yahoo Finance (Live)'
+            template['last_updated'] = live_data.get('last_updated', datetime.now().isoformat())
+            template['ticker'] = ticker
+            template['company_name'] = live_data.get('name', template.get('company_name', ticker))
+            template['industry'] = live_data.get('industry', template.get('industry', 'Unknown'))
+            template['sector'] = live_data.get('sector', template.get('sector', 'Unknown'))
+            
+            return template
         
-        # Return data if available, otherwise return None
-        return fundamental_data.get(ticker, None)
+        # For companies not in templates, create basic analysis with live Yahoo Finance data
+        return {
+            'company_name': live_data.get('name', ticker),
+            'sector': live_data.get('sector', 'Unknown'),
+            'industry': live_data.get('industry', 'Unknown'),
+            'ticker': ticker,
+            'business_model': {
+                'description': f"{live_data.get('name', ticker)}の最新財務データ分析",
+                'revenue_streams': ['主要事業収益'],
+                'key_products': ['主力製品・サービス']
+            },
+            'competitive_advantages': ['業界での競争力'],
+            'financial_health': {
+                'debt_to_equity': live_data.get('debt_to_equity'),
+                'current_ratio': live_data.get('current_ratio'),
+                'gross_margin': live_data.get('gross_margin'),
+                'operating_margin': live_data.get('operating_margin'),
+                'net_margin': live_data.get('profit_margin'),
+                'roe': live_data.get('roe'),
+                'roa': live_data.get('roa'),
+                'asset_turnover': live_data.get('asset_turnover'),
+                'pe_ratio': live_data.get('pe_ratio'),
+                'pb_ratio': live_data.get('pb_ratio'),
+                'ps_ratio': live_data.get('ps_ratio'),
+                'market_cap': live_data.get('market_cap'),
+                'revenue': live_data.get('revenue'),
+                'net_income': live_data.get('net_income'),
+                'eps': live_data.get('eps'),
+                'current_price': live_data.get('current_price')
+            },
+            'growth_metrics': {
+                'revenue_growth_latest': live_data.get('historical_growth', 0)
+            },
+            'swot': {
+                'strengths': ['安定した財務基盤'],
+                'weaknesses': ['詳細分析が必要'],
+                'opportunities': ['市場機会の活用'],
+                'threats': ['市場リスクの管理']
+            },
+            'investment_thesis': {
+                'bull_case': ['成長ポテンシャル'],
+                'bear_case': ['市場リスク']
+            },
+            'data_source': 'Yahoo Finance (Live)',
+            'last_updated': live_data.get('last_updated', datetime.now().isoformat())
+        }
         
     except Exception as e:
         return None
@@ -684,6 +755,13 @@ def display_fundamental_analysis(ticker):
         # Company Overview
         st.markdown(f"## 🏢 {fundamental_data['company_name']}")
         st.markdown(f"**セクター:** {fundamental_data['sector']} | **業界:** {fundamental_data['industry']}")
+        
+        # Data source indicator
+        if fundamental_data.get('data_source'):
+            st.markdown(f"<div style='background-color: #e8f5e8; padding: 10px; border-radius: 5px; margin: 10px 0;'>"
+                       f"<small><strong>データソース:</strong> {fundamental_data['data_source']} | "
+                       f"<strong>最終更新:</strong> {fundamental_data.get('last_updated', 'N/A')[:19].replace('T', ' ')}</small></div>", 
+                       unsafe_allow_html=True)
         
         # Fundamental Scorecard
         scorecard = create_fundamental_scorecard(fundamental_data)
