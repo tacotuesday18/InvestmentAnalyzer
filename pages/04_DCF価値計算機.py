@@ -822,8 +822,3 @@ else:
     st.info("銘柄を選択してください。")
 
 # Add floating chatbot component
-try:
-    from floating_chatbot import render_floating_chatbot
-    render_floating_chatbot()
-except ImportError:
-    pass
