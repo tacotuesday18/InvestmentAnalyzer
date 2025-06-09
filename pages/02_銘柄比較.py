@@ -243,9 +243,10 @@ col1, col2 = st.columns([3, 1])
 
 with col1:
     search_query = st.text_input(
-        "企業名またはティッカーで検索", 
+        "", 
         placeholder="企業名またはティッカーシンボルを入力 (例: Apple, Microsoft, AAPL, MSFT)", 
-        help="企業名の一部またはティッカーシンボルで検索できます"
+        help="企業名の一部またはティッカーシンボルで検索できます",
+        label_visibility="collapsed"
     )
 
 with col2:
