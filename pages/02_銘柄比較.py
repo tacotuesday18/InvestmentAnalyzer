@@ -646,7 +646,7 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
                                 "値": metrics['roe']
                             })
                         
-                        if show_dividend and metrics['dividend_yield'] > 0:
+                        if show_dividend and metrics.get('dividend_yield') and metrics['dividend_yield'] > 0:
                             metrics_chart_data.append({
                                 "ティッカー": ticker,
                                 "指標": "配当利回り (%)",

@@ -711,12 +711,13 @@ def calculate_growth_score(growth_data):
     """
     score = 0
     
-    # Revenue Growth
-    if growth_data['revenue_growth_5y'] > 20:
+    # Revenue Growth (handle missing data)
+    revenue_growth = growth_data.get('revenue_growth_5y', growth_data.get('revenue_growth_latest', 0))
+    if revenue_growth and revenue_growth > 20:
         score += 30
-    elif growth_data['revenue_growth_5y'] > 10:
+    elif revenue_growth and revenue_growth > 10:
         score += 25
-    elif growth_data['revenue_growth_5y'] > 5:
+    elif revenue_growth and revenue_growth > 5:
         score += 20
     else:
         score += 10

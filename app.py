@@ -454,6 +454,14 @@ with st.sidebar:
     if st.button("🧮 DCF価値計算機", key="nav_dcf", use_container_width=True):
         st.session_state.current_page = "dcf"
         st.rerun()
+        
+    if st.button("🔍 銘柄発見", key="nav_discovery", use_container_width=True):
+        st.session_state.current_page = "discovery"
+        st.rerun()
+        
+    if st.button("📈 決算分析", key="nav_earnings", use_container_width=True):
+        st.session_state.current_page = "earnings"
+        st.rerun()
 
 # Page content based on navigation selection
 if st.session_state.current_page == "home":
@@ -756,3 +764,19 @@ elif st.session_state.current_page == "dcf":
     
     # Execute the DCF page functionality
     exec(open("pages/04_DCF価値計算機.py").read())
+        
+elif st.session_state.current_page == "discovery":
+    # 銘柄発見ページ
+    st.title("🔍 銘柄発見")
+    st.markdown("### あなたの投資スタイルに合った銘柄を見つけよう")
+    
+    # Execute the stock discovery page functionality
+    exec(open("pages/06_🔍 銘柄発見.py").read())
+        
+elif st.session_state.current_page == "earnings":
+    # 決算分析ページ
+    st.title("📈 決算分析")
+    st.markdown("### 最新の決算情報と業績トレンドを分析")
+    
+    # Execute the earnings analysis page functionality
+    exec(open("pages/05_決算分析.py").read())
