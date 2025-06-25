@@ -286,8 +286,8 @@ with col3:
         help="流動資産÷流動負債"
     )
 
-# Sector filter
-sectors = ["All"] + get_all_categories()
+# Sector filter - use comprehensive market sectors
+sectors = ["All"] + list(get_stock_sector_mapping().keys())
 selected_sectors = st.multiselect(
     "業界・セクター",
     sectors,

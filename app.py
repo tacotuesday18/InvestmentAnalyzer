@@ -383,6 +383,31 @@ st.markdown("""
     }
     
     /* Hamburger Navigation System */
+    .hamburger-btn {
+        position: fixed;
+        top: 16px;
+        left: 16px;
+        width: 48px;
+        height: 48px;
+        background: #FFFFFF;
+        border: 2px solid #e2e8f0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: #333333;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        z-index: 1000;
+        transition: all 0.2s ease;
+    }
+    
+    .hamburger-btn:hover {
+        background: #F5F5F5;
+        transform: scale(1.05);
+    }
+    
     .top-app-bar {
         position: fixed;
         top: 0;
@@ -393,14 +418,18 @@ st.markdown("""
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         display: flex;
         align-items: center;
-        padding: 0 16px;
-        z-index: 1000;
+        padding: 0 80px 0 16px;
+        z-index: 999;
         font-family: 'Inter', sans-serif;
     }
     
     @media (max-width: 768px) {
         .top-app-bar {
             height: 56px;
+        }
+        .hamburger-btn {
+            top: 12px;
+            left: 12px;
         }
     }
     
@@ -1017,3 +1046,6 @@ elif st.session_state.current_page == "earnings":
     
     # Execute the earnings analysis page functionality
     exec(open("pages/05_決算分析.py").read())
+
+# Close main content div
+st.markdown('</div>', unsafe_allow_html=True)
