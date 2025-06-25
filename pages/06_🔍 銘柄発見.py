@@ -13,6 +13,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Import required modules
 from auto_financial_data import get_auto_financial_data
 from comprehensive_stock_data import get_all_tickers, get_stock_info, get_stocks_by_category, get_all_categories
+from comprehensive_market_stocks import get_all_market_stocks, get_stock_info_enhanced, search_stocks_comprehensive, get_stock_sector_mapping, get_market_categories
 from format_helpers import format_currency, format_large_number
 
 # Modern design CSS
@@ -300,18 +301,20 @@ st.markdown('</div>', unsafe_allow_html=True)
 if st.button("🔍 銘柄を検索", use_container_width=True, type="primary"):
     
     with st.spinner("条件に合う銘柄を検索中..."):
-        # Get all tickers to screen
+        # Get all market stocks for comprehensive screening
         if "All" in selected_sectors or not selected_sectors:
-            available_tickers = get_all_tickers()
+            available_tickers = get_all_market_stocks()
         else:
+            # Filter by sector from comprehensive market stocks
+            sector_mapping = get_stock_sector_mapping()
             available_tickers = []
             for sector in selected_sectors:
-                if sector != "All":
-                    available_tickers.extend(get_stocks_by_category(sector))
-            available_tickers = list(set(available_tickers))  # Remove duplicates
+                if sector != "All" and sector in sector_mapping:
+                    available_tickers.extend(sector_mapping[sector])
+            available_tickers = list(set(available_tickers))
         
-        # Limit to first 50 tickers for performance
-        available_tickers = available_tickers[:50]
+        # Increase limit for comprehensive market coverage
+        available_tickers = available_tickers[:200]
         
         # Screen stocks
         matching_stocks = []
@@ -459,40 +462,7 @@ if st.button("🔍 銘柄を検索", use_container_width=True, type="primary"):
                 
                 st.markdown('</div>', unsafe_allow_html=True)
             
-            # Summary statistics
-            if len(matching_stocks) > 0:
-                st.markdown("### 📈 検索結果サマリー")
-                
-                # Create summary dataframe
-                summary_df = pd.DataFrame(matching_stocks)
-                
-                col1, col2, col3, col4 = st.columns(4)
-                
-                with col1:
-                    avg_growth = summary_df['revenue_growth'].mean()
-                    st.metric("平均成長率", f"{avg_growth:.1f}%")
-                
-                with col2:
-                    avg_roe = summary_df['roe'].mean()
-                    st.metric("平均ROE", f"{avg_roe:.1f}%")
-                
-                with col3:
-                    avg_per = summary_df[summary_df['pe_ratio'] > 0]['pe_ratio'].mean()
-                    st.metric("平均PER", f"{avg_per:.1f}")
-                
-                with col4:
-                    total_market_cap = summary_df['market_cap'].sum() / 1000
-                    st.metric("合計時価総額", f"${total_market_cap:.0f}B")
-                
-                # Sector distribution chart
-                if len(matching_stocks) > 1:
-                    sector_counts = summary_df['sector'].value_counts()
-                    fig = px.pie(
-                        values=sector_counts.values,
-                        names=sector_counts.index,
-                        title="セクター分布"
-                    )
-                    st.plotly_chart(fig, use_container_width=True)
+
         
         else:
             st.warning("条件に合致する銘柄が見つかりませんでした。条件を緩和して再検索してください。")

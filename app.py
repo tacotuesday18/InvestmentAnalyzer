@@ -382,6 +382,208 @@ st.markdown("""
         margin-bottom: 2rem;
     }
     
+    /* Hamburger Navigation System */
+    .top-app-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 64px;
+        background: #FFFFFF;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        z-index: 1000;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    @media (max-width: 768px) {
+        .top-app-bar {
+            height: 56px;
+        }
+    }
+    
+    .hamburger-button {
+        width: 48px;
+        height: 48px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background-color 0.2s ease;
+        margin-right: 16px;
+    }
+    
+    .hamburger-button:hover {
+        background-color: #F5F5F5;
+    }
+    
+    .hamburger-icon {
+        width: 24px;
+        height: 24px;
+        position: relative;
+        transform: rotate(0deg);
+        transition: 0.3s ease-in-out;
+    }
+    
+    .hamburger-icon span {
+        display: block;
+        position: absolute;
+        height: 3px;
+        width: 100%;
+        background: #333333;
+        border-radius: 2px;
+        opacity: 1;
+        left: 0;
+        transform: rotate(0deg);
+        transition: 0.25s ease-in-out;
+    }
+    
+    .hamburger-icon span:nth-child(1) {
+        top: 0px;
+    }
+    
+    .hamburger-icon span:nth-child(2) {
+        top: 8px;
+    }
+    
+    .hamburger-icon span:nth-child(3) {
+        top: 16px;
+    }
+    
+    .app-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #333333;
+        margin: 0;
+    }
+    
+    .side-drawer {
+        position: fixed;
+        top: 0;
+        left: -320px;
+        width: 320px;
+        height: 100vh;
+        background: #FFFFFF;
+        box-shadow: 2px 0 8px rgba(0,0,0,0.2);
+        transition: left 0.3s ease;
+        z-index: 1001;
+        overflow-y: auto;
+    }
+    
+    @media (max-width: 768px) {
+        .side-drawer {
+            width: 256px;
+            left: -256px;
+        }
+    }
+    
+    .side-drawer.open {
+        left: 0;
+    }
+    
+    .drawer-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    
+    .drawer-overlay.open {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    .drawer-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid #E0E0E0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .drawer-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333333;
+    }
+    
+    .close-button {
+        width: 32px;
+        height: 32px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-size: 20px;
+        color: #666666;
+    }
+    
+    .close-button:hover {
+        background-color: #F0F0F0;
+    }
+    
+    .nav-menu {
+        padding: 8px 0;
+    }
+    
+    .nav-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 24px;
+        color: #333333;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        border: none;
+        background: transparent;
+        width: 100%;
+        text-align: left;
+        font-size: 16px;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .nav-item:hover {
+        background-color: #F0F0F0;
+    }
+    
+    .nav-item.active {
+        background-color: #E3F2FD;
+        font-weight: 600;
+        border-left: 4px solid #007BFF;
+    }
+    
+    .nav-icon {
+        margin-right: 16px;
+        font-size: 20px;
+        width: 24px;
+        text-align: center;
+    }
+    
+    .main-content {
+        margin-top: 64px;
+        transition: margin-left 0.3s ease;
+    }
+    
+    @media (max-width: 768px) {
+        .main-content {
+            margin-top: 56px;
+        }
+    }
+    
     /* Navigation buttons */
     .stButton > button {
         background: #667eea !important;
@@ -427,41 +629,76 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize session state for page navigation
+# Initialize session state for navigation
 if "current_page" not in st.session_state:
     st.session_state.current_page = "home"
+if "drawer_open" not in st.session_state:
+    st.session_state.drawer_open = False
 
-# Enhanced Navigation with Sidebar
-with st.sidebar:
-    st.markdown("### メニュー")
-    
-    if st.button("🏠 ホーム", key="nav_home", use_container_width=True):
-        st.session_state.current_page = "home"
-        st.rerun()
+# Responsive Hamburger Navigation System
+col1, col2 = st.columns([1, 20])
+
+with col1:
+    # Hamburger menu button
+    if st.button("☰", key="hamburger_menu", help="Open navigation menu"):
+        st.session_state.drawer_open = not st.session_state.drawer_open
+
+# Top navigation bar
+st.markdown("""
+<div class="top-app-bar">
+    <h1 class="app-title">Kabu2Easy - 株式分析プラットフォーム</h1>
+</div>
+""", unsafe_allow_html=True)
+
+# Side drawer navigation (conditionally shown)
+if st.session_state.drawer_open:
+    with st.sidebar:
+        st.markdown('<div class="drawer-header"><div class="drawer-title">メニュー</div></div>', unsafe_allow_html=True)
         
-    if st.button("📊 ビジネスモデル分析", key="nav_analysis", use_container_width=True):
-        st.session_state.current_page = "analysis"
-        st.rerun()
-        
-    if st.button("📈 銘柄比較", key="nav_compare", use_container_width=True):
-        st.session_state.current_page = "compare"
-        st.rerun()
-        
-    if st.button("📊 財務諸表", key="nav_financial", use_container_width=True):
-        st.session_state.current_page = "financial"
-        st.rerun()
-        
-    if st.button("🧮 DCF価値計算機", key="nav_dcf", use_container_width=True):
-        st.session_state.current_page = "dcf"
-        st.rerun()
-        
-    if st.button("🔍 銘柄発見", key="nav_discovery", use_container_width=True):
-        st.session_state.current_page = "discovery"
-        st.rerun()
-        
-    if st.button("📈 決算分析", key="nav_earnings", use_container_width=True):
-        st.session_state.current_page = "earnings"
-        st.rerun()
+        if st.button("🏠 ホーム", key="nav_home", use_container_width=True, 
+                    type="primary" if st.session_state.current_page == "home" else "secondary"):
+            st.session_state.current_page = "home"
+            st.session_state.drawer_open = False
+            st.rerun()
+            
+        if st.button("📊 ビジネスモデル分析", key="nav_analysis", use_container_width=True,
+                    type="primary" if st.session_state.current_page == "analysis" else "secondary"):
+            st.session_state.current_page = "analysis"
+            st.session_state.drawer_open = False
+            st.rerun()
+            
+        if st.button("📈 銘柄比較", key="nav_compare", use_container_width=True,
+                    type="primary" if st.session_state.current_page == "compare" else "secondary"):
+            st.session_state.current_page = "compare"
+            st.session_state.drawer_open = False
+            st.rerun()
+            
+        if st.button("📊 財務諸表", key="nav_financial", use_container_width=True,
+                    type="primary" if st.session_state.current_page == "financial" else "secondary"):
+            st.session_state.current_page = "financial"
+            st.session_state.drawer_open = False
+            st.rerun()
+            
+        if st.button("🧮 DCF価値計算機", key="nav_dcf", use_container_width=True,
+                    type="primary" if st.session_state.current_page == "dcf" else "secondary"):
+            st.session_state.current_page = "dcf"
+            st.session_state.drawer_open = False
+            st.rerun()
+            
+        if st.button("🔍 銘柄発見", key="nav_discovery", use_container_width=True,
+                    type="primary" if st.session_state.current_page == "discovery" else "secondary"):
+            st.session_state.current_page = "discovery"
+            st.session_state.drawer_open = False
+            st.rerun()
+            
+        if st.button("📈 決算分析", key="nav_earnings", use_container_width=True,
+                    type="primary" if st.session_state.current_page == "earnings" else "secondary"):
+            st.session_state.current_page = "earnings"
+            st.session_state.drawer_open = False
+            st.rerun()
+
+# Main content area
+st.markdown('<div class="main-content">', unsafe_allow_html=True)
 
 # Page content based on navigation selection
 if st.session_state.current_page == "home":
