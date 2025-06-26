@@ -14,7 +14,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from auto_financial_data import get_auto_financial_data
 from comprehensive_market_stocks import get_all_market_stocks, get_stock_info_enhanced
 from historical_metrics_chart import display_historical_metrics_chart
-from currency_converter import display_stock_price_in_jpy, get_company_by_name
+from currency_converter import display_stock_price_in_jpy
 from format_helpers import format_currency, format_large_number
 import yfinance as yf
 

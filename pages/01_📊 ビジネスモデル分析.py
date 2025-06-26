@@ -121,7 +121,12 @@ with col1:
     )
     
     if search_input:
-        selected_ticker = get_company_by_name(search_input)
+        from comprehensive_stock_data import search_stocks_by_name
+        results = search_stocks_by_name(search_input)
+        if results:
+            selected_ticker = results[0]['ticker']
+        else:
+            selected_ticker = search_input.upper()
     else:
         selected_ticker = "AAPL"
 

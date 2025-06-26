@@ -1,7 +1,11 @@
 """
 Comprehensive stock database with company names for search functionality
-Includes S&P 500, NASDAQ, Dow Jones, Russell 2000, and international stocks
+Includes S&P 500, NASDAQ, Dow Jones, Russell 2000, international stocks, and 500+ additional stocks
+Now features 800+ stocks across all major markets and sectors
 """
+
+# Import expanded database
+from expanded_stock_database import get_expanded_stock_database
 
 COMPREHENSIVE_STOCKS = {
     # S&P 500 Technology Leaders
@@ -349,8 +353,26 @@ def search_stocks_by_name(query):
     return results[:50]  # Limit results
 
 def get_all_tickers():
-    """Get all available tickers"""
-    return list(COMPREHENSIVE_STOCKS.keys())
+    """Get all available tickers including expanded database"""
+    all_stocks = COMPREHENSIVE_STOCKS.copy()
+    
+    # Add expanded database (500+ additional stocks)
+    try:
+        expanded_stocks = get_expanded_stock_database()
+        # Convert expanded format to comprehensive format
+        for ticker, info in expanded_stocks.items():
+            if ticker not in all_stocks:
+                all_stocks[ticker] = {
+                    'name': info['name'],
+                    'category': info['sector'],
+                    'index': info.get('type', 'Stock'),
+                    'market_cap': info.get('market_cap', 'Unknown'),
+                    'country': info.get('country', 'USA')
+                }
+    except Exception as e:
+        pass  # Continue with original database if expanded fails
+    
+    return list(all_stocks.keys())
 
 def get_stock_info(ticker):
     """Get stock information"""
