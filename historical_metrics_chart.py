@@ -325,7 +325,7 @@ def display_historical_metrics_chart(ticker):
                         st.metric("PEG Ratio", f"{current_peg:.2f}", f"{trend} Avg: {avg_peg:.2f}")
                 
             else:
-                st.warning(f"Historical metrics data not available for {ticker}")
+                st.warning(f"⚠️ {ticker} の過去財務データが取得できませんでした。このティッカーの詳細な財務履歴データがYahoo Financeに存在しない可能性があります。")
 
 def get_company_by_name(company_name):
     """Search for company ticker by name"""
