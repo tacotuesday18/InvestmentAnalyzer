@@ -83,7 +83,7 @@ def get_sector_etfs():
     }
 
 def get_all_market_stocks():
-    """Get comprehensive list of all major market stocks"""
+    """Get comprehensive list of all major market stocks including 500+ additional stocks"""
     all_stocks = []
     
     # Add major indices
@@ -100,6 +100,14 @@ def get_all_market_stocks():
         "PFE", "NVAX", "INO", "VXRT", "OCGN", "PROG", "PRTY", "BBBY", "EXPR", "KOSS"
     ]
     all_stocks.extend(popular_stocks)
+    
+    # Add expanded database (500+ additional stocks)
+    try:
+        from expanded_stock_database import get_all_tickers_expanded
+        expanded_tickers = get_all_tickers_expanded()
+        all_stocks.extend(expanded_tickers)
+    except Exception:
+        pass  # Continue with original database if expanded fails
     
     # Remove duplicates and return sorted list
     unique_stocks = list(set(all_stocks))

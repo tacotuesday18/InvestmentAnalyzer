@@ -340,15 +340,35 @@ COMPREHENSIVE_STOCKS = {
 }
 
 def search_stocks_by_name(query):
-    """Search stocks by company name or ticker"""
+    """Search stocks by company name or ticker including expanded database"""
     query = query.lower()
     results = []
     
-    for ticker, info in COMPREHENSIVE_STOCKS.items():
+    # Get combined stock database
+    all_stocks = COMPREHENSIVE_STOCKS.copy()
+    
+    # Add expanded database
+    try:
+        expanded_stocks = get_expanded_stock_database()
+        for ticker, info in expanded_stocks.items():
+            if ticker not in all_stocks:
+                all_stocks[ticker] = {
+                    'name': info['name'],
+                    'category': info['sector'],
+                    'index': info.get('type', 'Stock')
+                }
+    except Exception:
+        pass
+    
+    for ticker, info in all_stocks.items():
         # Search by ticker or company name
         if (query in ticker.lower() or 
             query in info['name'].lower()):
-            results.append(ticker)
+            results.append({
+                'ticker': ticker,
+                'name': info['name'],
+                'category': info['category']
+            })
     
     return results[:50]  # Limit results
 
