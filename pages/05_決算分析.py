@@ -16,6 +16,7 @@ from comprehensive_market_stocks import get_all_market_stocks, get_stock_info_en
 from historical_metrics_chart import display_historical_metrics_chart, get_company_by_name
 from currency_converter import display_stock_price_in_jpy
 from format_helpers import format_currency, format_large_number
+from gemini_analyzer import translate_earnings_transcript, generate_earnings_summary
 import yfinance as yf
 
 # Modern design CSS
@@ -276,7 +277,7 @@ if analyze_button and selected_ticker:
                 
                 # Display enhanced metrics
                 st.markdown("#### 🔍 詳細バリュエーション指標")
-                col1, col2, col3, col4, col5 = st.columns(5)
+                col1, col2, col3, col4 = st.columns(4)
                 
                 with col1:
                     peg_color = "trend-positive" if 0.5 <= peg_ratio <= 1.0 else "trend-negative" if peg_ratio > 2.0 else ""
@@ -315,15 +316,7 @@ if analyze_button and selected_ticker:
                     </div>
                     """, unsafe_allow_html=True)
                 
-                with col5:
-                    dividend_yield = info.get('dividendYield', 0) * 100
-                    div_color = "trend-positive" if dividend_yield > 2 else ""
-                    st.markdown(f"""
-                    <div class="metric-card">
-                        <div class="metric-value {div_color}">{dividend_yield:.2f}%</div>
-                        <div class="metric-label">配当利回り</div>
-                    </div>
-                    """, unsafe_allow_html=True)
+
                 
             except:
                 pass
