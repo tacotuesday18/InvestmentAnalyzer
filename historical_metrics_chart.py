@@ -315,10 +315,20 @@ def display_historical_metrics_chart(ticker):
                     
                     st.plotly_chart(price_fig, use_container_width=True)
                 
-                # Summary table
-                st.markdown("### 📋 Current vs Historical Average")
+                # Summary table with Japanese labels
+                st.markdown("### 📋 現在値と10年平均の比較")
                 current_metrics = metrics_df.iloc[-1] if len(metrics_df) > 0 else None
-                avg_metrics = metrics_df[['PE_Ratio', 'PS_Ratio', 'PB_Ratio', 'PEG_Ratio']].mean()
+                
+                # Calculate filtered averages to remove outliers
+                avg_metrics = {}
+                for col in ['PE_Ratio', 'PS_Ratio', 'PB_Ratio', 'PEG_Ratio']:
+                    if col in metrics_df.columns:
+                        data = metrics_df[col]
+                        Q1 = data.quantile(0.25)
+                        Q3 = data.quantile(0.75)
+                        IQR = Q3 - Q1
+                        filtered_data = data[(data >= Q1 - 1.5*IQR) & (data <= Q3 + 1.5*IQR)]
+                        avg_metrics[col] = filtered_data.mean() if len(filtered_data) > 0 else data.mean()
                 
                 if current_metrics is not None:
                     col1, col2, col3, col4 = st.columns(4)
@@ -327,25 +337,25 @@ def display_historical_metrics_chart(ticker):
                         current_pe = current_metrics.get('PE_Ratio', 0)
                         avg_pe = avg_metrics.get('PE_Ratio', 0)
                         trend = "↗️" if current_pe > avg_pe else "↘️" if current_pe < avg_pe else "→"
-                        st.metric("PE Ratio", f"{current_pe:.2f}", f"{trend} Avg: {avg_pe:.2f}")
+                        st.metric("PER倍率", f"{current_pe:.2f}倍", f"{trend} 10年平均: {avg_pe:.2f}倍")
                     
                     with col2:
-                        current_ps = current_metrics.get('PS_Ratio', 0)
-                        avg_ps = avg_metrics.get('PS_Ratio', 0)
-                        trend = "↗️" if current_ps > avg_ps else "↘️" if current_ps < avg_ps else "→"
-                        st.metric("PS Ratio", f"{current_ps:.2f}", f"{trend} Avg: {avg_ps:.2f}")
-                    
-                    with col3:
                         current_pb = current_metrics.get('PB_Ratio', 0)
                         avg_pb = avg_metrics.get('PB_Ratio', 0)
                         trend = "↗️" if current_pb > avg_pb else "↘️" if current_pb < avg_pb else "→"
-                        st.metric("PB Ratio", f"{current_pb:.2f}", f"{trend} Avg: {avg_pb:.2f}")
+                        st.metric("PBR倍率", f"{current_pb:.2f}倍", f"{trend} 10年平均: {avg_pb:.2f}倍")
+                    
+                    with col3:
+                        current_ps = current_metrics.get('PS_Ratio', 0)
+                        avg_ps = avg_metrics.get('PS_Ratio', 0)
+                        trend = "↗️" if current_ps > avg_ps else "↘️" if current_ps < avg_ps else "→"
+                        st.metric("PSR倍率", f"{current_ps:.2f}倍", f"{trend} 10年平均: {avg_ps:.2f}倍")
                     
                     with col4:
                         current_peg = current_metrics.get('PEG_Ratio', 0)
                         avg_peg = avg_metrics.get('PEG_Ratio', 0)
                         trend = "↗️" if current_peg > avg_peg else "↘️" if current_peg < avg_peg else "→"
-                        st.metric("PEG Ratio", f"{current_peg:.2f}", f"{trend} Avg: {avg_peg:.2f}")
+                        st.metric("PEG倍率", f"{current_peg:.2f}倍", f"{trend} 10年平均: {avg_peg:.2f}倍")
                 
             else:
                 st.warning(f"⚠️ {ticker} の過去財務データが取得できませんでした。このティッカーの詳細な財務履歴データがYahoo Financeに存在しない可能性があります。")
