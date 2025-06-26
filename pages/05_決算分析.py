@@ -13,7 +13,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Import required modules
 from auto_financial_data import get_auto_financial_data
 from comprehensive_market_stocks import get_all_market_stocks, get_stock_info_enhanced
-from historical_metrics_chart import display_historical_metrics_chart, get_company_by_name
+from historical_metrics_chart import display_historical_metrics_chart
+from currency_converter import display_stock_price_in_jpy, get_company_by_name
 from format_helpers import format_currency, format_large_number
 import yfinance as yf
 
@@ -380,6 +381,17 @@ if analyze_button and selected_ticker:
                 </div>
             </div>
             """, unsafe_allow_html=True)
+            
+            # Current stock price in JPY
+            try:
+                stock = yf.Ticker(selected_ticker)
+                info = stock.info
+                current_price = info.get('currentPrice') or info.get('regularMarketPrice')
+                if current_price:
+                    st.markdown('<div class="section-header">💱 現在の株価（日本円換算）</div>', unsafe_allow_html=True)
+                    display_stock_price_in_jpy(selected_ticker, current_price)
+            except:
+                pass
             
             # Historical metrics chart
             st.markdown('<div class="section-header">📈 過去のメトリクス推移</div>', unsafe_allow_html=True)

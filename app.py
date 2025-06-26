@@ -729,6 +729,12 @@ if st.session_state.drawer_open:
             st.session_state.current_page = "earnings"
             st.session_state.drawer_open = False
             st.rerun()
+            
+        if st.button("📚 投資教育", key="nav_education", use_container_width=True,
+                    type="primary" if st.session_state.current_page == "education" else "secondary"):
+            st.session_state.current_page = "education"
+            st.session_state.drawer_open = False
+            st.rerun()
 
 # Main content area
 st.markdown('<div class="main-content">', unsafe_allow_html=True)
@@ -1050,6 +1056,14 @@ elif st.session_state.current_page == "earnings":
     
     # Execute the earnings analysis page functionality
     exec(open("pages/05_決算分析.py").read())
+        
+elif st.session_state.current_page == "education":
+    # 投資教育ページ
+    st.title("📚 投資教育")
+    st.markdown("### プラットフォームの使い方と投資の基礎知識")
+    
+    # Execute the education page functionality
+    exec(open("pages/07_📚 投資教育.py").read())
 
 # Close main content div
 st.markdown('</div>', unsafe_allow_html=True)

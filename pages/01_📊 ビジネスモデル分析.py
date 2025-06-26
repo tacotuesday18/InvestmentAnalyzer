@@ -241,6 +241,15 @@ if analyze_button and selected_ticker:
             </div>
             """, unsafe_allow_html=True)
             
+            # Display current stock price in JPY
+            try:
+                current_price = info.get('currentPrice') or info.get('regularMarketPrice')
+                if current_price:
+                    st.markdown("### 💱 現在の株価（日本円換算）")
+                    display_stock_price_in_jpy(selected_ticker, current_price)
+            except:
+                pass
+            
             # Historical metrics chart
             st.markdown("### 📈 財務メトリクス推移分析")
             display_historical_metrics_chart(selected_ticker)

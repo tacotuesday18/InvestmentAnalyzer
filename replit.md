@@ -4,14 +4,16 @@
 An intelligent Streamlit-based company analysis platform delivering comprehensive business insights through advanced data visualization and interactive research tools. All financial data is sourced exclusively from Yahoo Finance to ensure accuracy and authenticity.
 
 ## Recent Changes
+- **2025-06-26**: Fixed all critical navigation issues - hamburger menu now starts closed and auto-closes when navigating
 - **2025-06-26**: Completely redesigned fundamental analysis page as research paper format (no numbers, business-focused)
+- **2025-06-26**: Removed buy/sell recommendations from earnings page, replaced with objective financial scoring
+- **2025-06-26**: Fixed income statement page indentation error and all page functionality
+- **2025-06-26**: Added comprehensive USD/JPY currency converter for Japanese investors
+- **2025-06-26**: Created new education page with investment fundamentals and platform tutorials
+- **2025-06-26**: Integrated real-time currency conversion on stock analysis pages
 - **2025-06-26**: Enhanced earnings page with comprehensive investment metrics (PE, PS, PB, PEG, Beta, Dividend)
-- **2025-06-26**: Added company name search functionality (instead of ticker-only)
-- **2025-06-26**: Added earnings call transcripts with Japanese translation feature
+- **2025-06-26**: Added company name search functionality across all pages
 - **2025-06-26**: Implemented historical metrics charts (PE, PS, PB, PEG trends) across all pages
-- **2025-06-26**: Fixed hamburger navigation to stay closed by default and stick to top-left corner
-- **2025-06-26**: Removed update data button from income statement page as requested
-- **2025-06-25**: Expanded stock discovery to include all major market stocks (1000+ comprehensive database)
 
 ## Project Architecture
 
