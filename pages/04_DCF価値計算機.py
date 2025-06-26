@@ -22,6 +22,7 @@ from stock_data import get_stock_data, get_available_tickers
 from comprehensive_stock_data import search_stocks_by_name, get_all_tickers, get_stock_info, get_stocks_by_category, get_all_categories
 from financial_models import calculate_intrinsic_value
 from auto_financial_data import get_auto_financial_data
+from historical_metrics_chart import display_historical_metrics_chart
 
 # ページ設定は main app.py で処理済み
 
@@ -816,6 +817,10 @@ if selected_ticker:
                 # 企業分析ページに遷移
                 st.session_state.selected_ticker = selected_ticker
                 st.switch_page("pages/01_企業分析.py")
+            
+            # Historical metrics chart
+            st.markdown("### 📈 過去の財務指標推移")
+            display_historical_metrics_chart(selected_ticker)
             
             st.markdown("</div>", unsafe_allow_html=True)
 else:

@@ -678,6 +678,11 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
 
                 st.markdown("</div>", unsafe_allow_html=True)
                 
+                # Historical metrics charts for each ticker
+                st.markdown("### 📈 過去の財務指標推移比較")
+                for ticker in selected_tickers:
+                    st.markdown(f"#### {ticker} - 過去のメトリクス推移")
+                    display_historical_metrics_chart(ticker)
 
             else:
                 st.error("比較結果の取得中にエラーが発生しました。")

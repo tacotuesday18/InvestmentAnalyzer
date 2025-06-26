@@ -4,12 +4,14 @@
 An intelligent Streamlit-based company analysis platform delivering comprehensive business insights through advanced data visualization and interactive research tools. All financial data is sourced exclusively from Yahoo Finance to ensure accuracy and authenticity.
 
 ## Recent Changes
-- **2025-06-25**: Implemented responsive hamburger navigation system with Material Design specs
-- **2025-06-25**: Expanded stock discovery to include all major market stocks (S&P 500, NASDAQ, Dow, Russell 2000, International)
-- **2025-06-25**: Removed search results summary section from discovery page as requested
-- **2025-06-25**: Added comprehensive earnings analysis page with investment scoring
-- **2025-06-25**: Created comprehensive market stock database with 1000+ stocks
-- **2025-06-25**: Fixed business model analysis to use only live Yahoo Finance data
+- **2025-06-26**: Completely redesigned fundamental analysis page as research paper format (no numbers, business-focused)
+- **2025-06-26**: Enhanced earnings page with comprehensive investment metrics (PE, PS, PB, PEG, Beta, Dividend)
+- **2025-06-26**: Added company name search functionality (instead of ticker-only)
+- **2025-06-26**: Added earnings call transcripts with Japanese translation feature
+- **2025-06-26**: Implemented historical metrics charts (PE, PS, PB, PEG trends) across all pages
+- **2025-06-26**: Fixed hamburger navigation to stay closed by default and stick to top-left corner
+- **2025-06-26**: Removed update data button from income statement page as requested
+- **2025-06-25**: Expanded stock discovery to include all major market stocks (1000+ comprehensive database)
 
 ## Project Architecture
 
