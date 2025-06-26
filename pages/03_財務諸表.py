@@ -4,6 +4,7 @@ import yfinance as yf
 from auto_financial_data import get_auto_financial_data
 from format_helpers import format_currency, format_large_number
 from earnings_scraper import get_website_text_content, analyze_earnings_call
+from historical_metrics_chart import display_historical_metrics_chart
 import numpy as np
 import requests
 import trafilatura
@@ -160,14 +161,7 @@ selected_ticker = st.selectbox(
 )
 
 with col2:
-    if st.button("🔄 データ更新", use_container_width=True):
-        st.cache_data.clear()
-        st.cache_resource.clear()
-        # Clear session state to fix data persistence issues
-        for key in list(st.session_state.keys()):
-            del st.session_state[key]
-        st.success("データを更新しました")
-        st.rerun()
+    # Removed update data button as requested
 
 if selected_ticker:
     with st.spinner("最新の財務データを取得中..."):
@@ -506,6 +500,13 @@ if selected_ticker:
         
         else:
             st.error("選択された企業の財務データを取得できませんでした。")
+
+# Historical metrics chart
+if selected_ticker:
+    st.markdown("<div class='card'>", unsafe_allow_html=True)
+    st.markdown("### 📈 過去の財務指標推移")
+    display_historical_metrics_chart(selected_ticker)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # Footer
 st.markdown("---")

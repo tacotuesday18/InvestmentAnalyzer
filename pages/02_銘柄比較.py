@@ -20,6 +20,7 @@ from stock_data import load_sample_data, ensure_sample_data_dir, SAMPLE_DATA_DIR
 from comprehensive_stock_data import search_stocks_by_name, get_all_tickers, get_stock_info, get_stocks_by_category, get_all_categories
 from real_time_fetcher import fetch_current_stock_price, fetch_comprehensive_data, show_live_price_indicator, display_market_status
 from auto_financial_data import get_auto_financial_data, calculate_growth_rate
+from historical_metrics_chart import display_historical_metrics_chart
 
 # ページ設定は main app.py で処理済み
 
