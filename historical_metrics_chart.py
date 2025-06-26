@@ -150,147 +150,170 @@ def display_historical_metrics_chart(ticker):
                 st.markdown(f"### 📊 {ticker} - 過去の財務指標推移")
                 
                 # Create tabs for different metric views in Japanese
-                tab1, tab2, tab3, tab4 = st.tabs(["PER・PEG倍率", "PSR・PBR倍率", "全指標一覧", "株価推移"])
+                tab1, tab2, tab3, tab4, tab5 = st.tabs(["PER倍率", "PBR倍率", "PSR倍率", "PEG倍率", "株価推移"])
                 
                 st.info("📌 このチャートは過去の財務指標の推移を示しています。投資判断にご活用ください。")
                 
                 with tab1:
-                    fig = go.Figure()
+                    # PE Ratio individual chart
+                    pe_fig = go.Figure()
                     
-                    # PE Ratio
-                    fig.add_trace(go.Scatter(
+                    pe_fig.add_trace(go.Scatter(
                         x=metrics_df['Date'],
                         y=metrics_df['PE_Ratio'],
                         mode='lines+markers',
                         name='PER (株価収益率)',
                         line=dict(color='#3b82f6', width=3),
+                        marker=dict(size=6),
                         hovertemplate='日付: %{x}<br>PER: %{y:.2f}倍<extra></extra>'
                     ))
                     
-                    # PEG Ratio (secondary y-axis)
-                    fig.add_trace(go.Scatter(
-                        x=metrics_df['Date'],
-                        y=metrics_df['PEG_Ratio'],
-                        mode='lines+markers',
-                        name='PEG倍率',
-                        line=dict(color='#ef4444', width=3),
-                        yaxis='y2',
-                        hovertemplate='日付: %{x}<br>PEG: %{y:.2f}倍<extra></extra>'
-                    ))
+                    # Add average line
+                    avg_pe = metrics_df['PE_Ratio'].mean()
+                    pe_fig.add_hline(
+                        y=avg_pe, 
+                        line_dash="dash", 
+                        line_color="red",
+                        annotation_text=f"10年平均: {avg_pe:.2f}倍"
+                    )
                     
-                    fig.update_layout(
-                        title=f"{ticker} - PER・PEG倍率の推移",
+                    pe_fig.update_layout(
+                        title=f"{ticker} - PER (株価収益率) 10年推移",
                         xaxis_title="日付",
                         yaxis_title="PER (株価収益率)",
-                        yaxis2=dict(
-                            title="PEG倍率",
-                            overlaying='y',
-                            side='right'
-                        ),
                         hovermode='x unified',
-                        height=500,
+                        height=450,
                         font=dict(family="Arial, sans-serif", size=12)
                     )
                     
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(pe_fig, use_container_width=True)
                 
                 with tab2:
-                    fig = go.Figure()
+                    # PBR individual chart
+                    pb_fig = go.Figure()
                     
-                    # PS Ratio
-                    fig.add_trace(go.Scatter(
-                        x=metrics_df['Date'],
-                        y=metrics_df['PS_Ratio'],
-                        mode='lines+markers',
-                        name='PSR (株価売上倍率)',
-                        line=dict(color='#10b981', width=3),
-                        hovertemplate='日付: %{x}<br>PSR: %{y:.2f}倍<extra></extra>'
-                    ))
-                    
-                    # PB Ratio (secondary y-axis)
-                    fig.add_trace(go.Scatter(
+                    pb_fig.add_trace(go.Scatter(
                         x=metrics_df['Date'],
                         y=metrics_df['PB_Ratio'],
                         mode='lines+markers',
                         name='PBR (株価純資産倍率)',
                         line=dict(color='#f59e0b', width=3),
-                        yaxis='y2',
+                        marker=dict(size=6),
                         hovertemplate='日付: %{x}<br>PBR: %{y:.2f}倍<extra></extra>'
                     ))
                     
-                    fig.update_layout(
-                        title=f"{ticker} - PSR・PBR倍率の推移",
+                    # Add average line
+                    avg_pb = metrics_df['PB_Ratio'].mean()
+                    pb_fig.add_hline(
+                        y=avg_pb, 
+                        line_dash="dash", 
+                        line_color="red",
+                        annotation_text=f"10年平均: {avg_pb:.2f}倍"
+                    )
+                    
+                    pb_fig.update_layout(
+                        title=f"{ticker} - PBR (株価純資産倍率) 10年推移",
                         xaxis_title="日付",
-                        yaxis_title="PSR (株価売上倍率)",
-                        yaxis2=dict(
-                            title="PBR (株価純資産倍率)",
-                            overlaying='y',
-                            side='right'
-                        ),
+                        yaxis_title="PBR (株価純資産倍率)",
                         hovermode='x unified',
-                        height=500,
+                        height=450,
                         font=dict(family="Arial, sans-serif", size=12)
                     )
                     
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(pb_fig, use_container_width=True)
                 
                 with tab3:
-                    # Normalize all metrics for comparison
-                    normalized_df = metrics_df.copy()
-                    for col in ['PE_Ratio', 'PS_Ratio', 'PB_Ratio', 'PEG_Ratio']:
-                        if col in normalized_df.columns:
-                            max_val = normalized_df[col].max()
-                            min_val = normalized_df[col].min()
-                            if max_val > min_val:
-                                normalized_df[f'{col}_norm'] = (normalized_df[col] - min_val) / (max_val - min_val)
+                    # PSR individual chart
+                    ps_fig = go.Figure()
                     
-                    fig = go.Figure()
+                    ps_fig.add_trace(go.Scatter(
+                        x=metrics_df['Date'],
+                        y=metrics_df['PS_Ratio'],
+                        mode='lines+markers',
+                        name='PSR (株価売上倍率)',
+                        line=dict(color='#10b981', width=3),
+                        marker=dict(size=6),
+                        hovertemplate='日付: %{x}<br>PSR: %{y:.2f}倍<extra></extra>'
+                    ))
                     
-                    colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b']
-                    metrics = ['PE_Ratio_norm', 'PS_Ratio_norm', 'PB_Ratio_norm', 'PEG_Ratio_norm']
-                    names = ['PE Ratio', 'PS Ratio', 'PB Ratio', 'PEG Ratio']
-                    
-                    for i, (metric, name) in enumerate(zip(metrics, names)):
-                        if metric in normalized_df.columns:
-                            fig.add_trace(go.Scatter(
-                                x=normalized_df['Date'],
-                                y=normalized_df[metric],
-                                mode='lines+markers',
-                                name=name,
-                                line=dict(color=colors[i], width=3)
-                            ))
-                    
-                    fig.update_layout(
-                        title=f"{ticker} - All Metrics Normalized Comparison",
-                        xaxis_title="Date",
-                        yaxis_title="Normalized Value (0-1)",
-                        hovermode='x unified',
-                        height=500
+                    # Add average line
+                    avg_ps = metrics_df['PS_Ratio'].mean()
+                    ps_fig.add_hline(
+                        y=avg_ps, 
+                        line_dash="dash", 
+                        line_color="red",
+                        annotation_text=f"10年平均: {avg_ps:.2f}倍"
                     )
                     
-                    st.plotly_chart(fig, use_container_width=True)
+                    ps_fig.update_layout(
+                        title=f"{ticker} - PSR (株価売上倍率) 10年推移",
+                        xaxis_title="日付",
+                        yaxis_title="PSR (株価売上倍率)",
+                        hovermode='x unified',
+                        height=450,
+                        font=dict(family="Arial, sans-serif", size=12)
+                    )
+                    
+                    st.plotly_chart(ps_fig, use_container_width=True)
                 
                 with tab4:
-                    fig = go.Figure()
+                    # PEG individual chart
+                    peg_fig = go.Figure()
                     
-                    fig.add_trace(go.Scatter(
+                    peg_fig.add_trace(go.Scatter(
+                        x=metrics_df['Date'],
+                        y=metrics_df['PEG_Ratio'],
+                        mode='lines+markers',
+                        name='PEG倍率',
+                        line=dict(color='#ef4444', width=3),
+                        marker=dict(size=6),
+                        hovertemplate='日付: %{x}<br>PEG: %{y:.2f}倍<extra></extra>'
+                    ))
+                    
+                    # Add average line
+                    avg_peg = metrics_df['PEG_Ratio'].mean()
+                    peg_fig.add_hline(
+                        y=avg_peg, 
+                        line_dash="dash", 
+                        line_color="red",
+                        annotation_text=f"10年平均: {avg_peg:.2f}倍"
+                    )
+                    
+                    peg_fig.update_layout(
+                        title=f"{ticker} - PEG倍率 10年推移",
+                        xaxis_title="日付",
+                        yaxis_title="PEG倍率",
+                        hovermode='x unified',
+                        height=450,
+                        font=dict(family="Arial, sans-serif", size=12)
+                    )
+                    
+                    st.plotly_chart(peg_fig, use_container_width=True)
+                
+                with tab5:
+                    # Stock price chart
+                    price_fig = go.Figure()
+                    
+                    price_fig.add_trace(go.Scatter(
                         x=metrics_df['Date'],
                         y=metrics_df['Stock_Price'],
                         mode='lines+markers',
-                        name='Stock Price',
+                        name='株価',
                         line=dict(color='#8b5cf6', width=3),
-                        hovertemplate='Date: %{x}<br>Price: $%{y:.2f}<extra></extra>'
+                        marker=dict(size=6),
+                        hovertemplate='日付: %{x}<br>株価: $%{y:.2f}<extra></extra>'
                     ))
                     
-                    fig.update_layout(
-                        title=f"{ticker} - Stock Price Trend",
-                        xaxis_title="Date",
-                        yaxis_title="Stock Price ($)",
+                    price_fig.update_layout(
+                        title=f"{ticker} - 株価推移 10年",
+                        xaxis_title="日付",
+                        yaxis_title="株価 ($)",
                         hovermode='x unified',
-                        height=500
+                        height=450,
+                        font=dict(family="Arial, sans-serif", size=12)
                     )
                     
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(price_fig, use_container_width=True)
                 
                 # Summary table
                 st.markdown("### 📋 Current vs Historical Average")
