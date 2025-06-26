@@ -676,7 +676,7 @@ def calculate_financial_health_score(financial_data):
         score += 10
     
     # Current Ratio (1.2-2.0 is ideal)
-    if 1.2 <= financial_data['current_ratio'] <= 2.0:
+    if financial_data.get('current_ratio') and 1.2 <= financial_data['current_ratio'] <= 2.0:
         score += 25
     elif 1.0 <= financial_data['current_ratio'] < 1.2:
         score += 20

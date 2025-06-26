@@ -382,30 +382,31 @@ st.markdown("""
         margin-bottom: 2rem;
     }
     
-    /* Hamburger Navigation System */
+    /* Fixed Hamburger Navigation System */
     .hamburger-btn {
-        position: fixed;
-        top: 16px;
-        left: 16px;
-        width: 48px;
-        height: 48px;
-        background: #FFFFFF;
-        border: 2px solid #e2e8f0;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 24px;
-        color: #333333;
-        cursor: pointer;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        z-index: 1000;
-        transition: all 0.2s ease;
+        position: fixed !important;
+        top: 16px !important;
+        left: 16px !important;
+        width: 48px !important;
+        height: 48px !important;
+        background: #FFFFFF !important;
+        border: 2px solid #e2e8f0 !important;
+        border-radius: 50% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 24px !important;
+        color: #333333 !important;
+        cursor: pointer !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+        z-index: 9999 !important;
+        transition: all 0.2s ease !important;
+        font-family: 'Inter', sans-serif !important;
     }
     
     .hamburger-btn:hover {
-        background: #F5F5F5;
-        transform: scale(1.05);
+        background: #F5F5F5 !important;
+        transform: scale(1.05) !important;
     }
     
     .top-app-bar {
@@ -664,12 +665,15 @@ if "current_page" not in st.session_state:
 if "drawer_open" not in st.session_state:
     st.session_state.drawer_open = False
 
-# Responsive Hamburger Navigation System
-col1, col2 = st.columns([1, 20])
-
-with col1:
-    # Hamburger menu button
-    if st.button("☰", key="hamburger_menu", help="Open navigation menu"):
+# Fixed hamburger navigation button
+hamburger_placeholder = st.empty()
+with hamburger_placeholder.container():
+    st.markdown("""
+    <div class="hamburger-btn" onclick="document.querySelector('#hamburger_menu').click();">☰</div>
+    """, unsafe_allow_html=True)
+    
+    # Hidden button for state management
+    if st.button("☰", key="hamburger_menu", help="Toggle navigation menu"):
         st.session_state.drawer_open = not st.session_state.drawer_open
 
 # Top navigation bar
