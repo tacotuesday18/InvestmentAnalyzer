@@ -144,7 +144,7 @@ with col2:
     if selected_category != "All":
         available_tickers = get_stocks_by_category(selected_category)
 
-st.info(f"選択可能銘柄数: {len(available_tickers)} | 包括的な株式データベース")
+
 
 # Create options with company names for better UX
 ticker_options = {}
@@ -427,11 +427,7 @@ if selected_ticker:
                 
                 st.markdown("</div>", unsafe_allow_html=True)
                 
-                # Revenue Streams Analysis
-                st.markdown("<div class='card'>", unsafe_allow_html=True)
-                from revenue_streams_analyzer import display_revenue_streams_analysis
-                display_revenue_streams_analysis(selected_ticker)
-                st.markdown("</div>", unsafe_allow_html=True)
+
                 
                 # 最新決算説明会の内容
                 st.markdown("<div class='card'>", unsafe_allow_html=True)

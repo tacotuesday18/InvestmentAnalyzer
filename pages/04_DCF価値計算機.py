@@ -312,7 +312,7 @@ with col2:
         available_tickers = get_stocks_by_category(selected_category)
 
 # Display number of available stocks with company names
-st.info(f"選択可能銘柄数: {len(available_tickers)} | S&P500, NASDAQ, Dow Jones, Russell 2000を含む主要株式")
+
 
 # Create options with company names for better UX
 ticker_options = {}

@@ -41,7 +41,7 @@ def create_simple_metrics(ticker, hist_data, info):
     except Exception:
         return None
 
-def get_historical_metrics(ticker, years=5):
+def get_historical_metrics(ticker, years=10):
     """Get historical financial metrics for a ticker"""
     try:
         stock = yf.Ticker(ticker)

@@ -279,7 +279,7 @@ for ticker in available_tickers:
     stock_info = get_stock_info(ticker)
     ticker_options[ticker] = f"{ticker} - {stock_info['name']}"
 
-st.info(f"選択可能銘柄数: {len(available_tickers)} | 主要指数の銘柄を網羅")
+
 
 # 統合された銘柄選択（最大8つまで）
 st.markdown("**比較銘柄選択**")
