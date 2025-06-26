@@ -9,6 +9,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from comprehensive_market_stocks import get_all_market_stocks
 from historical_metrics_chart import display_historical_metrics_chart, get_company_by_name
+from currency_converter import display_stock_price_in_jpy
 
 # Modern design CSS
 st.markdown("""

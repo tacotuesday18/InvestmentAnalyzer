@@ -353,29 +353,30 @@ if analyze_button and selected_ticker:
             
             score_percentage = (score / max_score) * 100
             
+            # Determine score category
             if score_percentage >= 70:
-                recommendation = "強い買い推奨"
-                rec_color = "#10b981"
+                score_category = "優秀"
+                score_color = "#10b981"
             elif score_percentage >= 50:
-                recommendation = "買い推奨"
-                rec_color = "#3b82f6"
+                score_category = "良好"
+                score_color = "#3b82f6"
             elif score_percentage >= 30:
-                recommendation = "ホールド"
-                rec_color = "#f59e0b"
+                score_category = "普通"
+                score_color = "#f59e0b"
             else:
-                recommendation = "売り推奨"
-                rec_color = "#ef4444"
+                score_category = "要注意"
+                score_color = "#ef4444"
             
             st.markdown(f"""
             <div class="earnings-card" style="text-align: center;">
-                <div style="font-size: 2.5rem; font-weight: 700; color: {rec_color}; margin-bottom: 1rem;">
-                    {recommendation}
+                <div style="font-size: 2.5rem; font-weight: 700; color: {score_color}; margin-bottom: 1rem;">
+                    財務スコア: {score_category}
                 </div>
                 <div style="font-size: 1.2rem; color: #64748b; margin-bottom: 1rem;">
-                    財務スコア: {score}/{max_score} ({score_percentage:.0f}%)
+                    総合得点: {score}/{max_score} ({score_percentage:.0f}%)
                 </div>
                 <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; color: #475569;">
-                    この評価は財務指標に基づく定量分析です。投資判断には市場環境、業界動向、企業の戦略などの定性要因も考慮してください。
+                    この評価は財務指標に基づく定量分析です。投資判断には市場環境、業界動向、企業の戦略などの定性要因も総合的に考慮することが重要です。
                 </div>
             </div>
             """, unsafe_allow_html=True)

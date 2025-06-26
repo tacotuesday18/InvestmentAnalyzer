@@ -162,6 +162,7 @@ selected_ticker = st.selectbox(
 
 with col2:
     # Removed update data button as requested
+    pass
 
 if selected_ticker:
     with st.spinner("最新の財務データを取得中..."):
