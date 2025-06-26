@@ -129,14 +129,7 @@ st.markdown("### 📈 企業選択")
 
 col1, col2 = st.columns([3, 1])
 
-with col1:
-    search_query = st.text_input("企業名またはティッカーで検索", placeholder="企業名またはティッカーシンボルを入力 (例: Apple, Tesla, AAPL)")
-    if search_query:
-        search_results = search_stocks_by_name(search_query)
-        if search_results:
-            available_tickers = search_results[:30]
-        else:
-            st.warning(f"'{search_query}' に一致する銘柄が見つかりません")
+
 
 with col2:
     categories = ["All"] + get_all_categories()

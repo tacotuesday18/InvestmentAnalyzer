@@ -394,25 +394,10 @@ if selected_ticker:
         shares_outstanding = auto_data['shares_outstanding'] * 1_000_000
         current_stock_price = auto_data['current_price']
         
-        # カスタム株価の入力（オプション）
-        custom_stock_price_str = st.text_input(
-            "現在の株価（USD）を上書き（必要な場合のみ）",
-            value=""
-        )
+
         
-        # 入力があれば変換
-        try:
-            if custom_stock_price_str and custom_stock_price_str.strip():
-                custom_stock_price = float(custom_stock_price_str.replace(',', ''))
-            else:
-                custom_stock_price = 0.0
-        except:
-            custom_stock_price = 0.0
-        
-        if custom_stock_price > 0:
-            current_stock_price = custom_stock_price
-        else:
-            current_stock_price = auto_data['current_price']
+        # Use the live stock price directly
+        final_stock_price = current_stock_price
     
     st.markdown("</div>", unsafe_allow_html=True)
     

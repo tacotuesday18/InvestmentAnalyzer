@@ -439,29 +439,9 @@ if analyze_button and selected_ticker:
                     )
                 
                 with col2:
-                    if st.button("🌐 日本語に翻訳", help="日本語翻訳を表示"):
-                        japanese_transcript = f"""
-                        {info.get('longName', selected_ticker)}の2024年Q4決算説明会へようこそ。
-
-                        CEO開会挨拶:
-                        本日はご参加いただきありがとうございます。今四半期は前年同期比{revenue_growth:.1f}%の売上成長を達成し、好調な業績をご報告できることを嬉しく思います。戦略的取り組みが価値創造と市場拡大を牽引しています。
-
-                        CFO財務ハイライト:
-                        - 総売上高は{data.get('revenue', 0)/1000000:.1f}億ドルに達しました
-                        - 純利益は{data.get('net_income', 0)/1000000:.1f}億ドルでした
-                        - 営業利益率は{operating_margins:.1f}%に改善しました
-                        - 流動比率{current_ratio:.2f}で強固なバランスシートを維持しています
-
-                        質疑応答:
-                        アナリスト: 成長戦略についてより詳しく教えてください。
-                        CEO: イノベーション、市場拡大、運営効率に注力しています。R&D投資が競争優位性を継続的に生み出しています。
-
-                        アナリスト: 次四半期の見通しはいかがですか？
-                        CFO: 市場ポジションについて楽観的であり、継続的な成長を期待していますが、市場環境を注意深く監視しています。
-
-                        将来予想に関する注意事項:
-                        この説明会には現在の予想に基づく将来予想が含まれています。実際の結果は大きく異なる場合があります。
-                        """
+                    if st.button("🌐 日本語に翻訳", help="Gemini AIで英語テキストを日本語に翻訳"):
+                        with st.spinner("Gemini AIで翻訳中..."):
+                            japanese_transcript = translate_earnings_transcript(earnings_transcript)
                         
                         st.text_area(
                             "決算説明会トランスクリプト (日本語)",
