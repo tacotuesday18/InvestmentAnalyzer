@@ -30,6 +30,9 @@ An intelligent Streamlit-based company analysis platform delivering comprehensiv
 - Comprehensive financial health scoring
 - Investment style presets (Growth, Value, Dividend, Stability)
 - Real-time stock screening with customizable criteria
+- USD/JPY currency conversion for Japanese investors
+- Interactive investment education center
+- Historical metrics trend analysis
 - Multi-language support (Japanese/English)
 
 ### Technology Stack
@@ -57,8 +60,9 @@ Home
 ├── Stock Comparison (銘柄比較)
 ├── Financial Statements (財務諸表)
 ├── DCF Calculator (DCF価値計算機)
-├── Stock Discovery (銘柄発見) [NEW]
-└── Earnings Analysis (決算分析)
+├── Stock Discovery (銘柄発見)
+├── Earnings Analysis (決算分析)
+└── Investment Education (投資教育) [NEW]
 ```
 
 ## Stock Discovery Tool Features
