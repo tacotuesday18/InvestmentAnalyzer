@@ -10,6 +10,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from comprehensive_market_stocks import get_all_market_stocks
 from historical_metrics_chart import display_historical_metrics_chart, get_company_by_name
 from currency_converter import display_stock_price_in_jpy
+from gemini_analyzer import analyze_company_fundamentals
 
 # Modern design CSS
 st.markdown("""
@@ -143,21 +144,24 @@ if analyze_button and selected_ticker:
             sector = info.get('sector', 'Technology')
             industry = info.get('industry', 'Software')
             
-            # Generate comprehensive business fundamental analysis
+            # Generate real-time fundamental analysis using Gemini AI
+            analysis_report = analyze_company_fundamentals(selected_ticker)
+            
             st.markdown(f"""
             <div class="research-paper">
                 <h1 class="paper-title">{company_name} ({selected_ticker})</h1>
-                <h2 class="paper-subtitle">包括的ビジネスファンダメンタル分析レポート</h2>
+                <h2 class="paper-subtitle">AI生成ファンダメンタル分析レポート</h2>
                 
                 <div class="author-info">
                     <strong>分析日:</strong> {datetime.now().strftime('%Y年%m月%d日')}<br>
-                    <strong>セクター:</strong> {sector} | <strong>業界:</strong> {industry}
+                    <strong>セクター:</strong> {sector} | <strong>業界:</strong> {industry}<br>
+                    <strong>分析エンジン:</strong> Gemini AI
                 </div>
-                
-                <div class="section-title">I. エグゼクティブサマリー</div>
-                <div class="research-content">
-                {company_name}は{sector}セクターにおける主要企業として、革新的な製品開発と強固なビジネスモデルにより市場での地位を確立しています。同社の戦略的ビジョン、卓越した実行力、そして持続可能な競争優位性により、長期的な成長機会を提供する投資対象として評価されます。本レポートでは、財務数値に依存せず、ビジネスの本質的な強みと投資魅力について詳細に分析します。
-                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Display the AI-generated analysis
+            st.markdown(analysis_report)
                 
                 <div class="section-title">II. 企業ビジョンと戦略的方向性</div>
                 <div class="subsection-title">2.1 コーポレートビジョン</div>
