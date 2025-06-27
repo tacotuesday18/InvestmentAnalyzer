@@ -136,14 +136,43 @@ def extract_and_translate_earnings_transcript(ticker):
         website = info.get('website', '')
         transcript_content = ""
         
-        # Enhanced sources for earnings information
-        potential_sources = [
-            f"https://investor.apple.com/investor-relations/default.aspx" if ticker == "AAPL" else "",
-            f"https://www.sec.gov/edgar/browse/?CIK={info.get('cik', '')}" if info.get('cik') else "",
+        # Use company-specific investor relations pages for better transcript access
+        company_ir_pages = {
+            'AAPL': 'https://investor.apple.com/investor-relations/',
+            'MSFT': 'https://www.microsoft.com/en-us/Investor/',
+            'GOOGL': 'https://abc.xyz/investor/',
+            'GOOG': 'https://abc.xyz/investor/',
+            'AMZN': 'https://ir.aboutamazon.com/',
+            'TSLA': 'https://ir.tesla.com/',
+            'META': 'https://investor.fb.com/',
+            'NVDA': 'https://investor.nvidia.com/',
+            'NFLX': 'https://ir.netflix.net/',
+            'AMD': 'https://ir.amd.com/',
+            'ORCL': 'https://investor.oracle.com/',
+            'CRM': 'https://investor.salesforce.com/',
+            'INTC': 'https://www.intc.com/investor-relations'
+        }
+        
+        # Enhanced sources prioritizing official company sources
+        potential_sources = []
+        
+        # Add company-specific IR page if available
+        if ticker in company_ir_pages:
+            potential_sources.append(company_ir_pages[ticker])
+        
+        # Add general company website IR
+        if website:
+            potential_sources.extend([
+                f"{website}/investor-relations",
+                f"{website}/investors",
+                f"{website}/ir"
+            ])
+        
+        # Add financial news sites
+        potential_sources.extend([
             f"https://seekingalpha.com/symbol/{ticker}/earnings/transcripts",
-            f"https://finance.yahoo.com/quote/{ticker}/financials",
-            f"https://www.zacks.com/stock/quote/{ticker}/detailed-earning-estimates"
-        ]
+            f"https://finance.yahoo.com/quote/{ticker}/financials"
+        ])
         
         # Try to extract from financial news and earnings sites
         for source_url in potential_sources:

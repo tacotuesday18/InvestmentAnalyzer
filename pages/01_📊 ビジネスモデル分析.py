@@ -112,7 +112,7 @@ if should_reset_fundamental_analysis(selected_ticker):
 
 if should_analyze or (st.session_state.fundamental_analysis_completed and st.session_state.fundamental_current_ticker == selected_ticker):
     # Run analysis if needed
-    if should_analyze and not st.session_state.analysis_completed:
+    if should_analyze and not st.session_state.fundamental_analysis_completed:
         with st.spinner(f"{selected_ticker}のビジネスファンダメンタルを分析中..."):
             try:
                 stock = yf.Ticker(selected_ticker)
@@ -123,7 +123,7 @@ if should_analyze or (st.session_state.fundamental_analysis_completed and st.ses
                 industry = info.get('industry', 'Software')
                 
                 # Store in session state
-                st.session_state.company_info = {
+                st.session_state.fundamental_company_info = {
                     'name': company_name,
                     'sector': sector,
                     'industry': industry,
@@ -131,16 +131,16 @@ if should_analyze or (st.session_state.fundamental_analysis_completed and st.ses
                 }
                 
                 # Generate real-time fundamental analysis using Gemini AI
-                st.session_state.analysis_report = analyze_company_fundamentals(selected_ticker)
-                st.session_state.analysis_completed = True
+                st.session_state.fundamental_analysis_report = analyze_company_fundamentals(selected_ticker)
+                st.session_state.fundamental_analysis_completed = True
                 
             except Exception as e:
                 st.error(f"企業情報の取得に失敗しました: {str(e)}")
-                st.session_state.analysis_completed = False
+                st.session_state.fundamental_analysis_completed = False
     
     # Display analysis results if available
-    if st.session_state.analysis_completed and st.session_state.company_info:
-        company_info = st.session_state.company_info
+    if st.session_state.fundamental_analysis_completed and st.session_state.fundamental_company_info:
+        company_info = st.session_state.fundamental_company_info
         
         st.markdown(f"""
         <div class="research-paper">
@@ -156,7 +156,7 @@ if should_analyze or (st.session_state.fundamental_analysis_completed and st.ses
         """, unsafe_allow_html=True)
         
         # Display the AI-generated analysis
-        st.markdown(st.session_state.analysis_report)
+        st.markdown(st.session_state.fundamental_analysis_report)
         
         # Display current stock price in JPY
         try:
