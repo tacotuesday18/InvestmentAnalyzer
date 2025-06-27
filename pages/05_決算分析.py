@@ -17,6 +17,12 @@ from historical_metrics_chart import display_historical_metrics_chart, get_compa
 from currency_converter import display_stock_price_in_jpy
 from format_helpers import format_currency, format_large_number
 from gemini_analyzer import generate_earnings_summary, extract_and_translate_earnings_transcript
+from openai_analyzer import (
+    generate_current_stock_metrics_with_chatgpt,
+    translate_earnings_transcript_to_japanese,
+    extract_key_transcript_sections,
+    generate_japanese_earnings_summary
+)
 import yfinance as yf
 
 # Modern design CSS

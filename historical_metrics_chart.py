@@ -9,6 +9,7 @@ import pandas as pd
 import yfinance as yf
 from datetime import datetime, timedelta
 import numpy as np
+from openai_analyzer import generate_historical_metrics_with_chatgpt
 
 def get_authentic_historical_ratios(ticker, hist_data, info):
     """Calculate authentic historical financial ratios using real financial data"""

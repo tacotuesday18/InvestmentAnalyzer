@@ -723,30 +723,30 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
                         # Add performance summary for individual comparison
                         try:
                             import yfinance as yf
+                            
+                            st.markdown("#### パフォーマンス統計")
+                            
+                            # Calculate returns for each stock
+                            returns_data = []
+                            for ticker in selected_tickers:
+                                try:
+                                    stock = yf.Ticker(ticker)
+                                    data = stock.history(period=selected_comparison_period)
+                                    if not data.empty:
+                                        period_return = ((data['Close'].iloc[-1] - data['Close'].iloc[0]) / data['Close'].iloc[0]) * 100
+                                        returns_data.append({
+                                            'Ticker': ticker,
+                                            'Return (%)': f"{period_return:+.2f}%"
+                                        })
+                                except:
+                                    continue
+                            
+                            if returns_data:
+                                returns_df = pd.DataFrame(returns_data)
+                                st.dataframe(returns_df, use_container_width=True)
                                 
-                                st.markdown("#### パフォーマンス統計")
-                                
-                                # Calculate returns for each stock
-                                returns_data = []
-                                for ticker in selected_tickers:
-                                    try:
-                                        stock = yf.Ticker(ticker)
-                                        data = stock.history(period=selected_comparison_period)
-                                        if not data.empty:
-                                            period_return = ((data['Close'].iloc[-1] - data['Close'].iloc[0]) / data['Close'].iloc[0]) * 100
-                                            returns_data.append({
-                                                'Ticker': ticker,
-                                                'Return (%)': f"{period_return:+.2f}%"
-                                            })
-                                    except:
-                                        continue
-                                
-                                if returns_data:
-                                    returns_df = pd.DataFrame(returns_data)
-                                    st.dataframe(returns_df, use_container_width=True)
-                                    
-                            except Exception as e:
-                                st.warning("パフォーマンス統計の計算中にエラーが発生しました")
+                        except Exception as e:
+                            st.warning("パフォーマンス統計の計算中にエラーが発生しました")
 
             else:
                 st.error("比較結果の取得中にエラーが発生しました。")
