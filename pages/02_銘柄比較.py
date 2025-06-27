@@ -730,7 +730,12 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
                     )
                     
                     if comparison_chart:
-                        st.plotly_chart(comparison_chart, use_container_width=True)
+                        # Use unique key to maintain chart state when period changes
+                        st.plotly_chart(
+                            comparison_chart, 
+                            use_container_width=True,
+                            key=f"comparison_chart_{selected_comparison_period}_{hash(tuple(selected_tickers))}"
+                        )
                         
                         # Add performance summary for individual comparison
                         try:

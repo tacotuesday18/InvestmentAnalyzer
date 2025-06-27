@@ -222,22 +222,22 @@ def extract_quarterly_business_developments_with_gemini(ticker, quarter_info="la
     Extract specific quarterly business developments using Gemini API
     """
     try:
-        prompt = f"""Generate realistic quarterly business developments for {ticker} based on typical tech company quarterly updates.
+        prompt = f"""Generate realistic quarterly business developments for {ticker} in Japanese language based on typical tech company quarterly updates.
 
-Return JSON with specific business developments:
+Return JSON with specific business developments in Japanese:
 
 {{
-  "product_developments": "Specific product launches and feature updates during the quarter",
-  "business_metrics_changes": "Key performance metrics and their quarter-over-quarter changes",
-  "strategic_initiatives": "Major strategic moves, partnerships, or acquisitions announced",
-  "operational_updates": "Changes to business operations, pricing strategies, or market approach",
-  "ceo_key_messages": "Main themes and priorities emphasized by leadership",
-  "market_position": "Competitive positioning and market share developments",
-  "financial_highlights": "Notable financial achievements or challenges for the quarter",
-  "outlook_changes": "Updates to forward guidance or future outlook"
+  "product_developments": "四半期中の具体的な製品発売や機能アップデートについて日本語で説明",
+  "business_metrics_changes": "主要パフォーマンス指標とその四半期比変化について日本語で説明",
+  "strategic_initiatives": "発表された主要な戦略的動き、パートナーシップ、買収について日本語で説明",
+  "operational_updates": "事業運営、価格戦略、市場アプローチの変更について日本語で説明",
+  "ceo_key_messages": "経営陣が強調した主要テーマと優先事項について日本語で説明",
+  "market_position": "競争ポジションと市場シェアの動向について日本語で説明",
+  "financial_highlights": "四半期の注目すべき財務業績や課題について日本語で説明",
+  "outlook_changes": "将来見通しやガイダンスの更新について日本語で説明"
 }}
 
-Generate realistic content appropriate for {ticker}'s industry sector."""
+Generate realistic content in Japanese appropriate for {ticker}'s industry sector. All content must be in Japanese."""
 
         response = client.models.generate_content(
             model="gemini-2.5-flash",
@@ -254,30 +254,30 @@ Generate realistic content appropriate for {ticker}'s industry sector."""
             return result
         else:
             print(f"No response for quarterly developments from Gemini for {ticker}")
-            # Return realistic fallback content
+            # Return realistic fallback content in Japanese
             return {
-                "product_developments": f"{ticker} continued product innovation with several feature updates and platform enhancements during the quarter, focusing on user experience improvements and new capabilities.",
-                "business_metrics_changes": f"Key business metrics showed mixed performance with some segments outperforming expectations while others faced headwinds from market conditions.",
-                "strategic_initiatives": f"{ticker} announced strategic partnerships and expansion initiatives aimed at strengthening market position and diversifying revenue streams.",
-                "operational_updates": f"Operational efficiency improvements and cost optimization measures were implemented to enhance margins and streamline business processes.",
-                "ceo_key_messages": f"Leadership emphasized focus on long-term growth strategy, operational excellence, and maintaining competitive advantages in core markets.",
-                "market_position": f"{ticker} maintained strong competitive positioning while adapting to evolving market dynamics and customer needs.",
-                "financial_highlights": f"Financial performance reflected broader market trends with strong execution in key areas offset by challenging market conditions.",
-                "outlook_changes": f"Management provided updated guidance reflecting current market outlook and strategic priorities for upcoming quarters."
+                "product_developments": f"{ticker}は四半期中、ユーザーエクスペリエンスの向上と新機能に焦点を当てた複数の機能アップデートとプラットフォーム強化により、製品イノベーションを継続しました。",
+                "business_metrics_changes": f"主要ビジネス指標は複合的なパフォーマンスを示し、一部セグメントは予想を上回る一方、他のセグメントは市場状況による逆風に直面しました。",
+                "strategic_initiatives": f"{ticker}は市場ポジションの強化と収益源の多様化を目指した戦略的パートナーシップと拡張イニシアチブを発表しました。",
+                "operational_updates": f"マージンの向上とビジネスプロセスの合理化を目的とした運営効率の改善とコスト最適化措置が実施されました。",
+                "ceo_key_messages": f"経営陣は長期成長戦略、運営の卓越性、コア市場での競争優位性の維持に焦点を当てることを強調しました。",
+                "market_position": f"{ticker}は進化する市場動向と顧客ニーズに適応しながら、強固な競争ポジションを維持しました。",
+                "financial_highlights": f"財務パフォーマンスは、困難な市場環境により相殺されたものの、主要分野での強力な実行力を反映し、より広範な市場動向を示しました。",
+                "outlook_changes": f"経営陣は、現在の市場見通しと今後の四半期の戦略的優先事項を反映した更新されたガイダンスを提供しました。"
             }
             
     except Exception as e:
         print(f"Error extracting quarterly developments with Gemini: {e}")
-        # Return fallback content to ensure something is always displayed
+        # Return fallback content in Japanese to ensure something is always displayed
         return {
-            "product_developments": f"{ticker} focused on product innovation and platform enhancements during the quarter.",
-            "business_metrics_changes": "Business metrics showed mixed performance across different segments.",
-            "strategic_initiatives": f"{ticker} pursued strategic initiatives to strengthen market position.",
-            "operational_updates": "Continued focus on operational efficiency and cost optimization.",
-            "ceo_key_messages": "Leadership emphasized long-term growth strategy and market positioning.",
-            "market_position": "Maintained competitive advantages while adapting to market changes.",
-            "financial_highlights": "Financial results reflected execution against strategic priorities.",
-            "outlook_changes": "Updated guidance provided based on current market conditions."
+            "product_developments": f"{ticker}は四半期中、製品イノベーションとプラットフォーム強化に焦点を当てました。",
+            "business_metrics_changes": "ビジネス指標は異なるセグメント間で複合的なパフォーマンスを示しました。",
+            "strategic_initiatives": f"{ticker}は市場ポジションを強化するための戦略的イニシアチブを追求しました。",
+            "operational_updates": "運営効率とコスト最適化への継続的な取り組みを行いました。",
+            "ceo_key_messages": "経営陣は長期成長戦略と市場ポジショニングを強調しました。",
+            "market_position": "市場変化に適応しながら競争優位性を維持しました。",
+            "financial_highlights": "財務結果は戦略的優先事項に対する実行力を反映しました。",
+            "outlook_changes": "現在の市場状況に基づいた更新されたガイダンスを提供しました。"
         }
 
 

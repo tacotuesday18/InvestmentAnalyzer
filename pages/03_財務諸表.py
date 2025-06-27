@@ -4,7 +4,7 @@ import yfinance as yf
 from auto_financial_data import get_auto_financial_data
 from format_helpers import format_currency, format_large_number
 from earnings_scraper import get_website_text_content, analyze_earnings_call
-from historical_metrics_chart import display_historical_metrics_chart
+from gemini_historical_metrics import create_historical_metrics_table_with_gemini
 import numpy as np
 import requests
 import trafilatura
@@ -430,11 +430,21 @@ if selected_ticker:
         else:
             st.error("選択された企業の財務データを取得できませんでした。")
 
-# Historical metrics chart
+# Historical metrics table (financecharts.com style)
 if selected_ticker:
     st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.markdown("### 📈 過去の財務指標推移")
-    display_historical_metrics_chart(selected_ticker)
+    st.markdown("### 📈 過去の財務指標推移と業界比較")
+    st.markdown("主要バリュエーション指標の現在値と過去平均値を比較して投資判断にご活用ください。")
+    
+    # Get current financial metrics
+    stock = yf.Ticker(selected_ticker)
+    info = stock.info
+    current_pe = info.get('trailingPE', info.get('forwardPE', None))
+    current_pb = info.get('priceToBook', None)
+    current_ps = info.get('priceToSalesTrailing12Months', None)
+    
+    # Display historical metrics table
+    create_historical_metrics_table_with_gemini(selected_ticker, current_pe, current_pb, current_ps)
     st.markdown("</div>", unsafe_allow_html=True)
 
 # Footer
