@@ -76,14 +76,26 @@ st.markdown("### 📊 企業ファンダメンタル分析 - ビジネス本質�
 # Company selection
 col1, col2 = st.columns([3, 1])
 
+# Initialize session state
+if 'analysis_completed' not in st.session_state:
+    st.session_state.analysis_completed = False
+if 'current_ticker' not in st.session_state:
+    st.session_state.current_ticker = "AAPL"
+if 'analysis_report' not in st.session_state:
+    st.session_state.analysis_report = ""
+if 'company_info' not in st.session_state:
+    st.session_state.company_info = {}
+
 with col1:
     search_input = st.text_input(
         "企業名またはティッカーシンボルを入力",
         placeholder="例: Apple, Microsoft, AAPL, MSFT",
-        help="企業名（日本語・英語）またはティッカーシンボルで検索"
+        help="企業名（日本語・英語）またはティッカーシンボルで検索",
+        value=st.session_state.get('search_input', '')
     )
     
     if search_input:
+        st.session_state.search_input = search_input
         from comprehensive_stock_data import search_stocks_by_name
         results = search_stocks_by_name(search_input)
         if results:
@@ -91,62 +103,85 @@ with col1:
         else:
             selected_ticker = search_input.upper()
     else:
-        selected_ticker = "AAPL"
+        selected_ticker = st.session_state.current_ticker
 
 with col2:
     analyze_button = st.button("📋 ファンダメンタル分析", type="primary", use_container_width=True)
 
-if analyze_button and selected_ticker:
-    with st.spinner(f"{selected_ticker}のビジネスファンダメンタルを分析中..."):
-        try:
-            stock = yf.Ticker(selected_ticker)
-            info = stock.info
-            
-            company_name = info.get('longName', selected_ticker)
-            sector = info.get('sector', 'Technology')
-            industry = info.get('industry', 'Software')
-            
-            # Generate real-time fundamental analysis using Gemini AI
-            analysis_report = analyze_company_fundamentals(selected_ticker)
-            
-            st.markdown(f"""
-            <div class="research-paper">
-                <h1 class="paper-title">{company_name} ({selected_ticker})</h1>
-                <h2 class="paper-subtitle">包括的ファンダメンタル分析レポート</h2>
-                
-                <div class="author-info">
-                    <strong>分析日:</strong> {datetime.now().strftime('%Y年%m月%d日')}<br>
-                    <strong>セクター:</strong> {sector} | <strong>業界:</strong> {industry}<br>
-                    <strong>データ源:</strong> Yahoo Finance
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # Display the AI-generated analysis
-            st.markdown(analysis_report)
-            
-            # Display current stock price in JPY
+# Check if we should run analysis
+should_analyze = analyze_button and selected_ticker
+
+# If ticker changed, reset analysis
+if selected_ticker != st.session_state.current_ticker:
+    st.session_state.analysis_completed = False
+    st.session_state.current_ticker = selected_ticker
+
+if should_analyze or (st.session_state.analysis_completed and st.session_state.current_ticker == selected_ticker):
+    # Run analysis if needed
+    if should_analyze and not st.session_state.analysis_completed:
+        with st.spinner(f"{selected_ticker}のビジネスファンダメンタルを分析中..."):
             try:
-                current_price = info.get('currentPrice') or info.get('regularMarketPrice')
-                if current_price:
-                    st.markdown("### 💱 現在の株価（日本円換算）")
-                    display_stock_price_in_jpy(selected_ticker, current_price)
-            except:
-                pass
+                stock = yf.Ticker(selected_ticker)
+                info = stock.info
+                
+                company_name = info.get('longName', selected_ticker)
+                sector = info.get('sector', 'Technology')
+                industry = info.get('industry', 'Software')
+                
+                # Store in session state
+                st.session_state.company_info = {
+                    'name': company_name,
+                    'sector': sector,
+                    'industry': industry,
+                    'info': info
+                }
+                
+                # Generate real-time fundamental analysis using Gemini AI
+                st.session_state.analysis_report = analyze_company_fundamentals(selected_ticker)
+                st.session_state.analysis_completed = True
+                
+            except Exception as e:
+                st.error(f"企業情報の取得に失敗しました: {str(e)}")
+                st.session_state.analysis_completed = False
+    
+    # Display analysis results if available
+    if st.session_state.analysis_completed and st.session_state.company_info:
+        company_info = st.session_state.company_info
+        
+        st.markdown(f"""
+        <div class="research-paper">
+            <h1 class="paper-title">{company_info['name']} ({selected_ticker})</h1>
+            <h2 class="paper-subtitle">包括的ファンダメンタル分析レポート</h2>
             
-            # Market comparison section
-            st.markdown("### 📈 市場指数との比較")
-            st.markdown("主要市場指数（NASDAQ、S&P 500）とのパフォーマンス比較を表示します。")
-            display_stock_market_comparison(selected_ticker)
-            
-            # Historical metrics section
-            st.markdown("### 📊 過去の財務指標推移と業界比較")
-            display_historical_metrics_chart(selected_ticker)
-            
-            # Analysis complete
-            
-        except Exception as e:
-            st.error(f"企業情報の取得に失敗しました: {str(e)}")
+            <div class="author-info">
+                <strong>分析日:</strong> {datetime.now().strftime('%Y年%m月%d日')}<br>
+                <strong>セクター:</strong> {company_info['sector']} | <strong>業界:</strong> {company_info['industry']}<br>
+                <strong>データ源:</strong> Yahoo Finance
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Display the AI-generated analysis
+        st.markdown(st.session_state.analysis_report)
+        
+        # Display current stock price in JPY
+        try:
+            info = company_info['info']
+            current_price = info.get('currentPrice') or info.get('regularMarketPrice')
+            if current_price:
+                st.markdown("### 💱 現在の株価（日本円換算）")
+                display_stock_price_in_jpy(selected_ticker, current_price)
+        except:
+            pass
+        
+        # Market comparison section
+        st.markdown("### 📈 市場指数との比較")
+        st.markdown("主要市場指数（NASDAQ、S&P 500）とのパフォーマンス比較を表示します。")
+        display_stock_market_comparison(selected_ticker)
+        
+        # Historical metrics section
+        st.markdown("### 📊 過去の財務指標推移と業界比較")
+        display_historical_metrics_chart(selected_ticker)
 
 # Educational section
 with st.expander("💡 ファンダメンタル分析の重要性"):
