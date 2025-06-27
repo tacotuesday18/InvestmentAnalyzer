@@ -21,6 +21,7 @@ from comprehensive_stock_data import search_stocks_by_name, get_all_tickers, get
 from real_time_fetcher import fetch_current_stock_price, fetch_comprehensive_data, show_live_price_indicator, display_market_status
 from auto_financial_data import get_auto_financial_data, calculate_growth_rate
 from historical_metrics_chart import display_historical_metrics_chart
+from market_comparison import display_stock_market_comparison, create_individual_stock_comparison_chart
 
 # ページ設定は main app.py で処理済み
 
