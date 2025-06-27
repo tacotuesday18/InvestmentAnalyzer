@@ -399,12 +399,12 @@ if analyze_button and selected_ticker:
                 info = stock.info
                 
                 # Extract and translate actual earnings call transcript
-                with st.spinner("決算説明会トランスクリプトを取得・翻訳中..."):
+                with st.spinner("最新決算情報を分析・翻訳中..."):
                     earnings_transcript = extract_and_translate_earnings_transcript(selected_ticker)
                 
                 st.markdown("""
                 <div class="earnings-card">
-                    <h3 style="color: #1e293b; margin-top: 0;">最新決算説明会トランスクリプト (日本語)</h3>
+                    <h3 style="color: #1e293b; margin-top: 0;">最新四半期決算分析 (日本語)</h3>
                 </div>
                 """, unsafe_allow_html=True)
                 
