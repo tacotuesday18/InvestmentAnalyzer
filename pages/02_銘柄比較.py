@@ -22,6 +22,7 @@ from real_time_fetcher import fetch_current_stock_price, fetch_comprehensive_dat
 from auto_financial_data import get_auto_financial_data, calculate_growth_rate
 from historical_metrics_chart import display_historical_metrics_chart
 from market_comparison import display_stock_market_comparison, create_individual_stock_comparison_chart
+from session_state_manager import init_session_state, reset_comparison_analysis, should_reset_comparison_analysis
 
 # ページ設定は main app.py で処理済み
 

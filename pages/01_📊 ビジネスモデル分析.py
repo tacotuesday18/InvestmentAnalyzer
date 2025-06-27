@@ -12,7 +12,6 @@ from comprehensive_stock_data import search_stocks_by_name
 from currency_converter import display_stock_price_in_jpy
 from gemini_analyzer import analyze_company_fundamentals
 from market_comparison import display_stock_market_comparison
-from historical_metrics_chart import display_historical_metrics_chart
 from session_state_manager import init_session_state, reset_fundamental_analysis, should_reset_fundamental_analysis
 
 # Modern design CSS
@@ -172,10 +171,6 @@ if should_analyze or (st.session_state.fundamental_analysis_completed and st.ses
         st.markdown("### 📈 市場指数との比較")
         st.markdown("主要市場指数（NASDAQ、S&P 500）とのパフォーマンス比較を表示します。")
         display_stock_market_comparison(selected_ticker)
-        
-        # Historical metrics section
-        st.markdown("### 📊 過去の財務指標推移と業界比較")
-        display_historical_metrics_chart(selected_ticker)
 
 # Educational section
 with st.expander("💡 ファンダメンタル分析の重要性"):

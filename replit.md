@@ -4,14 +4,15 @@
 An intelligent Streamlit-based company analysis platform delivering comprehensive business insights through advanced data visualization and interactive research tools. All financial data is sourced exclusively from Yahoo Finance to ensure accuracy and authenticity.
 
 ## Recent Changes
-- **2025-06-27**: FIXED HISTORICAL METRICS - Replaced inaccurate simulated data with authentic Yahoo Finance calculations
-- **2025-06-27**: Added industry benchmark comparisons to historical metrics charts for comprehensive analysis
-- **2025-06-27**: Implemented NASDAQ and S&P 500 comparison charts for individual stocks across all pages
-- **2025-06-27**: Enhanced earnings page with business-focused fundamental analysis instead of just numerical data
-- **2025-06-27**: Improved earnings text formatting with better typography, colors, and readability
+- **2025-06-27**: STREAMLINED USER EXPERIENCE - Removed duplicate functionality to reduce confusion across pages
+- **2025-06-27**: Enhanced industry benchmarks with realistic multiples for AI/tech vs traditional sectors
+- **2025-06-27**: Fixed session state management to prevent page resets when changing comparison periods
+- **2025-06-27**: Removed OpenAI API key requirements and implemented comprehensive earnings analysis
+- **2025-06-27**: Improved earnings transcript extraction with company-specific investor relations sources
+- **2025-06-27**: Simplified fundamental analysis page by removing redundant historical metrics section
 - **2025-06-27**: Added individual stock comparison charts to comparison page for direct performance analysis
 - **2025-06-27**: Created market comparison module for stock vs index performance visualization
-- **2025-06-27**: Enhanced fundamental analysis with market comparison and historical metrics integration
+- **2025-06-27**: Enhanced earnings page with business-focused fundamental analysis and improved formatting
 - **2025-06-26**: FIXED NAVIGATION - Completely rebuilt app.py to enable proper Streamlit sidebar page navigation
 - **2025-06-26**: Single hamburger button (☰) in top-left corner opens/closes sidebar with clickable page links
 - **2025-06-26**: Removed all custom navigation logic that was preventing page switching
