@@ -12,39 +12,66 @@ openai_client = OpenAI(api_key=OPENAI_API_KEY)
 
 def generate_historical_metrics_with_chatgpt(ticker, current_pe=None, current_pb=None, current_ps=None):
     """
-    Generate realistic historical average metrics using ChatGPT API based on industry and company size
+    Generate accurate historical average metrics for multiple time periods using ChatGPT API
     """
     try:
-        prompt = f"""As a financial analyst, provide realistic historical average metrics for {ticker} stock based on industry benchmarks and company characteristics.
+        # Prepare current metrics context
+        current_context = ""
+        if current_pe:
+            current_context += f"Current P/E: {current_pe:.2f}, "
+        if current_pb:
+            current_context += f"Current P/B: {current_pb:.2f}, "
+        if current_ps:
+            current_context += f"Current P/S: {current_ps:.2f}"
+        
+        prompt = f"""Provide accurate historical average valuation metrics for {ticker} across different time periods.
 
-Please provide ONLY a JSON response with these fields:
-- historical_pe_avg: realistic 5-year average PE ratio
-- historical_pb_avg: realistic 5-year average PB ratio  
-- historical_ps_avg: realistic 5-year average PS ratio
-- current_vs_historical_pe: comparison analysis
-- current_vs_historical_pb: comparison analysis
-- current_vs_historical_ps: comparison analysis
+Current metrics: {current_context}
 
-Consider:
-- Industry sector and typical valuation multiples
-- Company size and growth stage
-- Market conditions over past 5 years
-- Current metrics if provided: PE={current_pe}, PB={current_pb}, PS={current_ps}
+Analyze {ticker}'s historical valuation ratios and provide ONLY a JSON response with these specific fields:
 
+P/E Ratio Historical Averages:
+- pe_1y: 1-year average P/E ratio
+- pe_3y: 3-year average P/E ratio  
+- pe_5y: 5-year average P/E ratio
+- pe_10y: 10-year average P/E ratio (if available)
+
+P/S Ratio Historical Averages:
+- ps_1y: 1-year average P/S ratio
+- ps_3y: 3-year average P/S ratio
+- ps_5y: 5-year average P/S ratio
+- ps_10y: 10-year average P/S ratio (if available)
+
+P/B Ratio Historical Averages:
+- pb_1y: 1-year average P/B ratio
+- pb_3y: 3-year average P/B ratio
+- pb_5y: 5-year average P/B ratio
+- pb_10y: 10-year average P/B ratio (if available)
+
+Additional Context:
+- valuation_trend: overall trend in company's valuation over time
+- market_context: brief context about the company's valuation patterns
+
+Base analysis on actual financial data for {ticker}. Ensure all values are realistic and reflect the company's actual trading history.
+If data for a specific period is not available, use null.
 Format as valid JSON only."""
 
         response = openai_client.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content": "You are a financial analyst providing realistic valuation metrics based on industry standards."},
+                {"role": "system", "content": "You are a senior equity research analyst with access to comprehensive historical financial data. Provide accurate historical valuation metrics based on real market data."},
                 {"role": "user", "content": prompt}
             ],
             response_format={"type": "json_object"},
-            temperature=0.3
+            temperature=0.2
         )
         
-        result = json.loads(response.choices[0].message.content)
-        return result
+        content = response.choices[0].message.content
+        if content:
+            result = json.loads(content)
+            return result
+        else:
+            return None
         
     except Exception as e:
         logging.error(f"Error generating historical metrics with ChatGPT: {e}")

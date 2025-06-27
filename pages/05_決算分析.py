@@ -560,40 +560,41 @@ if analyze_button and selected_ticker:
                     st.warning("決算トランスクリプトの詳細分析が現在利用できません。基本情報を表示します。")
                     
                     # Fallback to basic earnings info
-                    earnings_transcript = extract_and_translate_earnings_transcript(selected_ticker)
-                    
-                    st.markdown("### 📋 基本決算情報")
-                
-                # Enhanced formatting for earnings transcript
-                st.markdown(f"""
-                <div style="
-                    background: #f8fafc;
-                    border: 1px solid #e2e8f0;
-                    border-radius: 12px;
-                    padding: 24px;
-                    margin: 16px 0;
-                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                ">
-                    <div style="
-                        color: #1e293b;
-                        font-size: 16px;
-                        line-height: 1.7;
-                        font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
-                        white-space: pre-wrap;
-                        max-height: 600px;
-                        overflow-y: auto;
-                        padding: 12px;
-                        background: white;
-                        border-radius: 8px;
-                        border: 1px solid #e2e8f0;
-                    ">
-{earnings_transcript}
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-                
-            except Exception as e:
-                st.info("決算説明会トランスクリプトは現在準備中です。")
+                    try:
+                        earnings_transcript = extract_and_translate_earnings_transcript(selected_ticker)
+                        
+                        st.markdown("### 📋 基本決算情報")
+                        
+                        # Enhanced formatting for earnings transcript
+                        st.markdown(f"""
+                        <div style="
+                            background: #f8fafc;
+                            border: 1px solid #e2e8f0;
+                            border-radius: 12px;
+                            padding: 24px;
+                            margin: 16px 0;
+                            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                        ">
+                            <div style="
+                                color: #1e293b;
+                                font-size: 16px;
+                                line-height: 1.7;
+                                font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+                                white-space: pre-wrap;
+                                max-height: 600px;
+                                overflow-y: auto;
+                                padding: 12px;
+                                background: white;
+                                border-radius: 8px;
+                                border: 1px solid #e2e8f0;
+                            ">
+        {earnings_transcript}
+                            </div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                        
+                    except Exception as e:
+                        st.info("決算説明会トランスクリプトは現在準備中です。")
             
         else:
             st.error(f"❌ {selected_ticker}の財務データを取得できませんでした。別のティッカーシンボルを試してください。")

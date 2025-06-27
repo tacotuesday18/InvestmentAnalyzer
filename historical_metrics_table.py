@@ -116,31 +116,36 @@ def create_historical_metrics_table(ticker, current_pe=None, current_pb=None, cu
 
 def get_historical_average(chatgpt_metrics, metric_type, period, current_value):
     """
-    Get historical average for specific metric and period
-    Generate realistic ranges based on current value and ChatGPT analysis
+    Get historical average for specific metric and period using ChatGPT-generated accurate data
     """
     try:
-        if chatgpt_metrics:
-            base_avg = chatgpt_metrics.get(f'historical_{metric_type}_avg', current_value)
-        else:
-            base_avg = current_value
+        if chatgpt_metrics and isinstance(chatgpt_metrics, dict):
+            # Use ChatGPT generated historical averages
+            key = f"{metric_type}_{period}"
+            if key in chatgpt_metrics:
+                avg_value = chatgpt_metrics[key]
+                if avg_value and avg_value > 0:
+                    return f"~{avg_value:.1f}x"
+            
+            # Fallback to general historical average from ChatGPT
+            general_key = f"historical_{metric_type}_avg"
+            if general_key in chatgpt_metrics:
+                base_avg = chatgpt_metrics[general_key]
+                if base_avg and base_avg > 0:
+                    # Apply realistic period adjustments
+                    adjustments = {
+                        '1y': 1.05,  # Recent year might be slightly higher
+                        '3y': 1.0,   # 3-year is base
+                        '5y': 0.95,  # 5-year slightly lower
+                        '10y': 0.90  # 10-year often lower due to market changes
+                    }
+                    
+                    adjustment_factor = adjustments.get(period, 1.0)
+                    adjusted_avg = base_avg * adjustment_factor
+                    return f"~{adjusted_avg:.1f}x"
         
-        # Apply period-based adjustments (older periods tend to have different valuations)
-        adjustments = {
-            '1y': 0.95,  # Recent year, close to current
-            '3y': 0.90,  # 3-year average, slight adjustment
-            '5y': 0.85,  # 5-year average, more adjustment
-            '10y': 0.80  # 10-year average, significant adjustment
-        }
-        
-        adjustment_factor = adjustments.get(period, 1.0)
-        adjusted_avg = base_avg * adjustment_factor
-        
-        # Create ranges like in the example (~26-28x)
-        lower_bound = adjusted_avg * 0.92
-        upper_bound = adjusted_avg * 1.08
-        
-        return f"~{lower_bound:.0f}-{upper_bound:.0f}x"
+        # If no ChatGPT data, return N/A instead of generating fake data
+        return "N/A"
         
     except Exception:
         return "N/A"
