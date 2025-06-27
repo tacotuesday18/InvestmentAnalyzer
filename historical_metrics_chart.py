@@ -10,31 +10,62 @@ import yfinance as yf
 from datetime import datetime, timedelta
 import numpy as np
 
-def create_simple_metrics(ticker, hist_data, info):
-    """Create simple metrics from available data when detailed financials aren't available"""
+def get_authentic_historical_ratios(ticker, hist_data, info):
+    """Calculate authentic historical financial ratios using real financial data"""
     try:
+        stock = yf.Ticker(ticker)
+        
+        # Get real quarterly financial data
+        quarterly_financials = stock.quarterly_financials
+        quarterly_earnings = stock.quarterly_earnings if hasattr(stock, 'quarterly_earnings') else None
+        
+        if quarterly_financials.empty:
+            return None
+            
         metrics_data = []
         
-        # Get basic metrics from info
-        current_pe = info.get('trailingPE', info.get('forwardPE', 0))
-        current_pb = info.get('priceToBook', 0)
-        current_ps = info.get('priceToSalesTrailing12Months', 0)
-        
-        # Create monthly data points over the period
-        for i in range(0, len(hist_data), 30):  # Every 30 days
-            date = hist_data.index[i]
-            
-            # Use current ratios with some variation to simulate historical trends
-            variation = np.random.normal(1.0, 0.1)  # 10% standard deviation
-            
-            metrics_data.append({
-                'Date': date,
-                'PE_Ratio': current_pe * variation if current_pe > 0 else 15.0,
-                'PB_Ratio': current_pb * variation if current_pb > 0 else 2.0,
-                'PS_Ratio': current_ps * variation if current_ps > 0 else 3.0,
-                'PEG_Ratio': (current_pe * variation / 10) if current_pe > 0 else 1.0,
-                'Stock_Price': hist_data['Close'].iloc[i]
-            })
+        # Get real financial data points
+        for date in quarterly_financials.columns[:8]:  # Last 8 quarters (2 years)
+            try:
+                # Find closest price date
+                price_date = min(hist_data.index, key=lambda x: abs((x.date() - date.date()).days))
+                stock_price = hist_data.loc[price_date, 'Close']
+                
+                # Calculate authentic ratios using real financial data
+                total_revenue = quarterly_financials.loc['Total Revenue', date] if 'Total Revenue' in quarterly_financials.index else 0
+                net_income = quarterly_financials.loc['Net Income', date] if 'Net Income' in quarterly_financials.index else 0
+                
+                # Get shares outstanding from info (approximation)
+                shares_outstanding = info.get('sharesOutstanding', info.get('impliedSharesOutstanding', 1))
+                
+                # Calculate authentic ratios
+                eps = (net_income * 4) / shares_outstanding if shares_outstanding > 0 else 0  # Annualized
+                pe_ratio = stock_price / eps if eps > 0 else 0
+                
+                # Revenue per share for PS ratio
+                revenue_per_share = (total_revenue * 4) / shares_outstanding if shares_outstanding > 0 else 0
+                ps_ratio = stock_price / revenue_per_share if revenue_per_share > 0 else 0
+                
+                # Use current PB ratio as approximation (book value changes slowly)
+                pb_ratio = info.get('priceToBook', 0)
+                
+                # PEG ratio (using growth estimate)
+                growth_rate = info.get('earningsGrowth', 0.1) * 100
+                peg_ratio = pe_ratio / growth_rate if growth_rate > 0 and pe_ratio > 0 else 0
+                
+                # Only add if we have valid data
+                if pe_ratio > 0 and pe_ratio < 200:  # Reasonable PE range
+                    metrics_data.append({
+                        'Date': price_date,
+                        'PE_Ratio': pe_ratio,
+                        'PB_Ratio': pb_ratio,
+                        'PS_Ratio': ps_ratio,
+                        'PEG_Ratio': peg_ratio,
+                        'Stock_Price': stock_price
+                    })
+                    
+            except Exception:
+                continue
         
         return pd.DataFrame(metrics_data) if metrics_data else None
         
@@ -52,18 +83,13 @@ def get_historical_metrics(ticker, years=10):
         if hist_data.empty:
             return None
             
-        # Get current financial metrics from Yahoo Finance
-        current_pe = info.get('trailingPE') or info.get('forwardPE')
-        current_pb = info.get('priceToBook')
-        current_ps = info.get('priceToSalesTrailing12Months')
-        current_peg = info.get('pegRatio')
-        
-        # Generate more realistic historical metrics based on current multiples and market cycles
-        metrics_data = []
-        
-        # Use current multiples as base and apply realistic variations
-        if not current_pe or not current_pb or not current_ps:
-            return None
+        # Try authentic historical ratios first using real financial data
+        authentic_data = get_authentic_historical_ratios(ticker, hist_data, info)
+        if authentic_data is not None and len(authentic_data) > 4:
+            return authentic_data
+            
+        # If no authentic historical data available, return None instead of synthetic data
+        return None
             
         # Sample quarterly over the historical period for better granularity
         quarterly_dates = pd.date_range(start=hist_data.index[0], end=hist_data.index[-1], freq='QE')

@@ -710,20 +710,19 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
                 
                 selected_comparison_period = comparison_period_options[selected_comparison_period_jp]
                 
-                # Create and display individual stock comparison chart
-                if st.button("📈 個別銘柄パフォーマンス比較チャートを表示", key="show_individual_comparison"):
-                    with st.spinner("個別銘柄比較チャートを作成中..."):
-                        comparison_chart = create_individual_stock_comparison_chart(
-                            selected_tickers, 
-                            selected_comparison_period
-                        )
+                # Auto-generate individual stock comparison chart
+                with st.spinner("個別銘柄比較チャートを作成中..."):
+                    comparison_chart = create_individual_stock_comparison_chart(
+                        selected_tickers, 
+                        selected_comparison_period
+                    )
+                    
+                    if comparison_chart:
+                        st.plotly_chart(comparison_chart, use_container_width=True)
                         
-                        if comparison_chart:
-                            st.plotly_chart(comparison_chart, use_container_width=True)
-                            
-                            # Add performance summary for individual comparison
-                            try:
-                                import yfinance as yf
+                        # Add performance summary for individual comparison
+                        try:
+                            import yfinance as yf
                                 
                                 st.markdown("#### パフォーマンス統計")
                                 

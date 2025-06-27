@@ -154,26 +154,36 @@ def extract_and_translate_earnings_transcript(ticker):
             'INTC': 'https://www.intc.com/investor-relations'
         }
         
-        # Enhanced sources prioritizing official company sources
+        # Enhanced sources using real transcript sources
         potential_sources = []
         
-        # Add company-specific IR page if available
+        # Priority sources: Investing.com and Seeking Alpha (as user suggested)
+        potential_sources.extend([
+            f"https://www.investing.com/equities/{ticker.lower()}-earnings",
+            f"https://seekingalpha.com/symbol/{ticker}/earnings/transcripts", 
+            f"https://seekingalpha.com/symbol/{ticker}/earnings",
+            f"https://www.investing.com/search/?q={ticker}+earnings+transcript",
+        ])
+        
+        # Add company-specific IR pages for official transcripts
         if ticker in company_ir_pages:
             potential_sources.append(company_ir_pages[ticker])
         
-        # Add general company website IR
+        # Add additional financial data sources
+        potential_sources.extend([
+            f"https://finance.yahoo.com/quote/{ticker}/financials",
+            f"https://www.marketwatch.com/investing/stock/{ticker}/financials",
+            f"https://finance.yahoo.com/quote/{ticker}/key-statistics"
+        ])
+        
+        # Add company website IR (for press releases)
         if website:
             potential_sources.extend([
                 f"{website}/investor-relations",
-                f"{website}/investors",
-                f"{website}/ir"
+                f"{website}/investors", 
+                f"{website}/ir",
+                f"{website}/news"
             ])
-        
-        # Add financial news sites
-        potential_sources.extend([
-            f"https://seekingalpha.com/symbol/{ticker}/earnings/transcripts",
-            f"https://finance.yahoo.com/quote/{ticker}/financials"
-        ])
         
         # Try to extract from financial news and earnings sites
         for source_url in potential_sources:
