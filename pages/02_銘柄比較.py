@@ -679,11 +679,9 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
 
                 st.markdown("</div>", unsafe_allow_html=True)
                 
-                # Historical metrics charts for each ticker
-                st.markdown("### 📈 過去の財務指標推移比較")
-                for ticker in selected_tickers:
-                    st.markdown(f"#### {ticker} - 過去のメトリクス推移")
-                    display_historical_metrics_chart(ticker)
+                # Remove duplicate functionality - use dedicated pages for detailed analysis
+                st.markdown("### 📌 詳細分析について")
+                st.info("各銘柄の詳細な分析は以下のページをご利用ください：\n- 📊 ビジネスモデル分析: 個別企業の詳細分析と市場比較\n- 📈 決算分析: 最新の決算情報と業界比較")
                 
                 # Individual stock comparison chart
                 st.markdown("### 📊 個別銘柄株価パフォーマンス比較")

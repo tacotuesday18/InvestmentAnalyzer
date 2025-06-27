@@ -445,23 +445,48 @@ if selected_ticker:
                         
                         earnings_summary = financial_chatbot(earnings_query)
                         
-                        if earnings_summary and "API key" not in earnings_summary and "quota" not in earnings_summary and "insufficient" not in earnings_summary:
-                            formatted_summary = earnings_summary.replace('\n', '<br>')
+                        # Show enhanced earnings analysis from financial data
+                        try:
+                            from gemini_analyzer import extract_and_translate_earnings_transcript
+                            
+                            with st.spinner("最新決算情報を分析中..."):
+                                earnings_analysis = extract_and_translate_earnings_transcript(selected_ticker)
+                                
                             st.markdown(f"""
-                            <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin: 10px 0;">
-                            {formatted_summary}
+                            <div style="
+                                background: #f8fafc;
+                                border: 1px solid #e2e8f0;
+                                border-radius: 12px;
+                                padding: 20px;
+                                margin: 16px 0;
+                                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                            ">
+                                <div style="
+                                    color: #1e293b;
+                                    font-size: 15px;
+                                    line-height: 1.6;
+                                    font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+                                    white-space: pre-wrap;
+                                ">
+{earnings_analysis}
+                                </div>
                             </div>
                             """, unsafe_allow_html=True)
-                        else:
-                            st.info("決算説明会の詳細な分析を表示するには、有効なOpenAI APIキーが必要です。")
-                            
+                        except Exception as e:
                             # Fallback: Show basic earnings information
                             stock_info = yf.Ticker(selected_ticker).info
-                            if 'earningsDate' in stock_info:
-                                st.write(f"**次回決算発表予定**: {stock_info.get('earningsDate', 'N/A')}")
-                            if 'earningsQuarterlyGrowth' in stock_info:
-                                growth = stock_info.get('earningsQuarterlyGrowth', 0) * 100
-                                st.write(f"**四半期利益成長率**: {growth:.1f}%")
+                            st.markdown("### 📊 基本決算情報")
+                            
+                            col1, col2 = st.columns(2)
+                            
+                            with col1:
+                                if 'earningsDate' in stock_info and stock_info['earningsDate']:
+                                    st.metric("次回決算発表", str(stock_info['earningsDate']) if stock_info['earningsDate'] else "未定")
+                                
+                            with col2:
+                                if 'earningsQuarterlyGrowth' in stock_info:
+                                    growth = stock_info.get('earningsQuarterlyGrowth', 0) * 100
+                                    st.metric("四半期利益成長率", f"{growth:.1f}%")
                                 
                     except Exception as e:
                         st.warning("決算説明会情報の取得中にエラーが発生しました。基本的な決算情報のみ表示します。")

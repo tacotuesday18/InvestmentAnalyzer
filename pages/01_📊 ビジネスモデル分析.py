@@ -13,6 +13,7 @@ from currency_converter import display_stock_price_in_jpy
 from gemini_analyzer import analyze_company_fundamentals
 from market_comparison import display_stock_market_comparison
 from historical_metrics_chart import display_historical_metrics_chart
+from session_state_manager import init_session_state, reset_fundamental_analysis, should_reset_fundamental_analysis
 
 # Modern design CSS
 st.markdown("""
@@ -77,25 +78,18 @@ st.markdown("### 📊 企業ファンダメンタル分析 - ビジネス本質�
 col1, col2 = st.columns([3, 1])
 
 # Initialize session state
-if 'analysis_completed' not in st.session_state:
-    st.session_state.analysis_completed = False
-if 'current_ticker' not in st.session_state:
-    st.session_state.current_ticker = "AAPL"
-if 'analysis_report' not in st.session_state:
-    st.session_state.analysis_report = ""
-if 'company_info' not in st.session_state:
-    st.session_state.company_info = {}
+init_session_state()
 
 with col1:
     search_input = st.text_input(
         "企業名またはティッカーシンボルを入力",
         placeholder="例: Apple, Microsoft, AAPL, MSFT",
         help="企業名（日本語・英語）またはティッカーシンボルで検索",
-        value=st.session_state.get('search_input', '')
+        value=st.session_state.get('fundamental_search_input', '')
     )
     
     if search_input:
-        st.session_state.search_input = search_input
+        st.session_state.fundamental_search_input = search_input
         from comprehensive_stock_data import search_stocks_by_name
         results = search_stocks_by_name(search_input)
         if results:
@@ -103,7 +97,7 @@ with col1:
         else:
             selected_ticker = search_input.upper()
     else:
-        selected_ticker = st.session_state.current_ticker
+        selected_ticker = st.session_state.fundamental_current_ticker
 
 with col2:
     analyze_button = st.button("📋 ファンダメンタル分析", type="primary", use_container_width=True)
@@ -112,11 +106,11 @@ with col2:
 should_analyze = analyze_button and selected_ticker
 
 # If ticker changed, reset analysis
-if selected_ticker != st.session_state.current_ticker:
-    st.session_state.analysis_completed = False
-    st.session_state.current_ticker = selected_ticker
+if should_reset_fundamental_analysis(selected_ticker):
+    reset_fundamental_analysis()
+    st.session_state.fundamental_current_ticker = selected_ticker
 
-if should_analyze or (st.session_state.analysis_completed and st.session_state.current_ticker == selected_ticker):
+if should_analyze or (st.session_state.fundamental_analysis_completed and st.session_state.fundamental_current_ticker == selected_ticker):
     # Run analysis if needed
     if should_analyze and not st.session_state.analysis_completed:
         with st.spinner(f"{selected_ticker}のビジネスファンダメンタルを分析中..."):

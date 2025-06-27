@@ -65,7 +65,7 @@ def get_historical_metrics(ticker, years=10):
         metrics_data = []
         
         # Sample data points monthly over the historical period
-        monthly_dates = pd.date_range(start=hist_data.index[0], end=hist_data.index[-1], freq='M')
+        monthly_dates = pd.date_range(start=hist_data.index[0], end=hist_data.index[-1], freq='ME')
         
         for date in monthly_dates:
             if date not in hist_data.index:
@@ -355,10 +355,13 @@ def display_historical_metrics_chart(ticker):
                         st.metric("PSR倍率", f"{current_ps:.2f}倍", f"{trend} 10年平均: {avg_ps:.2f}倍")
                     
                     with col4:
-                        current_peg = current_metrics.get('PEG_Ratio', 0)
-                        avg_peg = avg_metrics.get('PEG_Ratio', 0)
-                        trend = "↗️" if current_peg > avg_peg else "↘️" if current_peg < avg_peg else "→"
-                        st.metric("PEG倍率", f"{current_peg:.2f}倍", f"{trend} 10年平均: {avg_peg:.2f}倍")
+                        current_peg = current_metrics.get('PEG_Ratio') or 0
+                        avg_peg = avg_metrics.get('PEG_Ratio') or 0
+                        if current_peg and avg_peg:
+                            trend = "↗️" if current_peg > avg_peg else "↘️" if current_peg < avg_peg else "→"
+                            st.metric("PEG倍率", f"{current_peg:.2f}倍", f"{trend} 10年平均: {avg_peg:.2f}倍")
+                        else:
+                            st.metric("PEG倍率", "データなし", "10年平均: N/A")
                 
             else:
                 st.warning(f"⚠️ {ticker} の過去財務データが取得できませんでした。このティッカーの詳細な財務履歴データがYahoo Financeに存在しない可能性があります。")
