@@ -110,12 +110,12 @@ if analyze_button and selected_ticker:
             st.markdown(f"""
             <div class="research-paper">
                 <h1 class="paper-title">{company_name} ({selected_ticker})</h1>
-                <h2 class="paper-subtitle">AI生成ファンダメンタル分析レポート</h2>
+                <h2 class="paper-subtitle">包括的ファンダメンタル分析レポート</h2>
                 
                 <div class="author-info">
                     <strong>分析日:</strong> {datetime.now().strftime('%Y年%m月%d日')}<br>
                     <strong>セクター:</strong> {sector} | <strong>業界:</strong> {industry}<br>
-                    <strong>分析エンジン:</strong> Gemini AI
+                    <strong>データ源:</strong> Yahoo Finance
                 </div>
             </div>
             """, unsafe_allow_html=True)

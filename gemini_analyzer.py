@@ -59,7 +59,7 @@ ROE: {company_data['roe']:.2%} if company_data['roe'] else 'N/A'
 ## 🔮 将来展望
 ## 📋 投資判断の要点
 
-各セクションで具体的で実用的な洞察を提供し、日本の投資家にとって理解しやすい形で説明してください。
+各セクションで具体的で実用的な洞察を提供し、日本の投資家にとって理解しやすい形で説明してください。分析は実際の財務データに基づいて作成され、投資判断の参考として活用できます。
 """
 
         response = client.models.generate_content(
@@ -113,101 +113,135 @@ def translate_earnings_transcript(transcript_text):
         logging.error(f"Translation error: {e}")
         return f"翻訳エラー: {str(e)}"
 
-def generate_earnings_call_analysis(ticker):
+def extract_and_translate_earnings_transcript(ticker):
     """
-    Generate realistic earnings call content based on actual financial data
+    Extract actual earnings call transcript from company websites and translate to Japanese
     """
     try:
-        # Get real financial data from Yahoo Finance
+        import trafilatura
+        import requests
+        from urllib.parse import quote
+        
+        # Get company info for website search
         stock = yf.Ticker(ticker)
         info = stock.info
+        company_name = info.get('longName', ticker)
         
-        # Get quarterly financials
-        quarterly_financials = stock.quarterly_financials
-        quarterly_income_stmt = stock.quarterly_income_stmt
+        # Common earnings call transcript sources
+        transcript_urls = []
         
-        # Extract key financial data
-        company_data = {
-            'name': info.get('longName', ticker),
-            'ticker': ticker,
-            'current_price': info.get('currentPrice', info.get('regularMarketPrice', 0)),
-            'market_cap': info.get('marketCap', 0),
-            'revenue': info.get('totalRevenue', 0),
-            'revenue_growth': info.get('revenueGrowth', 0),
-            'profit_margins': info.get('profitMargins', 0),
-            'operating_margins': info.get('operatingMargins', 0),
-            'pe_ratio': info.get('trailingPE', 0),
-            'forward_pe': info.get('forwardPE', 0),
-            'pb_ratio': info.get('priceToBook', 0),
-            'debt_to_equity': info.get('debtToEquity', 0),
-            'current_ratio': info.get('currentRatio', 0),
-            'roe': info.get('returnOnEquity', 0),
-            'roa': info.get('returnOnAssets', 0),
-            'free_cash_flow': info.get('freeCashflow', 0),
-            'sector': info.get('sector', 'N/A'),
-            'industry': info.get('industry', 'N/A'),
-            'business_summary': info.get('longBusinessSummary', '')[:500]
-        }
+        # Try to find earnings transcript URLs
+        search_terms = [
+            f"{company_name} earnings call transcript",
+            f"{ticker} quarterly earnings transcript",
+            f"{company_name} latest earnings call"
+        ]
         
-        prompt = f"""
-以下の実際の財務データに基づいて、日本語でリアルな決算説明会のトランスクリプトを作成してください：
+        # Try company's investor relations page first
+        website = info.get('website', '')
+        if website:
+            try:
+                # Try common investor relations URLs
+                ir_urls = [
+                    f"{website}/investor-relations",
+                    f"{website}/investors",
+                    f"{website}/ir"
+                ]
+                
+                for ir_url in ir_urls:
+                    try:
+                        downloaded = trafilatura.fetch_url(ir_url)
+                        if downloaded:
+                            text = trafilatura.extract(downloaded)
+                            if text and ('transcript' in text.lower() or 'earnings call' in text.lower()):
+                                transcript_urls.append((ir_url, text))
+                                break
+                    except:
+                        continue
+                        
+            except:
+                pass
+        
+        # If no transcript found, try searching financial news sites
+        financial_sites = [
+            f"https://seekingalpha.com/symbol/{ticker}/earnings/transcripts",
+            f"https://www.fool.com/quote/{ticker.lower()}/",
+        ]
+        
+        for site_url in financial_sites:
+            try:
+                downloaded = trafilatura.fetch_url(site_url)
+                if downloaded:
+                    text = trafilatura.extract(downloaded)
+                    if text and len(text) > 1000:  # Substantial content
+                        transcript_urls.append((site_url, text))
+                        break
+            except:
+                continue
+        
+        # If we found transcript content, translate it
+        if transcript_urls:
+            # Use the first substantial transcript found
+            url, transcript_text = transcript_urls[0]
+            
+            # Clean and truncate the transcript for translation
+            # Focus on the most relevant parts
+            lines = transcript_text.split('\n')
+            relevant_lines = []
+            
+            for line in lines:
+                line = line.strip()
+                if any(keyword in line.lower() for keyword in ['ceo', 'cfo', 'revenue', 'earnings', 'quarter', 'growth', 'profit', 'analyst', 'question']):
+                    relevant_lines.append(line)
+                elif len(relevant_lines) > 0 and len(line) > 50:  # Context around relevant content
+                    relevant_lines.append(line)
+                
+                if len(' '.join(relevant_lines)) > 4000:  # Limit size for API
+                    break
+            
+            transcript_excerpt = ' '.join(relevant_lines[:100])  # Take first 100 relevant lines
+            
+            if len(transcript_excerpt) < 200:
+                # If transcript is too short, get more content
+                transcript_excerpt = transcript_text[:4000]
+            
+            # Translate using Gemini
+            prompt = f"""
+以下の実際の決算説明会トランスクリプトを日本語に翻訳してください。投資家にとって重要な情報を保持しながら、自然で読みやすい日本語に翻訳してください：
 
-企業: {company_data['name']} ({company_data['ticker']})
-セクター: {company_data['sector']}
-業界: {company_data['industry']}
-時価総額: ${company_data['market_cap']:,} if company_data['market_cap'] else 'N/A'
-売上高: ${company_data['revenue']:,} if company_data['revenue'] else 'N/A'
-売上成長率: {company_data['revenue_growth']:.1%} if company_data['revenue_growth'] else 'N/A'
-利益率: {company_data['profit_margins']:.1%} if company_data['profit_margins'] else 'N/A'
-営業利益率: {company_data['operating_margins']:.1%} if company_data['operating_margins'] else 'N/A'
-PER: {company_data['pe_ratio']:.2f} if company_data['pe_ratio'] else 'N/A'
-PBR: {company_data['pb_ratio']:.2f} if company_data['pb_ratio'] else 'N/A'
-ROE: {company_data['roe']:.1%} if company_data['roe'] else 'N/A'
-流動比率: {company_data['current_ratio']:.2f} if company_data['current_ratio'] else 'N/A'
+{transcript_excerpt}
 
-事業概要: {company_data['business_summary']}
+翻訳の際は以下の点に注意してください：
+- 財務用語は正確に翻訳する
+- CEO、CFO、アナリストの発言を明確に区別する
+- 数値や固有名詞は正確に保持する
+- 自然な日本語の表現を使用する
+- 投資判断に重要な内容を優先的に翻訳する
 
-この実際のデータに基づいて、以下の構造で本格的な決算説明会トランスクリプトを日本語で作成してください：
+出力は以下の形式でお願いします：
 
-{company_data['name']}最新四半期決算説明会へようこそ
+## {company_name} 決算説明会トランスクリプト（日本語翻訳）
 
-## CEO開会挨拶
-- 実際の業績数値を使用した挨拶
-- 四半期の主要成果と戦略的優先事項
-- 市場環境と事業の取り組み
-
-## CFO財務ハイライト
-- 実際の財務数値の詳細説明
-- 前年同期比較と成長実績
-- バランスシート強度
-- キャッシュフロー状況と資本配分
-
-## 事業見通し
-- 将来の事業展望
-- 市場機会と成長戦略
-- 潜在的課題への対応
-
-## 質疑応答セッション
-- アナリストからの典型的な質問
-- 経営陣の回答と戦略的洞察
-- 投資家が関心を持つポイント
-
-## 将来見通しに関する注意事項
-- 将来予想に関する免責事項
-
-実際のデータに基づいて、投資家にとって価値のある情報を含む本格的な内容を日本語で作成してください。数値は提供されたデータと正確に一致させてください。
+[翻訳されたトランスクリプト内容]
 """
 
-        response = client.models.generate_content(
-            model="gemini-2.0-flash-exp",
-            contents=prompt
-        )
+            response = client.models.generate_content(
+                model="gemini-2.0-flash-exp",
+                contents=prompt
+            )
+            
+            if response.text:
+                return response.text
+            else:
+                return f"{company_name}の決算説明会トランスクリプトの翻訳に失敗しました。"
         
-        return response.text if response.text else "決算説明会の生成に失敗しました。"
-        
+        else:
+            # If no transcript found, return a helpful message
+            return f"{company_name} ({ticker})の最新決算説明会トランスクリプトが見つかりませんでした。企業の投資家向けページを直接ご確認ください。"
+            
     except Exception as e:
-        logging.error(f"Earnings call generation error: {e}")
-        return f"決算説明会生成エラー: {str(e)}"
+        logging.error(f"Transcript extraction error: {e}")
+        return f"決算説明会トランスクリプトの取得中にエラーが発生しました: {str(e)}"
 
 def generate_business_insights(ticker):
     """

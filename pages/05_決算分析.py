@@ -16,7 +16,7 @@ from comprehensive_market_stocks import get_all_market_stocks, get_stock_info_en
 from historical_metrics_chart import display_historical_metrics_chart, get_company_by_name
 from currency_converter import display_stock_price_in_jpy
 from format_helpers import format_currency, format_large_number
-from gemini_analyzer import generate_earnings_summary, generate_earnings_call_analysis
+from gemini_analyzer import generate_earnings_summary, extract_and_translate_earnings_transcript
 import yfinance as yf
 
 # Modern design CSS
@@ -398,9 +398,9 @@ if analyze_button and selected_ticker:
                 stock = yf.Ticker(selected_ticker)
                 info = stock.info
                 
-                # Generate realistic earnings call transcript using Gemini AI and real financial data
-                with st.spinner("Gemini AIで決算説明会分析を生成中..."):
-                    earnings_transcript = generate_earnings_call_analysis(selected_ticker)
+                # Extract and translate actual earnings call transcript
+                with st.spinner("決算説明会トランスクリプトを取得・翻訳中..."):
+                    earnings_transcript = extract_and_translate_earnings_transcript(selected_ticker)
                 
                 st.markdown("""
                 <div class="earnings-card">
