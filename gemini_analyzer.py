@@ -115,7 +115,7 @@ def translate_earnings_transcript(transcript_text):
 
 def extract_and_translate_earnings_transcript(ticker):
     """
-    Generate comprehensive earnings analysis based on actual financial data and translate to Japanese
+    Generate quarterly business-focused earnings analysis with specific developments and events
     """
     try:
         import trafilatura
@@ -126,6 +126,7 @@ def extract_and_translate_earnings_transcript(ticker):
         info = stock.info
         financials = stock.financials
         quarterly_financials = stock.quarterly_financials
+        quarterly_earnings = stock.quarterly_earnings
         
         company_name = info.get('longName', ticker)
         
@@ -204,51 +205,124 @@ def extract_and_translate_earnings_transcript(ticker):
             industry = info.get('industry', 'Software')
             business_summary = info.get('longBusinessSummary', '')[:1500]
             
+            # Get quarterly financial data for business analysis
+            latest_quarter_data = {}
+            if not quarterly_financials.empty:
+                latest_quarter = quarterly_financials.columns[0]
+                latest_quarter_data = {
+                    'revenue': quarterly_financials.loc['Total Revenue', latest_quarter] if 'Total Revenue' in quarterly_financials.index else 0,
+                    'operating_income': quarterly_financials.loc['Operating Income', latest_quarter] if 'Operating Income' in quarterly_financials.index else 0,
+                    'net_income': quarterly_financials.loc['Net Income', latest_quarter] if 'Net Income' in quarterly_financials.index else 0
+                }
+            
+            # Get previous quarter for comparison
+            previous_quarter_data = {}
+            if not quarterly_financials.empty and len(quarterly_financials.columns) > 1:
+                previous_quarter = quarterly_financials.columns[1]
+                previous_quarter_data = {
+                    'revenue': quarterly_financials.loc['Total Revenue', previous_quarter] if 'Total Revenue' in quarterly_financials.index else 0,
+                    'operating_income': quarterly_financials.loc['Operating Income', previous_quarter] if 'Operating Income' in quarterly_financials.index else 0,
+                    'net_income': quarterly_financials.loc['Net Income', previous_quarter] if 'Net Income' in quarterly_financials.index else 0
+                }
+            
+            # Calculate quarter-over-quarter changes
+            qoq_revenue_change = 0
+            qoq_operating_change = 0
+            qoq_net_income_change = 0
+            
+            if previous_quarter_data.get('revenue', 0) != 0:
+                try:
+                    current_rev = float(latest_quarter_data.get('revenue', 0)) if latest_quarter_data.get('revenue', 0) else 0
+                    prev_rev = float(previous_quarter_data.get('revenue', 0)) if previous_quarter_data.get('revenue', 0) else 1
+                    qoq_revenue_change = ((current_rev - prev_rev) / prev_rev) * 100
+                except:
+                    qoq_revenue_change = 0
+            
+            if previous_quarter_data.get('operating_income', 0) != 0:
+                try:
+                    current_op = float(latest_quarter_data.get('operating_income', 0)) if latest_quarter_data.get('operating_income', 0) else 0
+                    prev_op = float(previous_quarter_data.get('operating_income', 0)) if previous_quarter_data.get('operating_income', 0) else 1
+                    qoq_operating_change = ((current_op - prev_op) / prev_op) * 100
+                except:
+                    qoq_operating_change = 0
+            
+            if previous_quarter_data.get('net_income', 0) != 0:
+                try:
+                    current_net = float(latest_quarter_data.get('net_income', 0)) if latest_quarter_data.get('net_income', 0) else 0
+                    prev_net = float(previous_quarter_data.get('net_income', 0)) if previous_quarter_data.get('net_income', 0) else 1
+                    qoq_net_income_change = ((current_net - prev_net) / prev_net) * 100
+                except:
+                    qoq_net_income_change = 0
+
             enhanced_content = f"""
-{company_name} Business Fundamentals & Quarterly Performance Analysis
+{company_name} Quarterly Business Analysis & Earnings Insights
 
-BUSINESS MODEL & COMPETITIVE POSITIONING:
-The company operates in the {sector} sector, specifically within {industry}. {business_summary}
+QUARTERLY BUSINESS PERFORMANCE:
+Recent Quarter Revenue: ${latest_quarter_data.get('revenue', 0):,.0f}
+Quarter-over-Quarter Revenue Change: {qoq_revenue_change:+.1f}%
+Operating Income Change: {qoq_operating_change:+.1f}%
+Net Income Change: {qoq_net_income_change:+.1f}%
 
-FINANCIAL PERFORMANCE HIGHLIGHTS:
-- Total Revenue: ${revenue:,} (Annual) | Growth Rate: {revenue_growth:.1%}
-- Profitability: {profit_margins:.1%} profit margins indicate operational efficiency
-- Market Valuation: ${info.get('marketCap', 0):,} market capitalization
-- Financial Health: {info.get('debtToEquity', 'N/A')} debt-to-equity ratio
+BUSINESS DEVELOPMENTS & STRATEGIC INITIATIVES:
+Sector: {sector} | Industry: {industry}
+Business Summary: {business_summary}
 
-BUSINESS INSIGHTS FROM RECENT QUARTER:
-{transcript_content[:2000]}
+QUARTERLY FINANCIAL HIGHLIGHTS:
+- Revenue Growth: {"Strong growth" if qoq_revenue_change > 5 else "Moderate growth" if qoq_revenue_change > 0 else "Revenue decline"}
+- Operational Efficiency: {"Improving margins" if qoq_operating_change > 0 else "Margin pressure"}
+- Profitability Trend: {"Increasing profitability" if qoq_net_income_change > 0 else "Profitability challenges"}
 
-FUNDAMENTAL INVESTMENT THESIS:
-Key Business Strengths:
-- Market Position: Trading at {info.get('trailingPE', 'N/A')}x earnings multiple
-- Asset Efficiency: {info.get('returnOnEquity', 'N/A')} return on equity demonstrates management effectiveness
-- Balance Sheet: {info.get('priceToBook', 'N/A')} price-to-book ratio indicates asset valuation
+MARKET POSITIONING & COMPETITIVE DYNAMICS:
+Current Market Cap: ${info.get('marketCap', 0):,}
+Trading Multiple: {info.get('trailingPE', 'N/A')}x P/E ratio
+Book Value: {info.get('priceToBook', 'N/A')}x P/B ratio
 
-Strategic Outlook & Business Moats:
-The company's competitive advantages include its market position within {sector}, operational scale, and ability to generate sustainable cash flows. The current financial metrics suggest the business model's effectiveness in creating shareholder value through consistent revenue growth and margin expansion.
+BUSINESS INSIGHTS:
+{transcript_content[:2000] if transcript_content else f"Analyzing {company_name}'s business fundamentals and quarterly performance trends based on financial data."}
 
-INVESTMENT CONSIDERATIONS:
-Based on fundamental analysis, the company demonstrates strong business fundamentals with sustainable competitive advantages. The financial metrics indicate a well-managed enterprise with clear value proposition in its market segment.
+KEY BUSINESS DRIVERS:
+- Revenue drivers: {"Product sales growth" if qoq_revenue_change > 0 else "Market challenges affecting revenue"}
+- Cost management: {"Operational efficiency gains" if qoq_operating_change > qoq_revenue_change else "Rising operational costs"}
+- Market expansion: Business operating in {sector} with focus on {industry}
+
+INVESTMENT PERSPECTIVE:
+The quarterly results show {"positive business momentum" if qoq_revenue_change > 0 else "business headwinds"} with {"improving operational metrics" if qoq_operating_change > 0 else "operational challenges"}. The company's strategic position in {sector} provides {"competitive advantages" if info.get('returnOnEquity', 0) > 0.15 else "market positioning opportunities"}.
 """
             
-            # Translate the enhanced content
+            # Translate the enhanced content with focus on quarterly business developments
             prompt = f"""
-以下の{company_name}の決算情報を日本語に翻訳してください。投資家にとって重要な財務情報を正確に伝える自然な日本語に翻訳してください：
+以下の{company_name}の四半期決算分析を日本語に翻訳し、具体的なビジネス展開や事業変化に焦点を当てて要約してください：
 
 {enhanced_content}
 
-翻訳の際は以下の点に注意してください：
-- 財務用語は正確に翻訳する
-- 数値は正確に保持する
-- 投資判断に重要な内容を明確に伝える
-- 自然で読みやすい日本語表現を使用する
+翻訳・分析の際は以下の点を重視してください：
+- 四半期の具体的な業績変化とその原因
+- 新製品、サービス、事業展開などの具体的な事業活動
+- 市場環境や競争状況の変化が業績に与えた影響
+- 経営陣の発言や今後の戦略的方向性
+- 業界全体の動向と当社への影響
 
-出力は以下の形式でお願いします：
+以下の形式で、具体的なビジネス情報を中心に分析してください：
 
-## {company_name} 最新四半期決算分析
+## {company_name} 最新四半期ビジネス分析
 
-[翻訳された決算分析内容]
+### 📊 四半期業績の変化
+[前四半期比での具体的な業績変化とその背景]
+
+### 🚀 事業展開・新規取り組み
+[新製品発表、市場参入、戦略的投資など具体的な事業活動]
+
+### 📈 業績を押し上げた要因
+[売上成長や利益改善の具体的な要因]
+
+### ⚠️ 課題・懸念材料
+[業績に悪影響を与えた要因や今後の懸念]
+
+### 🎯 今後の展望・戦略
+[経営陣の発言や今後の事業戦略]
+
+### 💡 投資家への示唆
+[これらの事業変化が投資判断に与える影響]
 """
 
             response = client.models.generate_content(

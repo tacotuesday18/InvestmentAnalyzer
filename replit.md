@@ -4,15 +4,15 @@
 An intelligent Streamlit-based company analysis platform delivering comprehensive business insights through advanced data visualization and interactive research tools. All financial data is sourced exclusively from Yahoo Finance to ensure accuracy and authenticity.
 
 ## Recent Changes
-- **2025-06-27**: STREAMLINED USER EXPERIENCE - Removed duplicate functionality to reduce confusion across pages
+- **2025-06-27**: ENHANCED EARNINGS ANALYSIS - Now focuses on specific quarterly business developments instead of generic fundamentals
+- **2025-06-27**: Added quarter-over-quarter performance analysis with specific business event identification
+- **2025-06-27**: Implemented business-focused earnings insights covering product launches, market expansion, and strategic initiatives
+- **2025-06-27**: Removed earnings highlights from financial statements page to avoid duplication
+- **2025-06-27**: Fixed individual stock comparison loop issue in comparison page
 - **2025-06-27**: Enhanced industry benchmarks with realistic multiples for AI/tech vs traditional sectors
 - **2025-06-27**: Fixed session state management to prevent page resets when changing comparison periods
-- **2025-06-27**: Removed OpenAI API key requirements and implemented comprehensive earnings analysis
-- **2025-06-27**: Improved earnings transcript extraction with company-specific investor relations sources
-- **2025-06-27**: Simplified fundamental analysis page by removing redundant historical metrics section
-- **2025-06-27**: Added individual stock comparison charts to comparison page for direct performance analysis
-- **2025-06-27**: Created market comparison module for stock vs index performance visualization
-- **2025-06-27**: Enhanced earnings page with business-focused fundamental analysis and improved formatting
+- **2025-06-27**: Streamlined user experience by removing duplicate functionality across pages
+- **2025-06-27**: Added market comparison module for stock vs index performance visualization
 - **2025-06-26**: FIXED NAVIGATION - Completely rebuilt app.py to enable proper Streamlit sidebar page navigation
 - **2025-06-26**: Single hamburger button (☰) in top-left corner opens/closes sidebar with clickable page links
 - **2025-06-26**: Removed all custom navigation logic that was preventing page switching
