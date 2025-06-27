@@ -48,6 +48,11 @@ def reset_comparison_analysis():
     st.session_state.comparison_analysis_completed = False
     st.session_state.comparison_results = {}
 
+def should_reset_comparison_analysis(current_tickers):
+    """Check if comparison analysis should be reset based on ticker changes"""
+    return (st.session_state.comparison_selected_tickers != current_tickers or 
+            not st.session_state.comparison_analysis_completed)
+
 def should_reset_fundamental_analysis(new_ticker):
     """Check if fundamental analysis should be reset for new ticker"""
     return new_ticker != st.session_state.fundamental_current_ticker

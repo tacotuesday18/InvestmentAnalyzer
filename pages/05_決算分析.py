@@ -338,6 +338,9 @@ if analyze_button and selected_ticker:
             # Valuation metrics (3 points)  
             if 10 <= pe_ratio <= 20: score += 2
             elif 5 <= pe_ratio <= 30: score += 1
+            
+            # Calculate PEG ratio (PE / Growth rate)
+            peg_ratio = pe_ratio / revenue_growth if revenue_growth > 0 else 0
             if peg_ratio > 0 and peg_ratio <= 1.0: score += 1
             
             # Financial health (3 points)

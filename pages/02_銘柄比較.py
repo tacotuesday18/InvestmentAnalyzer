@@ -181,6 +181,9 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# Initialize session state
+init_session_state()
+
 # サイドバー
 with st.sidebar:
     st.markdown("### 銘柄比較ツール")
