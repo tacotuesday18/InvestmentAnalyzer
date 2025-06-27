@@ -712,13 +712,17 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
                     key="individual_stock_comparison_period"
                 )
                 
+                # Store the previous period to detect changes
+                prev_period = st.session_state.get('comparison_period_key', "1年")
+                period_changed = selected_comparison_period_jp != prev_period
+                
                 # Update session state only when selection changes
-                if selected_comparison_period_jp != st.session_state.comparison_period_key:
+                if period_changed:
                     st.session_state.comparison_period_key = selected_comparison_period_jp
                 
                 selected_comparison_period = comparison_period_options[selected_comparison_period_jp]
                 
-                # Auto-generate individual stock comparison chart
+                # Auto-generate individual stock comparison chart (don't reset analysis for period changes)
                 with st.spinner("個別銘柄比較チャートを作成中..."):
                     comparison_chart = create_individual_stock_comparison_chart(
                         selected_tickers, 

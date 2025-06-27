@@ -23,7 +23,11 @@ from openai_analyzer import (
     extract_quarterly_business_developments,
     generate_qa_section_analysis
 )
-from historical_metrics_table import create_historical_metrics_table
+from gemini_historical_metrics import (
+    create_historical_metrics_table_with_gemini,
+    extract_quarterly_business_developments_with_gemini,
+    generate_qa_section_analysis_with_gemini
+)
 import yfinance as yf
 
 # Modern design CSS
@@ -471,7 +475,7 @@ if analyze_button and selected_ticker:
             
             # Historical metrics table (as requested by user)
             st.markdown('<div class="section-header">📈 過去のメトリクス比較</div>', unsafe_allow_html=True)
-            create_historical_metrics_table(selected_ticker, pe_ratio, pb_ratio, ps_ratio)
+            create_historical_metrics_table_with_gemini(selected_ticker, pe_ratio, pb_ratio, ps_ratio)
             
             # Quarterly Business Developments Section  
             st.markdown('<div class="section-header">🎙️ 決算説明会トランスクリプト</div>', unsafe_allow_html=True)
@@ -479,9 +483,17 @@ if analyze_button and selected_ticker:
             # Enhanced quarterly business analysis
             with st.spinner("最新決算の具体的なビジネス展開を分析中..."):
                 try:
-                    # Get specific quarterly business developments
-                    quarterly_developments = extract_quarterly_business_developments(selected_ticker)
-                    qa_analysis = generate_qa_section_analysis(selected_ticker)
+                    # Try OpenAI first, fallback to Gemini if quota exceeded
+                    try:
+                        quarterly_developments = extract_quarterly_business_developments(selected_ticker)
+                        qa_analysis = generate_qa_section_analysis(selected_ticker)
+                    except Exception as e:
+                        if "insufficient_quota" in str(e):
+                            st.info("OpenAI APIのクォータを超過しました。Gemini APIを使用して分析を継続します...")
+                            quarterly_developments = extract_quarterly_business_developments_with_gemini(selected_ticker)
+                            qa_analysis = generate_qa_section_analysis_with_gemini(selected_ticker)
+                        else:
+                            raise e
                     
                     if quarterly_developments:
                         st.markdown("### 📊 最新四半期の具体的なビジネス展開")
