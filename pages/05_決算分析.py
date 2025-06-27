@@ -260,6 +260,79 @@ if analyze_button and selected_ticker:
                 </div>
                 """, unsafe_allow_html=True)
             
+            # ChatGPT Enhanced Earnings Analysis
+            st.markdown('<div class="section-header">🤖 ChatGPT決算分析</div>', unsafe_allow_html=True)
+            
+            with st.spinner("ChatGPTで決算情報を分析中..."):
+                try:
+                    # Prepare financial data for ChatGPT analysis
+                    financial_data = {
+                        'ticker': selected_ticker,
+                        'market_cap': market_cap,
+                        'revenue': revenue,
+                        'pe_ratio': pe_ratio,
+                        'pb_ratio': pb_ratio,
+                        'ps_ratio': ps_ratio,
+                        'roe': roe,
+                        'roa': roa,
+                        'current_ratio': current_ratio,
+                        'info': stock.info if 'stock' in locals() else {}
+                    }
+                    
+                    # Generate ChatGPT analysis
+                    chatgpt_analysis = generate_current_stock_metrics_with_chatgpt(selected_ticker, financial_data)
+                    
+                    if chatgpt_analysis:
+                        col1, col2 = st.columns(2)
+                        
+                        with col1:
+                            st.markdown("#### 📊 投資評価")
+                            if chatgpt_analysis.get('valuation_assessment'):
+                                assessment = chatgpt_analysis['valuation_assessment']
+                                color = "trend-positive" if "undervalued" in assessment.lower() else "trend-negative" if "overvalued" in assessment.lower() else ""
+                                st.markdown(f'<div class="metric-card"><div class="metric-value {color}">{assessment}</div><div class="metric-label">評価結果</div></div>', unsafe_allow_html=True)
+                            
+                            if chatgpt_analysis.get('recommendation'):
+                                rec = chatgpt_analysis['recommendation']
+                                rec_color = "trend-positive" if "buy" in rec.lower() else "trend-negative" if "sell" in rec.lower() else ""
+                                st.markdown(f'<div class="metric-card"><div class="metric-value {rec_color}">{rec}</div><div class="metric-label">推奨</div></div>', unsafe_allow_html=True)
+                        
+                        with col2:
+                            st.markdown("#### 📈 成長見通し")
+                            if chatgpt_analysis.get('growth_prospects'):
+                                st.write(chatgpt_analysis['growth_prospects'])
+                            
+                            if chatgpt_analysis.get('target_price_range'):
+                                st.markdown(f"**目標株価**: {chatgpt_analysis['target_price_range']}")
+                        
+                        # Strengths and concerns
+                        col1, col2 = st.columns(2)
+                        
+                        with col1:
+                            if chatgpt_analysis.get('key_strengths'):
+                                st.markdown("#### ✅ 主要な強み")
+                                for strength in chatgpt_analysis['key_strengths']:
+                                    st.write(f"• {strength}")
+                        
+                        with col2:
+                            if chatgpt_analysis.get('key_concerns'):
+                                st.markdown("#### ⚠️ 懸念事項")
+                                for concern in chatgpt_analysis['key_concerns']:
+                                    st.write(f"• {concern}")
+                        
+                        # Investment thesis and risks
+                        if chatgpt_analysis.get('investment_thesis'):
+                            st.markdown("#### 🎯 投資テーゼ")
+                            st.info(chatgpt_analysis['investment_thesis'])
+                        
+                        if chatgpt_analysis.get('risk_factors'):
+                            st.markdown("#### ⚡ リスク要因")
+                            st.warning(chatgpt_analysis['risk_factors'])
+                
+                except Exception as e:
+                    st.error(f"ChatGPT分析の生成中にエラーが発生しました: {str(e)}")
+                    st.info("従来の分析を表示します")
+
             # Enhanced Investment Analysis with More Metrics
             st.markdown('<div class="section-header">🎯 総合投資分析</div>', unsafe_allow_html=True)
             

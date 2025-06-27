@@ -4,15 +4,15 @@
 An intelligent Streamlit-based company analysis platform delivering comprehensive business insights through advanced data visualization and interactive research tools. All financial data is sourced exclusively from Yahoo Finance to ensure accuracy and authenticity.
 
 ## Recent Changes  
-- **2025-06-27**: FIXED HISTORICAL METRICS ACCURACY - Removed all simulated data, now uses only authentic Yahoo Finance financial data
+- **2025-06-27**: INTEGRATED CHATGPT API - Added comprehensive ChatGPT analysis for historical metrics and current stock evaluation
+- **2025-06-27**: Enhanced earnings page with ChatGPT investment evaluation, target price analysis, and risk assessment
+- **2025-06-27**: Created Japanese earnings transcript translation capability using ChatGPT API
+- **2025-06-27**: Added ChatGPT-generated industry benchmark analysis when historical data unavailable
+- **2025-06-27**: Fixed comparison page indentation errors preventing proper functionality
 - **2025-06-27**: Enhanced earnings transcript sources to use Investing.com and Seeking Alpha as primary sources
 - **2025-06-27**: Auto-generates individual stock comparison charts when clicking "比較を実行" (no separate button needed)
 - **2025-06-27**: Enhanced earnings analysis to focus on specific quarterly business developments and actual events
-- **2025-06-27**: Added quarter-over-quarter performance tracking with real financial data calculations  
 - **2025-06-27**: Removed synthetic historical PE/PB/PS ratios that were showing inaccurate values (like Google PE 13.91)
-- **2025-06-27**: Fixed individual stock comparison infinite loop issue with proper session state management
-- **2025-06-27**: Removed duplicate earnings section from financial statements page
-- **2025-06-27**: Enhanced industry benchmarks with realistic multiples for different sectors
 - **2025-06-26**: FIXED NAVIGATION - Completely rebuilt app.py to enable proper Streamlit sidebar page navigation
 - **2025-06-26**: Single hamburger button (☰) in top-left corner opens/closes sidebar with clickable page links
 - **2025-06-26**: Removed all custom navigation logic that was preventing page switching
