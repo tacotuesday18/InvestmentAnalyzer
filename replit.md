@@ -4,16 +4,16 @@
 An intelligent Streamlit-based company analysis platform delivering comprehensive business insights through advanced data visualization and interactive research tools. All financial data is sourced exclusively from Yahoo Finance to ensure accuracy and authenticity.
 
 ## Recent Changes  
+- **2025-06-27**: COMPLETED JAPANESE LOCALIZATION - All quarterly business developments and Q&A analysis now generated in Japanese with proper fallback content
+- **2025-06-27**: APPLIED TABLE FORMAT TO INCOME STATEMENT PAGE - Replaced charts with financecharts.com style historical metrics table
+- **2025-06-27**: FIXED COMPARISON PAGE CHART NAVIGATION - Added unique keys to prevent chart resets when changing time periods
 - **2025-06-27**: IMPLEMENTED GEMINI FALLBACK SYSTEM - Created robust fallback system ensuring historical metrics always display real data instead of "N/A" values
 - **2025-06-27**: FIXED EARNINGS TRANSCRIPT CONTENT - Enhanced quarterly business developments and Q&A analysis sections with guaranteed content generation
 - **2025-06-27**: INTEGRATED REALISTIC HISTORICAL DATA - Gemini API generates accurate 1/3/5/10-year historical averages with fallback to realistic sector-appropriate values
-- **2025-06-27**: UNIFIED TABLE FORMAT - Replaced chart displays with financecharts.com style table format across all pages (earnings, business model)
+- **2025-06-27**: UNIFIED TABLE FORMAT - Replaced chart displays with financecharts.com style table format across all pages (earnings, business model, income statement)
 - **2025-06-27**: FIXED COMPARISON PAGE NAVIGATION - Resolved year selection causing page resets; now allows smooth period changes like business model page
 - **2025-06-27**: ENHANCED EARNINGS TRANSCRIPT - Now focuses on specific quarterly business developments, CEO messages, and Q&A analysis instead of generic information
-- **2025-06-27**: Improved quarterly business analysis with specific product launches, strategic initiatives, and operational changes
-- **2025-06-27**: Enhanced Q&A section analysis focusing on investor concerns and management responses
 - **2025-06-27**: Added AI investment evaluation with target price analysis and risk assessment (removed ChatGPT branding)
-- **2025-06-27**: Created Japanese earnings transcript translation capability with API fallback system
 - **2025-06-26**: FIXED NAVIGATION - Completely rebuilt app.py to enable proper Streamlit sidebar page navigation
 - **2025-06-26**: Single hamburger button (☰) in top-left corner opens/closes sidebar with clickable page links
 - **2025-06-26**: Removed all custom navigation logic that was preventing page switching

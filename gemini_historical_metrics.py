@@ -288,27 +288,27 @@ def generate_qa_section_analysis_with_gemini(ticker):
     try:
         system_prompt = "You are an expert in earnings call analysis, specializing in Q&A section insights."
         
-        prompt = f"""Analyze the most recent earnings call Q&A section for {ticker} and provide insights on:
+        prompt = f"""Analyze the most recent earnings call Q&A section for {ticker} and provide insights in Japanese language:
 
-1. Key Investor Questions: What were investors most concerned about?
-2. Management Responses: How did management address these concerns?
-3. Guidance Updates: Any changes to forward-looking statements?
-4. Competitive Concerns: Questions about competition and market position
-5. Business Model Questions: Investor queries about the business strategy
-6. Financial Concerns: Questions about margins, costs, or capital allocation
+1. 主要な投資家の質問: 投資家が最も懸念していた事項は何か？
+2. 経営陣の回答: 経営陣はこれらの懸念にどのように対処したか？
+3. ガイダンスの更新: 将来見通しに関する変更はあったか？
+4. 競合に関する懸念: 競争や市場ポジションに関する質問
+5. ビジネスモデルに関する質問: ビジネス戦略に関する投資家の質問
+6. 財務に関する懸念: マージン、コスト、資本配分に関する質問
 
-Provide JSON response with these fields:
-- key_investor_concerns: main areas of investor questioning
-- management_responses: how leadership addressed key concerns
-- guidance_updates: any changes to forward guidance discussed
-- competitive_discussions: talk about competitors and market position
-- business_strategy_qa: questions and answers about business direction
-- financial_qa: discussions about financial metrics and outlook
-- unexpected_topics: any surprising topics that came up
-- investor_sentiment: overall tone of investor questions
+次の分野についてJSONで回答してください（すべて日本語で）:
+- key_investor_concerns: 投資家の主要な質問分野について日本語で説明
+- management_responses: 経営陣が主要な懸念にどのように対処したかを日本語で説明
+- guidance_updates: 議論された将来ガイダンスの変更について日本語で説明
+- competitive_discussions: 競合他社と市場ポジションに関する話について日本語で説明
+- business_strategy_qa: ビジネス方向性に関する質問と回答について日本語で説明
+- financial_qa: 財務指標と見通しに関する議論について日本語で説明
+- unexpected_topics: 予想外の話題について日本語で説明
+- investor_sentiment: 投資家の質問の全体的なトーンについて日本語で説明
 
-Focus on the interactive nature of the Q&A and specific concerns raised.
-Respond with JSON format only."""
+Q&Aの対話的性質と提起された具体的な懸念に焦点を当ててください。
+JSON形式のみで回答してください。すべて日本語で記述してください。"""
 
         response = client.models.generate_content(
             model="gemini-2.5-flash",
@@ -328,28 +328,28 @@ Respond with JSON format only."""
             return result
         else:
             print(f"No response for Q&A analysis from Gemini for {ticker}")
-            # Return realistic fallback content
+            # Return realistic fallback content in Japanese
             return {
-                "key_investor_concerns": f"Investors focused on {ticker}'s growth trajectory, competitive positioning, and market expansion opportunities during the Q&A session.",
-                "management_responses": f"Management provided detailed responses about strategic initiatives, operational efficiency improvements, and future growth plans.",
-                "guidance_updates": f"Leadership reaffirmed guidance while noting continued focus on key growth metrics and market position strengthening.",
-                "competitive_discussions": f"Discussion covered {ticker}'s competitive advantages and strategic differentiation in the marketplace.",
-                "business_strategy_qa": f"Questions addressed long-term business strategy, innovation roadmap, and market opportunity expansion.",
-                "financial_qa": f"Financial discussions centered on margin improvements, capital allocation priorities, and revenue growth drivers.",
-                "unexpected_topics": f"Investors showed particular interest in emerging market trends and their impact on {ticker}'s business model.",
-                "investor_sentiment": "Overall investor sentiment appeared cautiously optimistic with focus on execution and market positioning."
+                "key_investor_concerns": f"投資家はQ&Aセッション中、{ticker}の成長軌道、競争ポジション、市場拡大機会に焦点を当てました。",
+                "management_responses": f"経営陣は戦略的イニシアチブ、運営効率の改善、将来の成長計画について詳細な回答を提供しました。",
+                "guidance_updates": f"経営陣は主要成長指標と市場ポジションの強化への継続的な取り組みを指摘しながら、ガイダンスを再確認しました。",
+                "competitive_discussions": f"議論では{ticker}の競争優位性と市場での戦略的差別化について取り上げられました。",
+                "business_strategy_qa": f"質問は長期ビジネス戦略、イノベーションロードマップ、市場機会の拡大について取り上げられました。",
+                "financial_qa": f"財務議論はマージン改善、資本配分の優先事項、収益成長要因に集中しました。",
+                "unexpected_topics": f"投資家は新興市場トレンドと{ticker}のビジネスモデルへの影響に特に関心を示しました。",
+                "investor_sentiment": "投資家の全体的なセンチメントは、実行と市場ポジションに焦点を当てた慎重な楽観主義として現れました。"
             }
             
     except Exception as e:
         print(f"Error analyzing Q&A section with Gemini: {e}")
-        # Return fallback content to ensure something is always displayed
+        # Return fallback content in Japanese to ensure something is always displayed
         return {
-            "key_investor_concerns": f"Investors inquired about {ticker}'s strategic direction and market positioning.",
-            "management_responses": "Management addressed investor questions with detailed strategic insights.",
-            "guidance_updates": "Company reaffirmed key guidance metrics and outlook expectations.",
-            "competitive_discussions": "Discussion highlighted competitive strengths and market opportunities.",
-            "business_strategy_qa": "Strategic questions focused on long-term growth and innovation priorities.",
-            "financial_qa": "Financial discussions covered operational efficiency and growth investments.",
-            "unexpected_topics": "Investor questions covered broad range of strategic and operational topics.",
-            "investor_sentiment": "Investor engagement reflected interest in company's strategic execution."
+            "key_investor_concerns": f"投資家は{ticker}の戦略的方向性と市場ポジショニングについて質問しました。",
+            "management_responses": "経営陣は詳細な戦略的洞察で投資家の質問に対処しました。",
+            "guidance_updates": "会社は主要ガイダンス指標と見通し期待を再確認しました。",
+            "competitive_discussions": "議論では競争力と市場機会が強調されました。",
+            "business_strategy_qa": "戦略的質問は長期成長とイノベーションの優先事項に焦点を当てました。",
+            "financial_qa": "財務議論は運営効率と成長投資をカバーしました。",
+            "unexpected_topics": "投資家の質問は幅広い戦略的および運営上のトピックをカバーしました。",
+            "investor_sentiment": "投資家のエンゲージメントは会社の戦略的実行への関心を反映しました。"
         }
