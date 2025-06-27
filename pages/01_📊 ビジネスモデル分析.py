@@ -8,7 +8,7 @@ import yfinance as yf
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from comprehensive_market_stocks import get_all_market_stocks
-from historical_metrics_chart import display_historical_metrics_chart, get_company_by_name
+from comprehensive_stock_data import search_stocks_by_name
 from currency_converter import display_stock_price_in_jpy
 from gemini_analyzer import analyze_company_fundamentals
 
@@ -132,9 +132,7 @@ if analyze_button and selected_ticker:
             except:
                 pass
             
-            # Historical metrics chart
-            st.markdown("### 📈 財務メトリクス推移分析")
-            display_historical_metrics_chart(selected_ticker)
+            # Analysis complete
             
         except Exception as e:
             st.error(f"企業情報の取得に失敗しました: {str(e)}")
