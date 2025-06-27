@@ -483,17 +483,10 @@ if analyze_button and selected_ticker:
             # Enhanced quarterly business analysis
             with st.spinner("最新決算の具体的なビジネス展開を分析中..."):
                 try:
-                    # Try OpenAI first, fallback to Gemini if quota exceeded
-                    try:
-                        quarterly_developments = extract_quarterly_business_developments(selected_ticker)
-                        qa_analysis = generate_qa_section_analysis(selected_ticker)
-                    except Exception as e:
-                        if "insufficient_quota" in str(e):
-                            st.info("OpenAI APIのクォータを超過しました。Gemini APIを使用して分析を継続します...")
-                            quarterly_developments = extract_quarterly_business_developments_with_gemini(selected_ticker)
-                            qa_analysis = generate_qa_section_analysis_with_gemini(selected_ticker)
-                        else:
-                            raise e
+                    # Always use Gemini due to OpenAI quota issues
+                    st.info("Gemini APIを使用して最新の決算分析を生成中...")
+                    quarterly_developments = extract_quarterly_business_developments_with_gemini(selected_ticker)
+                    qa_analysis = generate_qa_section_analysis_with_gemini(selected_ticker)
                     
                     if quarterly_developments:
                         st.markdown("### 📊 最新四半期の具体的なビジネス展開")
