@@ -16,7 +16,7 @@ from comprehensive_market_stocks import get_all_market_stocks, get_stock_info_en
 from historical_metrics_chart import display_historical_metrics_chart, get_company_by_name
 from currency_converter import display_stock_price_in_jpy
 from format_helpers import format_currency, format_large_number
-from gemini_analyzer import translate_earnings_transcript, generate_earnings_summary
+from gemini_analyzer import translate_earnings_transcript, generate_earnings_summary, generate_earnings_call_analysis, generate_business_insights
 import yfinance as yf
 
 # Modern design CSS
@@ -390,6 +390,14 @@ if analyze_button and selected_ticker:
             st.markdown('<div class="section-header">📈 過去のメトリクス推移</div>', unsafe_allow_html=True)
             display_historical_metrics_chart(selected_ticker)
             
+            # Business insights section powered by Gemini AI
+            st.markdown('<div class="section-header">🏢 ビジネス洞察分析 (Gemini AI)</div>', unsafe_allow_html=True)
+            
+            with st.spinner("Gemini AIでビジネス洞察を生成中..."):
+                business_insights = generate_business_insights(selected_ticker)
+            
+            st.markdown(business_insights)
+            
             # Earnings call transcript section
             st.markdown('<div class="section-header">🎙️ 決算説明会トランスクリプト</div>', unsafe_allow_html=True)
             
@@ -398,29 +406,9 @@ if analyze_button and selected_ticker:
                 stock = yf.Ticker(selected_ticker)
                 info = stock.info
                 
-                # Mock earnings call transcript (in real implementation, would fetch from earnings call APIs)
-                earnings_transcript = f"""
-                Welcome to {info.get('longName', selected_ticker)}'s Q4 2024 Earnings Call.
-
-                CEO Opening Remarks:
-                Thank you for joining us today. We're pleased to report strong performance this quarter, with revenue growth of {revenue_growth:.1f}% year-over-year. Our strategic initiatives continue to drive value creation and market expansion.
-
-                CFO Financial Highlights:
-                - Total revenue reached ${data.get('revenue', 0)/1000000:.1f} billion
-                - Net income was ${data.get('net_income', 0)/1000000:.1f} billion
-                - Operating margin improved to {operating_margins:.1f}%
-                - We maintain a strong balance sheet with current ratio of {current_ratio:.2f}
-
-                Q&A Session:
-                Analyst: Can you provide more details on your growth strategy?
-                CEO: We're focused on innovation, market expansion, and operational efficiency. Our investment in R&D continues to drive competitive advantages.
-
-                Analyst: What are your expectations for next quarter?
-                CFO: We remain optimistic about our market position and expect continued growth, though we're monitoring market conditions closely.
-
-                Forward-Looking Statements:
-                This call contains forward-looking statements based on current expectations. Actual results may differ materially.
-                """
+                # Generate realistic earnings call transcript using Gemini AI and real financial data
+                with st.spinner("Gemini AIで決算説明会分析を生成中..."):
+                    earnings_transcript = generate_earnings_call_analysis(selected_ticker)
                 
                 st.markdown("""
                 <div class="earnings-card">
