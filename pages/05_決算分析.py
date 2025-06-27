@@ -20,9 +20,10 @@ from gemini_analyzer import generate_earnings_summary, extract_and_translate_ear
 from openai_analyzer import (
     generate_current_stock_metrics_with_chatgpt,
     translate_earnings_transcript_to_japanese,
-    extract_key_transcript_sections,
-    generate_japanese_earnings_summary
+    extract_quarterly_business_developments,
+    generate_qa_section_analysis
 )
+from historical_metrics_table import create_historical_metrics_table
 import yfinance as yf
 
 # Modern design CSS
@@ -260,8 +261,8 @@ if analyze_button and selected_ticker:
                 </div>
                 """, unsafe_allow_html=True)
             
-            # ChatGPT Enhanced Earnings Analysis
-            st.markdown('<div class="section-header">🤖 ChatGPT決算分析</div>', unsafe_allow_html=True)
+            # AI Enhanced Earnings Analysis
+            st.markdown('<div class="section-header">🎯 AI決算分析</div>', unsafe_allow_html=True)
             
             with st.spinner("ChatGPTで決算情報を分析中..."):
                 try:
@@ -468,27 +469,100 @@ if analyze_button and selected_ticker:
             except:
                 pass
             
-            # Historical metrics chart
-            st.markdown('<div class="section-header">📈 過去のメトリクス推移</div>', unsafe_allow_html=True)
-            display_historical_metrics_chart(selected_ticker)
+            # Historical metrics table (as requested by user)
+            st.markdown('<div class="section-header">📈 過去のメトリクス比較</div>', unsafe_allow_html=True)
+            create_historical_metrics_table(selected_ticker, pe_ratio, pb_ratio, ps_ratio)
             
-            # Earnings call transcript section
+            # Quarterly Business Developments Section  
             st.markdown('<div class="section-header">🎙️ 決算説明会トランスクリプト</div>', unsafe_allow_html=True)
             
-            # Get earnings call transcript
-            try:
-                stock = yf.Ticker(selected_ticker)
-                info = stock.info
+            # Enhanced quarterly business analysis
+            with st.spinner("最新決算の具体的なビジネス展開を分析中..."):
+                try:
+                    # Get specific quarterly business developments
+                    quarterly_developments = extract_quarterly_business_developments(selected_ticker)
+                    qa_analysis = generate_qa_section_analysis(selected_ticker)
+                    
+                    if quarterly_developments:
+                        st.markdown("### 📊 最新四半期の具体的なビジネス展開")
+                        
+                        col1, col2 = st.columns(2)
+                        
+                        with col1:
+                            if quarterly_developments.get('product_developments'):
+                                st.markdown("#### 🚀 製品・サービス開発")
+                                st.write(quarterly_developments['product_developments'])
+                            
+                            if quarterly_developments.get('strategic_initiatives'):
+                                st.markdown("#### 🎯 戦略的取り組み")
+                                st.write(quarterly_developments['strategic_initiatives'])
+                            
+                            if quarterly_developments.get('operational_updates'):
+                                st.markdown("#### ⚙️ 運営面の変化")
+                                st.write(quarterly_developments['operational_updates'])
+                        
+                        with col2:
+                            if quarterly_developments.get('business_metrics_changes'):
+                                st.markdown("#### 📈 ビジネス指標の変化")
+                                st.write(quarterly_developments['business_metrics_changes'])
+                            
+                            if quarterly_developments.get('market_position'):
+                                st.markdown("#### 🏆 市場ポジションの変化")
+                                st.write(quarterly_developments['market_position'])
+                            
+                            if quarterly_developments.get('financial_highlights'):
+                                st.markdown("#### 💰 財務ハイライト")
+                                st.write(quarterly_developments['financial_highlights'])
+                        
+                        # CEO Messages
+                        if quarterly_developments.get('ceo_key_messages'):
+                            st.markdown("#### 👔 CEOの主要メッセージ")
+                            st.info(quarterly_developments['ceo_key_messages'])
+                        
+                        # Outlook Changes
+                        if quarterly_developments.get('outlook_changes'):
+                            st.markdown("#### 🔮 見通しの変化")
+                            st.warning(quarterly_developments['outlook_changes'])
+                    
+                    # Q&A Section Analysis
+                    if qa_analysis:
+                        st.markdown("### 🤝 Q&Aセクション分析")
+                        
+                        col1, col2 = st.columns(2)
+                        
+                        with col1:
+                            if qa_analysis.get('key_investor_concerns'):
+                                st.markdown("#### ❓ 投資家の主要な懸念")
+                                st.write(qa_analysis['key_investor_concerns'])
+                            
+                            if qa_analysis.get('competitive_discussions'):
+                                st.markdown("#### 🥊 競合関連の議論")
+                                st.write(qa_analysis['competitive_discussions'])
+                        
+                        with col2:
+                            if qa_analysis.get('management_responses'):
+                                st.markdown("#### 💼 経営陣の回答")
+                                st.write(qa_analysis['management_responses'])
+                            
+                            if qa_analysis.get('financial_qa'):
+                                st.markdown("#### 💹 財務関連のQ&A")
+                                st.write(qa_analysis['financial_qa'])
+                        
+                        if qa_analysis.get('unexpected_topics'):
+                            st.markdown("#### ⚡ 予想外の話題")
+                            st.error(qa_analysis['unexpected_topics'])
+                        
+                        if qa_analysis.get('investor_sentiment'):
+                            st.markdown("#### 📊 投資家のセンチメント")
+                            st.info(qa_analysis['investor_sentiment'])
                 
-                # Extract and translate actual earnings call transcript
-                with st.spinner("最新決算情報を分析・翻訳中..."):
+                except Exception as e:
+                    st.warning("決算トランスクリプトの詳細分析が現在利用できません。基本情報を表示します。")
+                    
+                    # Fallback to basic earnings info
                     earnings_transcript = extract_and_translate_earnings_transcript(selected_ticker)
-                
-                st.markdown("""
-                <div class="earnings-card">
-                    <h3 style="color: #1e293b; margin-top: 0;">最新四半期決算分析 (日本語)</h3>
-                </div>
-                """, unsafe_allow_html=True)
+                    
+                    st.markdown("### 📋 基本決算情報")
                 
                 # Enhanced formatting for earnings transcript
                 st.markdown(f"""

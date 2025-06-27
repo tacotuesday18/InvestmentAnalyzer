@@ -701,12 +701,20 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
                     "5年": "5y"
                 }
                 
+                # Initialize session state for comparison period if not exists
+                if 'comparison_period_key' not in st.session_state:
+                    st.session_state.comparison_period_key = "1年"
+                
                 selected_comparison_period_jp = st.selectbox(
                     "比較期間を選択:",
                     options=list(comparison_period_options.keys()),
-                    index=3,  # Default to 1年
+                    index=list(comparison_period_options.keys()).index(st.session_state.comparison_period_key),
                     key="individual_stock_comparison_period"
                 )
+                
+                # Update session state only when selection changes
+                if selected_comparison_period_jp != st.session_state.comparison_period_key:
+                    st.session_state.comparison_period_key = selected_comparison_period_jp
                 
                 selected_comparison_period = comparison_period_options[selected_comparison_period_jp]
                 
