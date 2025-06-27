@@ -13,6 +13,7 @@ from currency_converter import display_stock_price_in_jpy
 from gemini_analyzer import analyze_company_fundamentals
 from market_comparison import display_stock_market_comparison
 from session_state_manager import init_session_state, reset_fundamental_analysis, should_reset_fundamental_analysis
+from gemini_historical_metrics import create_historical_metrics_table_with_gemini
 
 # Modern design CSS
 st.markdown("""
@@ -167,10 +168,19 @@ if should_analyze or (st.session_state.fundamental_analysis_completed and st.ses
         except:
             pass
         
-        # Market comparison section
-        st.markdown("### 📈 市場指数との比較")
-        st.markdown("主要市場指数（NASDAQ、S&P 500）とのパフォーマンス比較を表示します。")
-        display_stock_market_comparison(selected_ticker)
+        # Historical metrics table section (financecharts.com style)
+        st.markdown("### 📈 過去の財務指標推移と業界比較")
+        st.markdown("主要バリュエーション指標の現在値と過去平均値を比較して投資判断にご活用ください。")
+        
+        # Get current financial metrics
+        stock = yf.Ticker(selected_ticker)
+        info = stock.info
+        current_pe = info.get('trailingPE', info.get('forwardPE', None))
+        current_pb = info.get('priceToBook', None)
+        current_ps = info.get('priceToSalesTrailing12Months', None)
+        
+        # Display historical metrics table
+        create_historical_metrics_table_with_gemini(selected_ticker, current_pe, current_pb, current_ps)
 
 # Educational section
 with st.expander("💡 ファンダメンタル分析の重要性"):
