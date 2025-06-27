@@ -684,6 +684,68 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
                 for ticker in selected_tickers:
                     st.markdown(f"#### {ticker} - 過去のメトリクス推移")
                     display_historical_metrics_chart(ticker)
+                
+                # Individual stock comparison chart
+                st.markdown("### 📊 個別銘柄株価パフォーマンス比較")
+                st.markdown("選択した銘柄の株価パフォーマンスを比較チャートで表示します。")
+                
+                # Period selection for comparison chart
+                comparison_period_options = {
+                    "1ヶ月": "1mo",
+                    "3ヶ月": "3mo", 
+                    "6ヶ月": "6mo",
+                    "1年": "1y",
+                    "2年": "2y",
+                    "5年": "5y"
+                }
+                
+                selected_comparison_period_jp = st.selectbox(
+                    "比較期間を選択:",
+                    options=list(comparison_period_options.keys()),
+                    index=3,  # Default to 1年
+                    key="individual_stock_comparison_period"
+                )
+                
+                selected_comparison_period = comparison_period_options[selected_comparison_period_jp]
+                
+                # Create and display individual stock comparison chart
+                if st.button("📈 個別銘柄パフォーマンス比較チャートを表示", key="show_individual_comparison"):
+                    with st.spinner("個別銘柄比較チャートを作成中..."):
+                        comparison_chart = create_individual_stock_comparison_chart(
+                            selected_tickers, 
+                            selected_comparison_period
+                        )
+                        
+                        if comparison_chart:
+                            st.plotly_chart(comparison_chart, use_container_width=True)
+                            
+                            # Add performance summary for individual comparison
+                            try:
+                                import yfinance as yf
+                                
+                                st.markdown("#### パフォーマンス統計")
+                                
+                                # Calculate returns for each stock
+                                returns_data = []
+                                for ticker in selected_tickers:
+                                    try:
+                                        stock = yf.Ticker(ticker)
+                                        data = stock.history(period=selected_comparison_period)
+                                        if not data.empty:
+                                            period_return = ((data['Close'].iloc[-1] - data['Close'].iloc[0]) / data['Close'].iloc[0]) * 100
+                                            returns_data.append({
+                                                'Ticker': ticker,
+                                                'Return (%)': f"{period_return:+.2f}%"
+                                            })
+                                    except:
+                                        continue
+                                
+                                if returns_data:
+                                    returns_df = pd.DataFrame(returns_data)
+                                    st.dataframe(returns_df, use_container_width=True)
+                                    
+                            except Exception as e:
+                                st.warning("パフォーマンス統計の計算中にエラーが発生しました")
 
             else:
                 st.error("比較結果の取得中にエラーが発生しました。")
