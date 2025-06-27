@@ -16,7 +16,7 @@ from comprehensive_market_stocks import get_all_market_stocks, get_stock_info_en
 from historical_metrics_chart import display_historical_metrics_chart, get_company_by_name
 from currency_converter import display_stock_price_in_jpy
 from format_helpers import format_currency, format_large_number
-from gemini_analyzer import translate_earnings_transcript, generate_earnings_summary, generate_earnings_call_analysis, generate_business_insights
+from gemini_analyzer import generate_earnings_summary, generate_earnings_call_analysis, generate_business_insights
 import yfinance as yf
 
 # Modern design CSS
@@ -412,31 +412,17 @@ if analyze_button and selected_ticker:
                 
                 st.markdown("""
                 <div class="earnings-card">
-                    <h3 style="color: #1e293b; margin-top: 0;">最新決算説明会トランスクリプト</h3>
+                    <h3 style="color: #1e293b; margin-top: 0;">最新決算説明会トランスクリプト (日本語)</h3>
                 </div>
                 """, unsafe_allow_html=True)
                 
-                col1, col2 = st.columns([3, 1])
-                
-                with col1:
-                    st.text_area(
-                        "Earnings Call Transcript (English)",
-                        earnings_transcript,
-                        height=300,
-                        disabled=True
-                    )
-                
-                with col2:
-                    if st.button("🌐 日本語に翻訳", help="Gemini AIで英語テキストを日本語に翻訳"):
-                        with st.spinner("Gemini AIで翻訳中..."):
-                            japanese_transcript = translate_earnings_transcript(earnings_transcript)
-                        
-                        st.text_area(
-                            "決算説明会トランスクリプト (日本語)",
-                            japanese_transcript,
-                            height=300,
-                            disabled=True
-                        )
+                st.text_area(
+                    "決算説明会トランスクリプト",
+                    earnings_transcript,
+                    height=400,
+                    disabled=True,
+                    label_visibility="collapsed"
+                )
                 
             except Exception as e:
                 st.info("決算説明会トランスクリプトは現在準備中です。")
