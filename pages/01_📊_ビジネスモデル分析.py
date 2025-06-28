@@ -227,11 +227,12 @@ if should_analyze or (st.session_state.fundamental_analysis_completed and st.ses
         st.markdown(f"""
         <div class="research-paper">
             <h1 class="paper-title">{company_info['name']} ({selected_ticker})</h1>
-            <h2 class="paper-subtitle">包括的ファンダメンタル分析レポート</h2>
+            <h2 class="paper-subtitle">長期投資家向け批判的ビジネス分析</h2>
             
             <div class="author-info">
                 <strong>分析日:</strong> {datetime.now().strftime('%Y年%m月%d日')}<br>
                 <strong>セクター:</strong> {company_info['sector']} | <strong>業界:</strong> {company_info['industry']}<br>
+                <strong>分析方針:</strong> 財務比率を使わない定性的深掘り分析<br>
                 <strong>データ源:</strong> Yahoo Finance
             </div>
         </div>
@@ -265,22 +266,25 @@ if should_analyze or (st.session_state.fundamental_analysis_completed and st.ses
         create_historical_metrics_table_with_gemini(selected_ticker, current_pe, current_pb, current_ps)
 
 # Educational section
-with st.expander("💡 ファンダメンタル分析の重要性"):
+with st.expander("🔍 批判的ビジネス分析の価値"):
     st.markdown("""
-    ### なぜビジネスファンダメンタルズが重要なのか
+    ### なぜ批判的な質的分析が重要なのか
     
-    **長期投資における本質的価値の理解**
-    - 財務数値は過去の結果であり、ビジネスの本質的な強さを表すものです
-    - 企業の「経済的堀」や競争優位性は数字だけでは見えません
-    - 経営陣の質や戦略的ビジョンが長期的な成果を左右します
+    **財務比率を超えた企業理解**
+    - 財務数値は過去の結果に過ぎず、将来の成功を保証しません
+    - 企業の真の競争力は、数字に現れない定性的要因に隠されています
+    - 投資家が見落としがちな「ストーリーの亀裂」を発見することが重要です
     
-    **投資判断への活用方法**
-    - 短期的な株価変動に惑わされない投資判断
-    - 企業の持続可能な成長性の評価
-    - リスク要因の事前把握と対策
+    **6つの重要な分析領域**
+    - **経済的堀**: 持続可能な競争優位性の源泉と脆弱性
+    - **ビジネスモデル**: 収益構造の回復力と戦略の実行力
+    - **経営陣の質**: 資本配分能力とコミュニケーションの誠実さ
+    - **企業文化**: 人材の定着と組織の健全性
+    - **業界ポジション**: 競合環境と脅威への対応力
+    - **ステークホルダー関係**: 顧客・パートナー・規制当局との信頼度
     
     **このページの活用法**
-    - 気になる企業のティッカーを入力して分析を開始
-    - AIが生成する包括的なレポートで投資判断の参考に
-    - 通貨換算機能で日本円での投資額を把握
+    - 懐疑的な視点で企業の弱点や課題を発見
+    - 表面的な成功に隠された潜在的リスクを評価
+    - 長期的な投資価値の本質を理解
     """)
