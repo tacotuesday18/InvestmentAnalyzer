@@ -32,7 +32,7 @@ def generate_historical_metrics_with_gemini(ticker, current_pe=None, current_pb=
         if current_ps:
             current_context += f"Current P/S: {current_ps:.2f}"
         
-        system_prompt = """You are a senior equity research analyst. Generate realistic historical valuation metrics based on market knowledge and company fundamentals."""
+        system_prompt = """You are a senior equity research analyst. Generate realistic historical valuation metrics based on market knowledge and company fundamentals. Respond ONLY in Japanese for market_context."""
         
         prompt = f"""Generate realistic historical average valuation metrics for {ticker}.
 
@@ -53,10 +53,10 @@ Return ONLY valid JSON with these exact keys (all values must be positive number
   "pb_3y": 3.8,
   "pb_5y": 4.1,
   "pb_10y": 3.5,
-  "market_context": "Historical analysis shows..."
+  "market_context": "過去の分析により..."
 }}
 
-Generate realistic values appropriate for {ticker}'s sector and market cap. Ensure ALL numeric values are positive."""
+Generate realistic values appropriate for {ticker}'s sector and market cap. The market_context must be written in Japanese and provide professional analysis of the historical valuation trends. Ensure ALL numeric values are positive."""
 
         response = client.models.generate_content(
             model="gemini-2.5-flash",
@@ -92,7 +92,7 @@ Generate realistic values appropriate for {ticker}'s sector and market cap. Ensu
             "pb_3y": 3.6,
             "pb_5y": 3.9,
             "pb_10y": 3.4,
-            "market_context": "Based on historical sector averages and company fundamentals."
+            "market_context": "過去のセクター平均と企業ファンダメンタルズに基づいた分析です。"
         }
 
 
