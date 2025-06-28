@@ -7,27 +7,42 @@ The actual main application is in ホーム.py (Home in Japanese)
 
 import sys
 import os
+import streamlit as st
 
 # Add current directory to Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-# Import and run the main application from ホーム.py
-try:
-    # Import the main home page module
-    import importlib.util
-    
-    # Load ホーム.py as a module
-    spec = importlib.util.spec_from_file_location("home", "ホーム.py")
-    if spec is not None and spec.loader is not None:
-        home_module = importlib.util.module_from_spec(spec)
-        if home_module is not None:
-            spec.loader.exec_module(home_module)
-        else:
-            raise ImportError("Could not create module from spec")
-    else:
-        raise ImportError("Could not load ホーム.py module")
-    
-except Exception as e:
-    import streamlit as st
-    st.error(f"Error loading main application: {e}")
-    st.write("Please ensure ホーム.py exists and is properly configured.")
+def main():
+    """Main entry point that loads and executes the home page application"""
+    try:
+        # Import the main home page module using exec
+        # This approach works better for Streamlit applications
+        home_file_path = os.path.join(os.path.dirname(__file__), "ホーム.py")
+        
+        if not os.path.exists(home_file_path):
+            st.error("メインアプリケーションファイル 'ホーム.py' が見つかりません。")
+            st.write("Main application file 'ホーム.py' not found.")
+            return
+        
+        # Read and execute the home page file
+        with open(home_file_path, 'r', encoding='utf-8') as f:
+            home_code = f.read()
+        
+        # Execute the home page code in the current namespace
+        exec(home_code)
+        
+    except Exception as e:
+        st.error(f"アプリケーションの読み込み中にエラーが発生しました: {e}")
+        st.error(f"Error loading main application: {e}")
+        st.write("ホーム.py ファイルが正しく設定されていることを確認してください。")
+        st.write("Please ensure ホーム.py exists and is properly configured.")
+        
+        # Show debug information
+        st.write("**Debug Information:**")
+        st.write(f"Current working directory: {os.getcwd()}")
+        st.write(f"Python path: {sys.path}")
+        st.write(f"Looking for file: {home_file_path}")
+        st.write(f"File exists: {os.path.exists(home_file_path)}")
+
+if __name__ == "__main__":
+    main()
