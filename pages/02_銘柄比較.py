@@ -810,62 +810,62 @@ elif st.session_state.stored_comparison_results:
 if st.session_state.stored_comparison_results:
     comparison_results = st.session_state.stored_comparison_results
     selected_tickers = st.session_state.stored_comparison_tickers
-                
-                # Individual stock comparison chart
-                st.markdown("### 📊 個別銘柄株価パフォーマンス比較")
-                st.markdown("選択した銘柄の株価パフォーマンスを比較チャートで表示します。")
-                
-                # Period selection for comparison chart
-                comparison_period_options = {
-                    "1ヶ月": "1mo",
-                    "3ヶ月": "3mo", 
-                    "6ヶ月": "6mo",
-                    "1年": "1y",
-                    "2年": "2y",
-                    "5年": "5y"
-                }
-                
-                # Initialize session state for comparison period if not exists
-                if 'chart_period_selection' not in st.session_state:
-                    st.session_state.chart_period_selection = "1年"
-                
-                # Use radio buttons in columns for period selection to avoid page reload
-                st.write("**比較期間を選択:**")
-                
-                cols = st.columns(6)
-                period_keys = list(comparison_period_options.keys())
-                
-                for i, period in enumerate(period_keys):
-                    with cols[i]:
-                        if st.button(
-                            period, 
-                            key=f"period_btn_{period}",
-                            use_container_width=True,
-                            type="primary" if st.session_state.chart_period_selection == period else "secondary"
-                        ):
-                            st.session_state.chart_period_selection = period
-                            st.rerun()
-                
-                # Use the session state value for chart generation
-                selected_comparison_period = comparison_period_options[st.session_state.chart_period_selection]
-                
-                # Display current selected period
-                st.info(f"現在の表示期間: **{st.session_state.chart_period_selection}**")
-                
-                # Auto-generate individual stock comparison chart
-                with st.spinner("個別銘柄比較チャートを作成中..."):
-                    comparison_chart = create_individual_stock_comparison_chart(
-                        selected_tickers, 
-                        selected_comparison_period
-                    )
-                    
-                    if comparison_chart:
-                        # Display chart with period-specific key
-                        st.plotly_chart(
-                            comparison_chart, 
-                            use_container_width=True,
-                            key=f"comparison_chart_{selected_comparison_period}_{hash(tuple(selected_tickers))}"
-                        )
+    
+    # Individual stock comparison chart
+    st.markdown("### 📊 個別銘柄株価パフォーマンス比較")
+    st.markdown("選択した銘柄の株価パフォーマンスを比較チャートで表示します。")
+    
+    # Period selection for comparison chart
+    comparison_period_options = {
+        "1ヶ月": "1mo",
+        "3ヶ月": "3mo", 
+        "6ヶ月": "6mo",
+        "1年": "1y",
+        "2年": "2y",
+        "5年": "5y"
+    }
+    
+    # Initialize session state for comparison period if not exists
+    if 'chart_period_selection' not in st.session_state:
+        st.session_state.chart_period_selection = "1年"
+    
+    # Use radio buttons in columns for period selection to avoid page reload
+    st.write("**比較期間を選択:**")
+    
+    cols = st.columns(6)
+    period_keys = list(comparison_period_options.keys())
+    
+    for i, period in enumerate(period_keys):
+        with cols[i]:
+            if st.button(
+                period, 
+                key=f"period_btn_{period}",
+                use_container_width=True,
+                type="primary" if st.session_state.chart_period_selection == period else "secondary"
+            ):
+                st.session_state.chart_period_selection = period
+                st.rerun()
+    
+    # Use the session state value for chart generation
+    selected_comparison_period = comparison_period_options[st.session_state.chart_period_selection]
+    
+    # Display current selected period
+    st.info(f"現在の表示期間: **{st.session_state.chart_period_selection}**")
+    
+    # Auto-generate individual stock comparison chart
+    with st.spinner("個別銘柄比較チャートを作成中..."):
+        comparison_chart = create_individual_stock_comparison_chart(
+            selected_tickers, 
+            selected_comparison_period
+        )
+        
+        if comparison_chart:
+            # Display chart with period-specific key
+            st.plotly_chart(
+                comparison_chart, 
+                use_container_width=True,
+                key=f"comparison_chart_{selected_comparison_period}_{hash(tuple(selected_tickers))}"
+            )
                         
                         # Add performance summary for individual comparison
                         try:
