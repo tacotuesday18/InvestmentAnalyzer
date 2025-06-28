@@ -339,8 +339,35 @@ if use_pb:
 if use_ps:
     valuation_methods.append("ps_ratio")
 
+# Initialize session state for comparison data
+if 'stored_comparison_results' not in st.session_state:
+    st.session_state.stored_comparison_results = {}
+if 'stored_comparison_tickers' not in st.session_state:
+    st.session_state.stored_comparison_tickers = []
+if 'stored_comparison_methods' not in st.session_state:
+    st.session_state.stored_comparison_methods = []
+
+# Check if we need to recompute comparison (only when tickers or methods change)
+need_recompute = (
+    set(selected_tickers) != set(st.session_state.stored_comparison_tickers) or
+    set(valuation_methods) != set(st.session_state.stored_comparison_methods) or
+    not st.session_state.stored_comparison_results
+)
+
 # 比較ボタン
-if st.button("比較を実行", key="compare_btn", use_container_width=True):
+comparison_button_clicked = False
+if need_recompute:
+    comparison_button_clicked = st.button("比較を実行", key="compare_btn", use_container_width=True)
+else:
+    # Show that comparison is already available
+    st.success(f"比較済み: {len(st.session_state.stored_comparison_tickers)}銘柄 | 銘柄や指標を変更した場合は「比較を再実行」ボタンを押してください")
+    comparison_button_clicked = st.button("比較を再実行", key="recompare_btn", use_container_width=True)
+    if comparison_button_clicked:
+        # Force recompute
+        st.session_state.stored_comparison_results = {}
+
+# Execute comparison if button was clicked and parameters are valid
+if comparison_button_clicked:
     if len(selected_tickers) == 0:
         st.warning("少なくとも1つの銘柄を選択してください。")
     elif len(selected_tickers) > 8:
@@ -348,6 +375,10 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
     elif len(valuation_methods) == 0:
         st.warning("少なくとも1つの評価方法を選択してください。")
     else:
+        # Store current selection
+        st.session_state.stored_comparison_tickers = selected_tickers.copy()
+        st.session_state.stored_comparison_methods = valuation_methods.copy()
+        
         # Auto-fetch financial data for each selected ticker
         with st.spinner("Fetching live financial data and comparing stocks..."):
             comparison_results = {}
@@ -430,6 +461,9 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
                         }
                     
                     comparison_results[ticker] = result
+            
+            # Store results in session state for future use
+            st.session_state.stored_comparison_results = comparison_results
             
             if comparison_results:
                 # 比較結果の表示
@@ -686,6 +720,96 @@ if st.button("比較を実行", key="compare_btn", use_container_width=True):
                 # Remove duplicate functionality - use dedicated pages for detailed analysis
                 st.markdown("### 📌 詳細分析について")
                 st.info("各銘柄の詳細な分析は以下のページをご利用ください：\n- 📊 ビジネスモデル分析: 個別企業の詳細分析と市場比較\n- 📈 決算分析: 最新の決算情報と業界比較")
+
+# Also display stored comparison results even if button wasn't clicked this time
+elif st.session_state.stored_comparison_results:
+    # Display stored comparison results
+    comparison_results = st.session_state.stored_comparison_results
+    selected_tickers = st.session_state.stored_comparison_tickers
+    valuation_methods = st.session_state.stored_comparison_methods
+    
+    st.markdown("</div>", unsafe_allow_html=True)  # 入力カードを閉じる
+    
+    # 概要一覧表示
+    st.markdown("<div class='card'>", unsafe_allow_html=True)
+    st.markdown("<h2 class='card-title'>比較結果の概要</h2>", unsafe_allow_html=True)
+    
+    # Use same display logic as above but with stored results
+    summary_data = []
+    
+    for ticker, result in comparison_results.items():
+        row = {
+            "ティッカー": ticker,
+            "企業名": result["name"],
+            "業界": result["industry"],
+            "現在株価": f"${result['current_price']:.2f}"
+        }
+        
+        # Add financial metrics based on stored selection
+        if "financial_metrics" in result:
+            metrics = result["financial_metrics"]
+            
+            # Use current UI state for what to show
+            if show_revenue_growth:
+                row["売上成長率"] = f"{metrics['revenue_growth']:.1f}%" if metrics['revenue_growth'] is not None else "N/A"
+            if show_peg:
+                row["PEG倍率"] = f"{metrics['peg_ratio']:.2f}" if metrics['peg_ratio'] is not None else "N/A"
+            if show_dividend:
+                row["配当利回り"] = f"{metrics['dividend_yield']:.2f}%" if metrics['dividend_yield'] is not None else "N/A"
+            if show_debt_ratio:
+                row["負債比率"] = f"{metrics['debt_to_equity']:.2f}" if metrics['debt_to_equity'] is not None else "N/A"
+            if show_roe:
+                row["ROE"] = f"{metrics['roe']:.1f}%" if metrics['roe'] is not None else "N/A"
+            if show_roa:
+                row["ROA"] = f"{metrics['roa']:.1f}%" if metrics['roa'] is not None else "N/A"
+            if show_profit_margin:
+                row["純利益率"] = f"{metrics['profit_margin']:.1f}%" if metrics['profit_margin'] is not None else "N/A"
+            if show_gross_margin:
+                row["売上総利益率"] = f"{metrics['gross_margin']:.1f}%" if metrics['gross_margin'] is not None else "N/A"
+            if show_operating_margin:
+                row["営業利益率"] = f"{metrics['operating_margin']:.1f}%" if metrics['operating_margin'] is not None else "N/A"
+            if show_current_ratio:
+                row["流動比率"] = f"{metrics['current_ratio']:.2f}" if metrics['current_ratio'] is not None else "N/A"
+            if show_asset_turnover:
+                row["総資産回転率"] = f"{metrics['asset_turnover']:.2f}" if metrics['asset_turnover'] is not None else "N/A"
+            if show_company_size:
+                row["企業規模"] = metrics['company_size']
+                row["時価総額"] = f"{metrics['market_cap_billion']:.0f}億ドル"
+        
+        # 各評価方法の結果を追加
+        for method in valuation_methods:
+            if method in result["valuation_methods"]:
+                method_result = result["valuation_methods"][method]
+                
+                # 方法に応じた表示名を設定
+                if method == "pe_ratio":
+                    method_name = "PER"
+                    row[f"{method_name}"] = f"{method_result['current_multiple']:.2f}倍"
+                    if show_eps:
+                        row["EPS"] = f"${method_result['eps']:.2f}"
+                elif method == "pb_ratio":
+                    method_name = "PBR"
+                    row[f"{method_name}"] = f"{method_result['current_multiple']:.2f}倍"
+                    row["1株純資産"] = f"${method_result['book_value']:.2f}"
+                elif method == "ps_ratio":
+                    method_name = "PSR"
+                    row[f"{method_name}"] = f"{method_result['current_multiple']:.2f}倍"
+        
+        summary_data.append(row)
+    
+    if summary_data:
+        summary_df = pd.DataFrame(summary_data)
+        st.dataframe(summary_df, use_container_width=True, hide_index=True)
+    
+    st.markdown("</div>", unsafe_allow_html=True)
+    
+    st.markdown("### 📌 詳細分析について")
+    st.info("各銘柄の詳細な分析は以下のページをご利用ください：\n- 📊 ビジネスモデル分析: 個別企業の詳細分析と市場比較\n- 📈 決算分析: 最新の決算情報と業界比較")
+
+# Display chart section for both new and stored comparison results
+if st.session_state.stored_comparison_results:
+    comparison_results = st.session_state.stored_comparison_results
+    selected_tickers = st.session_state.stored_comparison_tickers
                 
                 # Individual stock comparison chart
                 st.markdown("### 📊 個別銘柄株価パフォーマンス比較")
