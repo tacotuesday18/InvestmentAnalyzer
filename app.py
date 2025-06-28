@@ -1,28 +1,9 @@
-#!/usr/bin/env python3
-"""
-Main entry point for the Stock Analysis Platform - Kabu2Easy
-Comprehensive business analysis platform delivering financial insights through advanced data visualization.
-This is the deployment-ready main application file.
-"""
-
 import streamlit as st
 import datetime
 import os
 import json
-import sys
-
-# Add current directory to Python path for imports
-current_dir = os.path.dirname(os.path.abspath(__file__))
-if current_dir not in sys.path:
-    sys.path.insert(0, current_dir)
-
-# Import required modules
-try:
-    from auth import authenticate_user, create_user
-    from payment import PaymentProcessor
-except ImportError:
-    # Graceful fallback if auth modules are not available
-    pass
+from auth import authenticate_user, create_user
+from payment import PaymentProcessor
 
 # ページ設定
 st.set_page_config(
@@ -69,153 +50,195 @@ st.markdown("""
         justify-content: center !important;
     }
     
-    button[kind="header"]:hover,
+    /* Hover effects for ALL buttons */
+    button[kind="header"]:hover, 
     [data-testid="collapsedControl"]:hover,
     .st-emotion-cache-1rs6os:hover, 
-    .st-emotion-cache-17eq0hr:hover {
-        transform: scale(1.1) !important;
-        box-shadow: 0 6px 25px rgba(102, 126, 234, 0.6) !important;
+    .st-emotion-cache-17eq0hr:hover,
+    section[data-testid="stSidebar"] > div > button:hover,
+    .stSidebar > div > button:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6) !important;
     }
     
-    /* Sidebar with purple gradient */
+    /* Hide ALL original icons */
+    button[kind="header"] svg, 
+    [data-testid="collapsedControl"] svg,
+    .st-emotion-cache-1rs6os svg, 
+    .st-emotion-cache-17eq0hr svg,
+    section[data-testid="stSidebar"] > div > button svg,
+    .stSidebar > div > button svg {
+        display: none !important;
+    }
+    
+    /* Add hamburger icon to ALL buttons */
+    button[kind="header"]::after, 
+    [data-testid="collapsedControl"]::after,
+    .st-emotion-cache-1rs6os::after, 
+    .st-emotion-cache-17eq0hr::after,
+    section[data-testid="stSidebar"] > div > button::after,
+    .stSidebar > div > button::after {
+        content: "☰" !important;
+        color: white !important;
+        font-size: 24px !important;
+        font-weight: 600 !important;
+        position: absolute !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    /* Enhanced Navigation Styles */
     .stSidebar, section[data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #667eea 0%, #764ba2 100%) !important;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
         border-right: none !important;
+        box-shadow: 4px 0 20px rgba(102, 126, 234, 0.15) !important;
     }
     
-    .stSidebar .stMarkdown, 
-    .stSidebar .stSelectbox,
-    .stSidebar .stButton,
-    section[data-testid="stSidebar"] .stMarkdown,
-    section[data-testid="stSidebar"] .stSelectbox,
-    section[data-testid="stSidebar"] .stButton {
+    .stSidebar > div {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    }
+    
+    /* Sidebar content styling */
+    .stSidebar .stMarkdown, .stSidebar .stButton, .stSidebar .stForm {
         color: white !important;
     }
     
-    .stSidebar a, section[data-testid="stSidebar"] a {
+    .stSidebar .stMarkdown h1, .stSidebar .stMarkdown h2, .stSidebar .stMarkdown h3, .stSidebar .stMarkdown p {
+        color: white !important;
+    }
+    
+    .stSidebar .stButton > button {
+        background: rgba(255, 255, 255, 0.15) !important;
+        color: white !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        border-radius: 10px !important;
+        font-weight: 500 !important;
+        transition: all 0.3s ease !important;
+        width: 100% !important;
+        margin: 5px 0 !important;
+    }
+    
+    .stSidebar .stButton > button:hover {
+        background: rgba(255, 255, 255, 0.25) !important;
+        border-color: rgba(255, 255, 255, 0.5) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+    }
+    
+    /* Sidebar positioning */
+    section[data-testid="stSidebar"] {
+        position: fixed !important;
+        left: 0 !important;
+        top: 0 !important;
+        height: 100vh !important;
+        z-index: 1000 !important;
+    }
+    
+    /* Style Streamlit page navigation */
+    [data-testid="stSidebarNav"] {
+        background: transparent !important;
+        padding: 1rem 0 !important;
+    }
+    
+    [data-testid="stSidebarNav"] ul {
+        list-style: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    [data-testid="stSidebarNav"] li {
+        margin: 8px 0 !important;
+    }
+    
+    [data-testid="stSidebarNav"] a {
+        display: block !important;
+        padding: 12px 16px !important;
+        background: rgba(255, 255, 255, 0.15) !important;
         color: white !important;
         text-decoration: none !important;
-        padding: 12px 16px !important;
-        border-radius: 8px !important;
-        display: block !important;
-        margin: 4px 0 !important;
+        border-radius: 10px !important;
+        font-weight: 500 !important;
         transition: all 0.3s ease !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
     }
     
-    .stSidebar a:hover, section[data-testid="stSidebar"] a:hover {
-        background-color: rgba(255, 255, 255, 0.2) !important;
-        transform: translateX(5px) !important;
+    [data-testid="stSidebarNav"] a:hover {
+        background: rgba(255, 255, 255, 0.25) !important;
+        border-color: rgba(255, 255, 255, 0.5) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
     }
     
-    /* Global styles */
+    [data-testid="stSidebarNav"] a[aria-current="page"] {
+        background: rgba(255, 255, 255, 0.3) !important;
+        border-color: rgba(255, 255, 255, 0.6) !important;
+        font-weight: 600 !important;
+    }
+    
+    .nav-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        margin: -1rem -1rem 1rem -1rem;
+        border-radius: 0 0 15px 15px;
+        text-align: center;
+        font-weight: 700;
+        font-size: 18px;
+    }
+    
+    /* Global Styles */
     .stApp {
-        font-family: 'Inter', sans-serif !important;
-        background-color: #fafbfc;
+        font-family: 'Inter', sans-serif;
+        background-color: #fafafa;
     }
     
-    /* Header styles */
+    .main-content {
+        margin-top: 0;
+        padding: 0;
+    }
+    
     .app-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 1rem 0;
-        margin: -1rem -6rem 0 -6rem;
+        color: white;
+        padding: 2rem 0;
         text-align: center;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        margin: -1rem -1rem 2rem -1rem;
     }
     
     .app-title {
-        color: white;
-        font-size: 2rem;
-        font-weight: 700;
-        margin: 0;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    }
-    
-    /* Navigation styles */
-    .nav-header {
-        color: white;
-        font-size: 1.2rem;
-        font-weight: 600;
-        padding: 1rem 0 0.5rem 0;
-        border-bottom: 2px solid rgba(255,255,255,0.3);
-        margin-bottom: 1rem;
-        text-align: center;
-    }
-    
-    /* Main content container */
-    .main-content {
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 2rem;
-    }
-    
-    /* Feature cards */
-    .feature-card {
-        background: white;
-        border-radius: 16px;
-        padding: 2rem;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-        border: 1px solid #e2e8f0;
-        height: 240px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .feature-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 16px 48px rgba(102, 126, 234, 0.2);
-    }
-    
-    .feature-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-    
-    .feature-icon {
-        font-size: 3rem;
-        margin-bottom: 1rem;
-        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
-    }
-    
-    .feature-title {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #1a202c;
-        margin-bottom: 0.5rem;
-    }
-    
-    .feature-description {
-        font-size: 0.9rem;
-        color: #4a5568;
-        line-height: 1.5;
-    }
-    
-    /* Features section */
-    .features-container {
-        margin: 4rem 0 3rem 0;
-        text-align: center;
-    }
-    
-    .features-title {
         font-size: 2.5rem;
         font-weight: 700;
-        color: #1a202c;
-        margin-bottom: 1rem;
+        margin: 0;
+    }
+    
+    /* Button Styling */
+    .stButton > button {
+        background: #667eea !important;
+        color: white !important;
+        border: none !important;
+        padding: 1rem 2rem !important;
+        border-radius: 50px !important;
+        font-weight: 600 !important;
+        font-size: 1rem !important;
+        transition: all 0.3s ease !important;
+        width: 100% !important;
+        margin: 0.5rem 0 !important;
+    }
+    
+    .stButton > button:hover {
+        background: #5a67d8 !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3) !important;
     }
     
     /* Responsive design */
     @media (max-width: 768px) {
-        .app-header {
-            margin: -1rem -1rem 0 -1rem;
+        .app-title {
+            font-size: 2rem;
         }
         
         .main-content {
@@ -238,7 +261,7 @@ with st.sidebar:
     st.markdown("""
     <div style="color: white; padding: 1rem; font-size: 14px; line-height: 1.6;">
         上記のページリンクをクリックして<br/>
-        各種分析ツールをご利用ください。
+        各分析ツールをご利用ください。
     </div>
     """, unsafe_allow_html=True)
 
@@ -259,28 +282,31 @@ st.markdown("""
                 Kabu2Easyは企業の本質的価値を瞬時に分析し、データに基づいた投資判断をサポートします。
             </div>
             <div style="display: flex; gap: 1.5rem; align-items: center; margin-bottom: 3rem;">
-                <button style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 20px 40px; border-radius: 12px; font-size: 1.2rem; font-weight: 600; cursor: pointer; box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4); transition: all 0.3s ease;" 
-                onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 10px 30px rgba(102, 126, 234, 0.6)'"
-                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.4)'">
-                    今すぐ分析開始
+                <button style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 20px 40px; border-radius: 12px; font-size: 1.2rem; font-weight: 600; cursor: pointer; box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);">
+                    無料で始める →
                 </button>
-                <div style="color: #4a5568; font-size: 1rem;">
-                    ✓ 無料で利用開始<br>
-                    ✓ 登録不要ですぐ使える
+                <button style="background: transparent; color: #4a5568; border: 2px solid #e2e8f0; padding: 18px 36px; border-radius: 12px; font-size: 1.1rem; font-weight: 500; cursor: pointer;">
+                    デモを見る
+                </button>
+            </div>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="display: flex; align-items: center;">
+                    <span style="color: #f59e0b; font-size: 1.4rem;">★★★★★</span>
+                    <span style="margin-left: 0.75rem; color: #4a5568; font-weight: 700; font-size: 1.2rem;">4.8</span>
+                    <span style="margin-left: 0.75rem; color: #6b7280; font-size: 1.1rem;">| 1,500+ レビュー</span>
                 </div>
             </div>
         </div>
-        <div style="flex: 1; max-width: 600px;">
-            <div style="background: white; border-radius: 20px; padding: 3rem; box-shadow: 0 20px 60px rgba(0,0,0,0.1); border: 1px solid #e2e8f0;">
-                <div style="font-size: 1.8rem; font-weight: 600; color: #1a202c; margin-bottom: 2rem; text-align: center;">
-                    🎯 こんな悩みありませんか？
+        <div style="flex: 1; text-align: center; max-width: 500px;">
+            <div style="background: white; border-radius: 25px; padding: 2.5rem; box-shadow: 0 25px 80px rgba(0,0,0,0.15); transform: rotate(3deg);">
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem; border-radius: 15px; margin-bottom: 1.5rem;">
+                    <div style="font-size: 1.8rem; font-weight: bold;">AAPL分析結果</div>
                 </div>
-                <div style="color: #4a5568; font-size: 1.1rem; line-height: 1.8;">
-                    ✗ どの株が割安なのか判断できない<br>
-                    ✗ 企業分析のやり方が分からない<br>
-                    ✗ DCF法を使いたいけど計算が複雑<br>
-                    ✗ 決算書を読むのに時間がかかりすぎる<br>
-                    ✗ 投資の根拠を明確にしたい<br>
+                <div style="text-align: left; color: #4a5568; font-size: 1.1rem;">
+                    <div style="margin: 1rem 0;"><strong>現在株価:</strong> $175.25</div>
+                    <div style="margin: 1rem 0;"><strong>目標株価:</strong> $195.80</div>
+                    <div style="margin: 1rem 0; color: #10b981; font-weight: bold; font-size: 1.2rem;">上昇余地: +11.7%</div>
+                    <div style="margin: 1rem 0; background: #10b981; color: white; padding: 1rem; border-radius: 10px; text-align: center; font-weight: bold; font-size: 1.2rem;">買い推奨</div>
                 </div>
             </div>
         </div>
@@ -288,93 +314,89 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Value proposition section
+# Pain points section
 st.markdown("""
-<div style="background: white; padding: 4rem 2rem; margin: 0 -6rem;">
-    <div style="max-width: 1400px; margin: 0 auto; text-align: center;">
-        <div style="font-size: 2.5rem; font-weight: 700; color: #1a202c; margin-bottom: 2rem;">
-            Kabu2Easyが選ばれる理由
-        </div>
-        <div style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); padding: 3rem; border-radius: 20px; color: #4a5568; font-size: 1.2rem; line-height: 1.8; text-align: left; max-width: 900px; margin: 0 auto;">
-            🧮 <strong>瞬間DCF計算</strong>→ 企業の本質的価値を数値で明確化<br>
-            📊 <strong>自動財務分析</strong>→ Yahoo Financeから最新データを自動取得<br>
-            🔍 <strong>包括的企業評価</strong>→ PER・PBR・PSRを同時比較<br>
-            📈 <strong>リアルタイム更新</strong>→ 常に最新の市場データで分析<br>
-            🎯 <strong>明確な投資根拠</strong>→ 感情ではなくデータに基づく判断
-        </div>
+<div style="background-color: #fff3cd; padding: 2rem; margin: 2rem 0; border-left: 4px solid #ffc107;">
+    <h2 style="color: #856404; margin-bottom: 1rem;">🔥 こんな投資の悩みはありませんか？</h2>
+    <div style="color: #856404;">
+        ✗ 株価チャートだけを見て感情的に売買してしまう<br>
+        ✗ 企業の本当の価値が分からず、割高な株を掴んでしまう<br>
+        ✗ 決算書の読み方が分からず、表面的な情報だけで判断<br>
+        ✗ いつも「買い」推奨ばかりのアナリストレポートに騙される<br>
+        ✗ 複雑なExcelでDCF計算を試みるも、結果に確信が持てない
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# Solution section
+st.markdown("""
+<div style="background-color: #d1ecf1; padding: 2rem; margin: 2rem 0; border-left: 4px solid #17a2b8;">
+    <h2 style="color: #0c5460; margin-bottom: 1rem;">✨ Kabu2Easyが解決します</h2>
+    <div style="color: #0c5460;">
+        ✓ <strong>DCF法による科学的な企業価値算定</strong> - 感情に左右されない客観的な判断<br>
+        ✓ <strong>財務データの自動分析</strong> - 複雑な計算は全て自動化<br>
+        ✓ <strong>分かりやすい投資判断</strong> - 「買い」「売り」「保留」を明確に表示<br>
+        ✓ <strong>リスク要因の可視化</strong> - 投資前にリスクを把握<br>
+        ✓ <strong>定期的な再評価</strong> - 投資判断を常に最新の状態に保つ
     </div>
 </div>
 """, unsafe_allow_html=True)
 
 # Features section
 st.markdown("""
-<div class="features-container">
-    <div class="features-title">プロレベルの企業分析ツール</div>
+<div style="background: white; padding: 4rem 0;">
+    <div style="max-width: 1400px; margin: 0 auto; padding: 0 2rem;">
+        <div style="text-align: center; margin-bottom: 4rem;">
+            <h2 style="font-size: 3rem; font-weight: 700; color: #1a202c; margin-bottom: 1rem;">
+                プロレベルの分析を<br><span style="color: #667eea;">誰でも簡単に</span>
+            </h2>
+            <p style="font-size: 1.4rem; color: #4a5568; line-height: 1.6;">
+                機関投資家が使う本格的な分析手法を、直感的なインターフェースで提供
+            </p>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 4rem;">
+            <div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📊</div>
+                <h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; color: #1a202c;">DCF価値算定</h3>
+                <p style="color: #4a5568; line-height: 1.6;">
+                    割引キャッシュフロー法による科学的な企業価値計算。複雑な財務モデルを自動化し、本質的価値を瞬時に算出。
+                </p>
+            </div>
+            
+            <div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📈</div>
+                <h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; color: #1a202c;">財務分析</h3>
+                <p style="color: #4a5568; line-height: 1.6;">
+                    売上成長率、利益率、ROEなど重要な財務指標を自動計算。過去のトレンドから将来の成長性を評価。
+                </p>
+            </div>
+            
+            <div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">🎯</div>
+                <h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; color: #1a202c;">投資判断</h3>
+                <p style="color: #4a5568; line-height: 1.6;">
+                    現在の株価と本質的価値を比較し、明確な投資推奨を提供。上昇余地や下落リスクも数値化。
+                </p>
+            </div>
+        </div>
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
-col1, col2, col3, col4 = st.columns(4)
-
-with col1:
-    st.markdown("""
-    <div class="feature-card">
-        <div class="feature-icon">🧮</div>
-        <div class="feature-title">DCF価値計算</div>
-        <div class="feature-description">割引キャッシュフロー法で企業の本質的価値を算出</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-with col2:
-    st.markdown("""
-    <div class="feature-card">
-        <div class="feature-icon">📊</div>
-        <div class="feature-title">企業分析</div>
-        <div class="feature-description">SWOT分析と競争優位性の詳細評価</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-with col3:
-    st.markdown("""
-    <div class="feature-card">
-        <div class="feature-icon">⚖️</div>
-        <div class="feature-title">銘柄比較</div>
-        <div class="feature-description">複数企業の財務指標を同時比較分析</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-with col4:
-    st.markdown("""
-    <div class="feature-card">
-        <div class="feature-icon">🔍</div>
-        <div class="feature-title">銘柄発見</div>
-        <div class="feature-description">投資スタイル別の銘柄スクリーニング</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-# Quick access section
+# CTA section
 st.markdown("""
-<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 4rem 2rem; margin: 4rem -6rem 0 -6rem;">
-    <div style="max-width: 1400px; margin: 0 auto; text-align: center;">
-        <div style="color: white; font-size: 2.5rem; font-weight: 700; margin-bottom: 2rem;">
-            今すぐ始めましょう
-        </div>
-        <div style="color: rgba(255,255,255,0.9); font-size: 1.3rem; margin-bottom: 3rem; line-height: 1.6;">
-            左上のメニューボタン（☰）をクリックして、分析ツールにアクセス
-        </div>
-        <div style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;">
-            <div style="background: rgba(255,255,255,0.1); padding: 1.5rem 2rem; border-radius: 12px; backdrop-filter: blur(10px);">
-                <div style="color: white; font-weight: 600; margin-bottom: 0.5rem;">ステップ 1</div>
-                <div style="color: rgba(255,255,255,0.8);">企業名やティッカーを検索</div>
-            </div>
-            <div style="background: rgba(255,255,255,0.1); padding: 1.5rem 2rem; border-radius: 12px; backdrop-filter: blur(10px);">
-                <div style="color: white; font-weight: 600; margin-bottom: 0.5rem;">ステップ 2</div>
-                <div style="color: rgba(255,255,255,0.8);">自動で財務データを取得</div>
-            </div>
-            <div style="background: rgba(255,255,255,0.1); padding: 1.5rem 2rem; border-radius: 12px; backdrop-filter: blur(10px);">
-                <div style="color: white; font-weight: 600; margin-bottom: 0.5rem;">ステップ 3</div>
-                <div style="color: rgba(255,255,255,0.8);">詳細分析レポートを確認</div>
-            </div>
-        </div>
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 4rem 0; text-align: center;">
+    <div style="max-width: 800px; margin: 0 auto; padding: 0 2rem;">
+        <h2 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem;">
+            今すぐ始めて、賢い投資家になろう
+        </h2>
+        <p style="font-size: 1.2rem; opacity: 0.9; margin-bottom: 2rem;">
+            感情的な投資判断から卒業し、データドリブンな投資を始めませんか？
+        </p>
+        <button style="background: white; color: #667eea; border: none; padding: 20px 40px; border-radius: 12px; font-size: 1.2rem; font-weight: 600; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,0.2);">
+            無料で分析を始める →
+        </button>
     </div>
 </div>
 """, unsafe_allow_html=True)
