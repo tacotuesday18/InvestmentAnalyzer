@@ -35,6 +35,111 @@ st.markdown("""
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
+    .stApp > header {visibility: hidden;}
+    .stDeployButton {display: none;}
+    .stDecoration {display: none;}
+    
+    /* Style ALL possible sidebar control elements */
+    button[kind="header"], 
+    [data-testid="collapsedControl"],
+    .st-emotion-cache-1rs6os, 
+    .st-emotion-cache-17eq0hr,
+    section[data-testid="stSidebar"] > div > button,
+    .stSidebar > div > button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        border: none !important;
+        border-radius: 50% !important;
+        width: 60px !important;
+        height: 60px !important;
+        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4) !important;
+        position: fixed !important;
+        top: 20px !important;
+        left: 20px !important;
+        z-index: 9999 !important;
+        transition: all 0.3s ease !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    /* Enhanced Navigation Styles */
+    .stSidebar, section[data-testid="stSidebar"] {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        border-right: none !important;
+        box-shadow: 4px 0 20px rgba(102, 126, 234, 0.15) !important;
+    }
+    
+    .stSidebar > div {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    }
+    
+    /* Sidebar content styling */
+    .stSidebar .stMarkdown, .stSidebar .stButton, .stSidebar .stForm {
+        color: white !important;
+    }
+    
+    .stSidebar .stMarkdown h1, .stSidebar .stMarkdown h2, .stSidebar .stMarkdown h3, .stSidebar .stMarkdown p {
+        color: white !important;
+    }
+    
+    .stSidebar .stButton > button {
+        background: rgba(255, 255, 255, 0.15) !important;
+        color: white !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        border-radius: 10px !important;
+        font-weight: 500 !important;
+        transition: all 0.3s ease !important;
+        width: 100% !important;
+        margin: 5px 0 !important;
+    }
+    
+    .stSidebar .stButton > button:hover {
+        background: rgba(255, 255, 255, 0.25) !important;
+        border-color: rgba(255, 255, 255, 0.5) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+    }
+    
+    /* Style Streamlit page navigation */
+    [data-testid="stSidebarNav"] {
+        background: transparent !important;
+        padding: 1rem 0 !important;
+    }
+    
+    [data-testid="stSidebarNav"] ul {
+        list-style: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    [data-testid="stSidebarNav"] li {
+        margin: 8px 0 !important;
+    }
+    
+    [data-testid="stSidebarNav"] a {
+        display: block !important;
+        padding: 12px 16px !important;
+        background: rgba(255, 255, 255, 0.15) !important;
+        color: white !important;
+        text-decoration: none !important;
+        border-radius: 10px !important;
+        font-weight: 500 !important;
+        transition: all 0.3s ease !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    }
+    
+    [data-testid="stSidebarNav"] a:hover {
+        background: rgba(255, 255, 255, 0.25) !important;
+        border-color: rgba(255, 255, 255, 0.5) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+    }
+    
+    [data-testid="stSidebarNav"] a[aria-current="page"] {
+        background: rgba(255, 255, 255, 0.3) !important;
+        border-color: rgba(255, 255, 255, 0.6) !important;
+        font-weight: 600 !important;
+    }
     
     /* Global styles */
     .main .block-container {
