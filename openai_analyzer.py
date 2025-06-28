@@ -65,16 +65,17 @@ P/B Ratio Historical Averages:
 
 Additional Context:
 - valuation_trend: overall trend in company's valuation over time
-- market_context: brief context about the company's valuation patterns
+- market_context: brief context about the company's valuation patterns (write in Japanese)
 
 Base analysis on actual financial data for {ticker}. Ensure all values are realistic and reflect the company's actual trading history.
+The market_context field must be written in Japanese. Provide professional analysis of historical valuation trends.
 If data for a specific period is not available, use null.
 Format as valid JSON only."""
 
         response = openai_client.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content": "You are a senior equity research analyst with access to comprehensive historical financial data. Provide accurate historical valuation metrics based on real market data."},
+                {"role": "system", "content": "You are a senior equity research analyst with access to comprehensive historical financial data. Provide accurate historical valuation metrics based on real market data. Write the market_context field in Japanese only."},
                 {"role": "user", "content": prompt}
             ],
             response_format={"type": "json_object"},

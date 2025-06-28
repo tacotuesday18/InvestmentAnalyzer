@@ -194,7 +194,7 @@ with st.sidebar:
     # ナビゲーション
     st.markdown("### ナビゲーション")
     if st.button("ホームに戻る", key="home_btn"):
-        st.switch_page("app.py")
+        st.switch_page("ホーム.py")
     
     if st.button("企業分析", key="analysis_btn"):
         st.switch_page("pages/01_企業分析.py")

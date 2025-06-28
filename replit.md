@@ -4,6 +4,9 @@
 An intelligent Streamlit-based company analysis platform delivering comprehensive business insights through advanced data visualization and interactive research tools. All financial data is sourced exclusively from Yahoo Finance to ensure accuracy and authenticity.
 
 ## Recent Changes  
+- **2025-06-28**: COMPLETED JAPANESE LOCALIZATION - Fixed all English market context text to display in Japanese; updated AI prompts to generate Japanese responses
+- **2025-06-28**: RENAMED HOME PAGE - Changed "app" to "ホーム" in navigation by renaming app.py to ホーム.py
+- **2025-06-28**: UPDATED NAVIGATION LINKS - Fixed all page references to point to new ホーム.py file
 - **2025-06-28**: IMPLEMENTED PERSISTENT COMPARISON RESULTS - Stock comparisons now stored in session state; changing time periods no longer requires re-running analysis
 - **2025-06-28**: FIXED COMPARISON PAGE NAVIGATION ISSUES - Replaced problematic selectbox with button-based period selection to prevent page navigation resets
 - **2025-06-27**: COMPLETED JAPANESE LOCALIZATION - All quarterly business developments and Q&A analysis now generated in Japanese with proper fallback content
