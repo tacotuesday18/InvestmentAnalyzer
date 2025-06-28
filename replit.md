@@ -4,7 +4,7 @@
 An intelligent Streamlit-based company analysis platform delivering comprehensive business insights through advanced data visualization and interactive research tools. All financial data is sourced exclusively from Yahoo Finance to ensure accuracy and authenticity.
 
 ## Recent Changes  
-- **2025-06-28**: APPLIED CONSISTENT PURPLE SIDEBAR - Added purple gradient sidebar CSS to all pages (DCF, 比較, ビジネスモデル分析, 財務諸表) to maintain consistent styling
+- **2025-06-28**: APPLIED CONSISTENT PURPLE SIDEBAR - Added purple gradient sidebar CSS to ALL pages including 決算分析, 銘柄発見, and 投資教育 to maintain consistent styling across entire application
 - **2025-06-28**: COMPLETED JAPANESE LOCALIZATION - Fixed all English market context text to display in Japanese; updated AI prompts to generate Japanese responses
 - **2025-06-28**: RENAMED HOME PAGE - Changed "app" to "ホーム" in navigation by renaming app.py to ホーム.py
 - **2025-06-28**: UPDATED NAVIGATION LINKS - Fixed all page references to point to new ホーム.py file
