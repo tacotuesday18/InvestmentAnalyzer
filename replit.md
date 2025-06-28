@@ -4,7 +4,8 @@
 An intelligent Streamlit-based company analysis platform delivering comprehensive business insights through advanced data visualization and interactive research tools. All financial data is sourced exclusively from Yahoo Finance to ensure accuracy and authenticity.
 
 ## Recent Changes  
-- **2025-06-28**: RENAMED ALL FILES TO ENGLISH - Systematically renamed all Japanese filenames to English for deployment compatibility: ホーム.py → home.py, ビジネスモデル分析 → Business_Model_Analysis, etc.
+- **2025-06-28**: FIXED SIDEBAR NAVIGATION TO JAPANESE - Renamed all page files to Japanese names for proper sidebar display: Business_Model_Analysis.py → ビジネスモデル分析.py, Stock_Comparison.py → 銘柄比較.py, etc.
+- **2025-06-28**: OPTIMIZED DEPLOYMENT CONFIGURATION - Enhanced .streamlit/config.toml with deployment-specific settings including CORS and XSRF protection disabled for Replit deployment
 - **2025-06-28**: FIXED DEPLOYMENT ISSUES - Updated app.py as main entry point, configured Streamlit server settings with proper host binding for deployment
 - **2025-06-28**: APPLIED CONSISTENT PURPLE SIDEBAR - Added purple gradient sidebar CSS to ALL pages including earnings analysis, stock discovery, and investment education to maintain consistent styling across entire application
 - **2025-06-28**: COMPLETED JAPANESE LOCALIZATION - Fixed all English market context text to display in Japanese; updated AI prompts to generate Japanese responses
