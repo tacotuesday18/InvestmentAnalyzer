@@ -4,6 +4,7 @@
 An intelligent Streamlit-based company analysis platform delivering comprehensive business insights through advanced data visualization and interactive research tools. All financial data is sourced exclusively from Yahoo Finance to ensure accuracy and authenticity.
 
 ## Recent Changes  
+- **2025-06-28**: ADDED COMPREHENSIVE GROWTH & MARKETING STRATEGY ANALYSIS - Enhanced business model section with detailed growth strategy analysis (organic vs M&A, geographic expansion, product extension), comprehensive marketing strategy evaluation (CAC/LTV, customer lifecycle, digital marketing), and customer acquisition/retention frameworks
 - **2025-06-28**: ENHANCED BUSINESS MODEL ANALYSIS WITH EXECUTIVE DETAILS - Added comprehensive management team analysis (CEO/CFO/CTO/COO track records), specific competitive advantages (cost structure, core competencies), success/struggle factor analysis, and compelling company vision headlines
 - **2025-06-28**: FIXED SIDEBAR NAVIGATION TO JAPANESE - Renamed all page files to Japanese names for proper sidebar display: Business_Model_Analysis.py → ビジネスモデル分析.py, Stock_Comparison.py → 銘柄比較.py, etc.
 - **2025-06-28**: OPTIMIZED DEPLOYMENT CONFIGURATION - Enhanced .streamlit/config.toml with deployment-specific settings including CORS and XSRF protection disabled for Replit deployment
