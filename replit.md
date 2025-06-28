@@ -4,10 +4,10 @@
 An intelligent Streamlit-based company analysis platform delivering comprehensive business insights through advanced data visualization and interactive research tools. All financial data is sourced exclusively from Yahoo Finance to ensure accuracy and authenticity.
 
 ## Recent Changes  
-- **2025-06-28**: APPLIED CONSISTENT PURPLE SIDEBAR - Added purple gradient sidebar CSS to ALL pages including 決算分析, 銘柄発見, and 投資教育 to maintain consistent styling across entire application
+- **2025-06-28**: RENAMED ALL FILES TO ENGLISH - Systematically renamed all Japanese filenames to English for deployment compatibility: ホーム.py → home.py, ビジネスモデル分析 → Business_Model_Analysis, etc.
+- **2025-06-28**: FIXED DEPLOYMENT ISSUES - Updated app.py as main entry point, configured Streamlit server settings with proper host binding for deployment
+- **2025-06-28**: APPLIED CONSISTENT PURPLE SIDEBAR - Added purple gradient sidebar CSS to ALL pages including earnings analysis, stock discovery, and investment education to maintain consistent styling across entire application
 - **2025-06-28**: COMPLETED JAPANESE LOCALIZATION - Fixed all English market context text to display in Japanese; updated AI prompts to generate Japanese responses
-- **2025-06-28**: RENAMED HOME PAGE - Changed "app" to "ホーム" in navigation by renaming app.py to ホーム.py
-- **2025-06-28**: UPDATED NAVIGATION LINKS - Fixed all page references to point to new ホーム.py file
 - **2025-06-28**: IMPLEMENTED PERSISTENT COMPARISON RESULTS - Stock comparisons now stored in session state; changing time periods no longer requires re-running analysis
 - **2025-06-28**: FIXED COMPARISON PAGE NAVIGATION ISSUES - Replaced problematic selectbox with button-based period selection to prevent page navigation resets
 - **2025-06-27**: COMPLETED JAPANESE LOCALIZATION - All quarterly business developments and Q&A analysis now generated in Japanese with proper fallback content
@@ -74,14 +74,14 @@ An intelligent Streamlit-based company analysis platform delivering comprehensiv
 
 ## Navigation Structure
 ```
-Home
-├── Business Model Analysis (ビジネスモデル分析)
-├── Stock Comparison (銘柄比較)
-├── Financial Statements (財務諸表)
-├── DCF Calculator (DCF価値計算機)
-├── Stock Discovery (銘柄発見)
-├── Earnings Analysis (決算分析)
-└── Investment Education (投資教育) [NEW]
+Home (app.py)
+├── 01_📊_Business_Model_Analysis.py (ビジネスモデル分析)
+├── 02_Stock_Comparison.py (銘柄比較)
+├── 03_Financial_Statements.py (財務諸表)
+├── 04_DCF_Calculator.py (DCF価値計算機)
+├── 05_Earnings_Analysis.py (決算分析)
+├── 06_🔍_Stock_Discovery.py (銘柄発見)
+└── 07_📚_Investment_Education.py (投資教育)
 ```
 
 ## Stock Discovery Tool Features
