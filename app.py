@@ -18,8 +18,14 @@ try:
     
     # Load ホーム.py as a module
     spec = importlib.util.spec_from_file_location("home", "ホーム.py")
-    home_module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(home_module)
+    if spec is not None and spec.loader is not None:
+        home_module = importlib.util.module_from_spec(spec)
+        if home_module is not None:
+            spec.loader.exec_module(home_module)
+        else:
+            raise ImportError("Could not create module from spec")
+    else:
+        raise ImportError("Could not load ホーム.py module")
     
 except Exception as e:
     import streamlit as st
