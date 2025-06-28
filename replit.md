@@ -76,13 +76,13 @@ An intelligent Streamlit-based company analysis platform delivering comprehensiv
 ## Navigation Structure
 ```
 Home (app.py)
-├── 01_📊_Business_Model_Analysis.py (ビジネスモデル分析)
-├── 02_Stock_Comparison.py (銘柄比較)
-├── 03_Financial_Statements.py (財務諸表)
-├── 04_DCF_Calculator.py (DCF価値計算機)
-├── 05_Earnings_Analysis.py (決算分析)
-├── 06_🔍_Stock_Discovery.py (銘柄発見)
-└── 07_📚_Investment_Education.py (投資教育)
+├── 01_📊_ビジネスモデル分析.py
+├── 02_銘柄比較.py
+├── 03_財務諸表.py
+├── 04_DCF価値計算機.py
+├── 05_決算分析.py
+├── 06_🔍_銘柄発見.py
+└── 07_📚_投資教育.py
 ```
 
 ## Stock Discovery Tool Features
