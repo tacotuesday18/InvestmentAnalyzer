@@ -4,6 +4,7 @@
 An intelligent Streamlit-based company analysis platform delivering comprehensive business insights through advanced data visualization and interactive research tools. All financial data is sourced exclusively from Yahoo Finance to ensure accuracy and authenticity.
 
 ## Recent Changes  
+- **2025-06-30**: ADDED COMPREHENSIVE FINANCIAL STATEMENTS TO EARNINGS PAGE - Integrated complete quarterly financial statements (income statement, balance sheet, cash flow statement) in table format with Japanese translations and proper formatting for latest 4 quarters
 - **2025-06-28**: ADDED PRODUCT/SERVICE SUCCESS ANALYSIS - Integrated comprehensive product portfolio evaluation including success/failure analysis, revenue contribution metrics, innovation success rates, and specific product performance data with concrete examples and metrics
 - **2025-06-28**: ADDED COMPREHENSIVE GROWTH & MARKETING STRATEGY ANALYSIS - Enhanced business model section with detailed growth strategy analysis (organic vs M&A, geographic expansion, product extension), comprehensive marketing strategy evaluation (CAC/LTV, customer lifecycle, digital marketing), and customer acquisition/retention frameworks
 - **2025-06-28**: ENHANCED BUSINESS MODEL ANALYSIS WITH EXECUTIVE DETAILS - Added comprehensive management team analysis (CEO/CFO/CTO/COO track records), specific competitive advantages (cost structure, core competencies), success/struggle factor analysis, and compelling company vision headlines

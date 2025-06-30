@@ -555,6 +555,169 @@ if analyze_button and selected_ticker:
             except:
                 pass
             
+            # Latest Quarter Financial Statements
+            st.markdown('<div class="section-header">📊 最新四半期の財務諸表</div>', unsafe_allow_html=True)
+            
+            try:
+                stock = yf.Ticker(selected_ticker)
+                
+                # Create tabs for different financial statements
+                tab1, tab2, tab3 = st.tabs(["📈 損益計算書", "📋 貸借対照表", "💰 キャッシュフロー計算書"])
+                
+                with tab1:
+                    st.markdown("#### 四半期損益計算書（最新4四半期）")
+                    try:
+                        income_statement = stock.quarterly_income_stmt
+                        if not income_statement.empty:
+                            # Convert to Japanese format and display most recent 4 quarters
+                            income_df = income_statement.iloc[:, :4].copy()  # Get latest 4 quarters
+                            income_df.columns = [col.strftime('%Y年%m月期') for col in income_df.columns]
+                            
+                            # Translate key financial statement items to Japanese
+                            income_translations = {
+                                'Total Revenue': '売上高',
+                                'Gross Profit': '売上総利益',
+                                'Operating Income': '営業利益',
+                                'EBITDA': 'EBITDA',
+                                'Net Income': '純利益',
+                                'Basic EPS': '基本的EPS',
+                                'Diluted EPS': '希薄化EPS',
+                                'Cost Of Revenue': '売上原価',
+                                'Operating Expense': '営業費用',
+                                'Research And Development': '研究開発費',
+                                'Selling General And Administration': '販売費及び一般管理費',
+                                'Interest Expense': '支払利息',
+                                'Tax Provision': '税金費用',
+                                'Net Income Common Stockholders': '普通株主に帰属する純利益'
+                            }
+                            
+                            # Format values in billions/millions
+                            income_formatted = income_df.copy()
+                            for col in income_formatted.columns:
+                                income_formatted[col] = income_formatted[col].apply(
+                                    lambda x: f"{x/1e9:.2f}B" if pd.notna(x) and abs(x) >= 1e9 
+                                    else f"{x/1e6:.1f}M" if pd.notna(x) and abs(x) >= 1e6
+                                    else f"{x:.0f}" if pd.notna(x) 
+                                    else "N/A"
+                                )
+                            
+                            # Rename index with Japanese translations
+                            income_formatted.index = [income_translations.get(idx, idx) for idx in income_formatted.index]
+                            
+                            st.dataframe(
+                                income_formatted,
+                                use_container_width=True,
+                                height=400
+                            )
+                        else:
+                            st.warning("損益計算書データが利用できません")
+                    except Exception as e:
+                        st.error(f"損益計算書の取得中にエラーが発生しました: {str(e)}")
+                
+                with tab2:
+                    st.markdown("#### 四半期貸借対照表（最新4四半期）")
+                    try:
+                        balance_sheet = stock.quarterly_balance_sheet
+                        if not balance_sheet.empty:
+                            # Convert to Japanese format and display most recent 4 quarters
+                            balance_df = balance_sheet.iloc[:, :4].copy()
+                            balance_df.columns = [col.strftime('%Y年%m月期') for col in balance_df.columns]
+                            
+                            # Translate key balance sheet items to Japanese
+                            balance_translations = {
+                                'Total Assets': '総資産',
+                                'Current Assets': '流動資産',
+                                'Cash And Cash Equivalents': '現金及び現金同等物',
+                                'Total Liabilities Net Minority Interest': '負債合計',
+                                'Current Liabilities': '流動負債',
+                                'Total Debt': '総負債',
+                                'Stockholders Equity': '株主資本',
+                                'Retained Earnings': '利益剰余金',
+                                'Accounts Receivable': '売掛金',
+                                'Inventory': '棚卸資産',
+                                'Property Plant Equipment': '有形固定資産',
+                                'Goodwill': 'のれん',
+                                'Accounts Payable': '買掛金',
+                                'Long Term Debt': '長期負債',
+                                'Short Term Debt': '短期負債'
+                            }
+                            
+                            # Format values in billions/millions
+                            balance_formatted = balance_df.copy()
+                            for col in balance_formatted.columns:
+                                balance_formatted[col] = balance_formatted[col].apply(
+                                    lambda x: f"{x/1e9:.2f}B" if pd.notna(x) and abs(x) >= 1e9 
+                                    else f"{x/1e6:.1f}M" if pd.notna(x) and abs(x) >= 1e6
+                                    else f"{x:.0f}" if pd.notna(x) 
+                                    else "N/A"
+                                )
+                            
+                            # Rename index with Japanese translations
+                            balance_formatted.index = [balance_translations.get(idx, idx) for idx in balance_formatted.index]
+                            
+                            st.dataframe(
+                                balance_formatted,
+                                use_container_width=True,
+                                height=400
+                            )
+                        else:
+                            st.warning("貸借対照表データが利用できません")
+                    except Exception as e:
+                        st.error(f"貸借対照表の取得中にエラーが発生しました: {str(e)}")
+                
+                with tab3:
+                    st.markdown("#### 四半期キャッシュフロー計算書（最新4四半期）")
+                    try:
+                        cashflow = stock.quarterly_cashflow
+                        if not cashflow.empty:
+                            # Convert to Japanese format and display most recent 4 quarters
+                            cf_df = cashflow.iloc[:, :4].copy()
+                            cf_df.columns = [col.strftime('%Y年%m月期') for col in cf_df.columns]
+                            
+                            # Translate key cash flow items to Japanese
+                            cf_translations = {
+                                'Operating Cash Flow': '営業活動によるキャッシュフロー',
+                                'Investing Cash Flow': '投資活動によるキャッシュフロー',
+                                'Financing Cash Flow': '財務活動によるキャッシュフロー',
+                                'Net Income From Continuing Operations': '継続事業からの純利益',
+                                'Depreciation And Amortization': '減価償却費',
+                                'Capital Expenditure': '設備投資',
+                                'Free Cash Flow': 'フリーキャッシュフロー',
+                                'Dividends Paid': '配当金支払額',
+                                'Stock Based Compensation': '株式報酬',
+                                'Change In Working Capital': '運転資本の変動',
+                                'Purchases Of Investments': '投資の取得',
+                                'Sale Of Investment': '投資の売却',
+                                'Common Stock Issuance': '普通株式の発行',
+                                'Common Stock Payments': '自己株式の取得'
+                            }
+                            
+                            # Format values in billions/millions
+                            cf_formatted = cf_df.copy()
+                            for col in cf_formatted.columns:
+                                cf_formatted[col] = cf_formatted[col].apply(
+                                    lambda x: f"{x/1e9:.2f}B" if pd.notna(x) and abs(x) >= 1e9 
+                                    else f"{x/1e6:.1f}M" if pd.notna(x) and abs(x) >= 1e6
+                                    else f"{x:.0f}" if pd.notna(x) 
+                                    else "N/A"
+                                )
+                            
+                            # Rename index with Japanese translations
+                            cf_formatted.index = [cf_translations.get(idx, idx) for idx in cf_formatted.index]
+                            
+                            st.dataframe(
+                                cf_formatted,
+                                use_container_width=True,
+                                height=400
+                            )
+                        else:
+                            st.warning("キャッシュフロー計算書データが利用できません")
+                    except Exception as e:
+                        st.error(f"キャッシュフロー計算書の取得中にエラーが発生しました: {str(e)}")
+                        
+            except Exception as e:
+                st.error(f"財務諸表データの取得中にエラーが発生しました: {str(e)}")
+            
             # Historical metrics table (as requested by user)
             st.markdown('<div class="section-header">📈 過去のメトリクス比較</div>', unsafe_allow_html=True)
             create_historical_metrics_table_with_gemini(selected_ticker, pe_ratio, pb_ratio, ps_ratio)
