@@ -485,9 +485,23 @@ selected_ticker = st.selectbox(
 )
 
 if selected_ticker:
-    # Get live financial data automatically
-    with st.spinner(f"Fetching live financial data for {selected_ticker}..."):
-        auto_data = get_auto_financial_data(selected_ticker)
+    # Initialize session state for DCF inputs
+    if "dcf_initialized" not in st.session_state or st.session_state.get("last_ticker") != selected_ticker:
+        # Get live financial data automatically only when ticker changes
+        with st.spinner(f"Fetching live financial data for {selected_ticker}..."):
+            auto_data = get_auto_financial_data(selected_ticker)
+        
+        if auto_data:
+            # Store in session state
+            st.session_state.auto_data = auto_data
+            st.session_state.last_ticker = selected_ticker
+            st.session_state.dcf_initialized = True
+        else:
+            st.error("Financial data could not be retrieved")
+            st.stop()
+    else:
+        # Use cached data
+        auto_data = st.session_state.auto_data
     
     if auto_data:
         st.success("✅ Live financial data loaded successfully")
@@ -524,47 +538,62 @@ if selected_ticker:
         with col4:
             st.metric("成長率", f"{auto_data['historical_growth']:.1f}%", delta="Historical")
         
+        # Initialize session state for input values only when ticker changes
+        if st.session_state.get("last_ticker") != selected_ticker:
+            st.session_state.dcf_forecast_years = 3
+            st.session_state.dcf_revenue_growth = float(auto_data['historical_growth'])
+            st.session_state.dcf_discount_rate = 10.0
+            st.session_state.dcf_net_margin = float(auto_data['profit_margin'])
+            
+            # PER ratio initialization
+            try:
+                per_value = float(auto_data.get('pe_ratio', 20.0))
+                per_value = max(1.0, min(100.0, per_value))
+            except (TypeError, ValueError):
+                per_value = 20.0
+            st.session_state.dcf_per = per_value
+            
+            # PSR ratio initialization
+            try:
+                current_market_cap = float(auto_data['current_price']) * float(auto_data['shares_outstanding'])
+                current_psr = current_market_cap / float(auto_data['revenue']) if float(auto_data['revenue']) > 0 else 5.0
+                current_psr = max(0.1, min(50.0, current_psr))
+            except (TypeError, ZeroDivisionError, ValueError):
+                current_psr = 5.0
+            st.session_state.dcf_psr = current_psr
+            
+            # PBR ratio initialization
+            try:
+                pbr_value = float(auto_data.get('pb_ratio', 3.0))
+                pbr_value = max(0.1, min(50.0, pbr_value))
+            except (TypeError, ValueError):
+                pbr_value = 3.0
+            st.session_state.dcf_pbr = pbr_value
+
         # DCF calculation parameters (only adjustable parameters)
         st.markdown("### ⚙️ DCF計算パラメータ（調整可能）")
         
         col1, col2 = st.columns(2)
         
         with col1:
-            forecast_years = st.number_input("予測期間（年）", min_value=1, max_value=10, value=3, step=1, key="forecast_years_input")
-            revenue_growth = st.number_input("予想売上成長率（%）", min_value=-50.0, max_value=100.0, value=float(auto_data['historical_growth']), step=0.1, format="%.1f", key="revenue_growth_input")
-            discount_rate = st.number_input("割引率（%）", min_value=1.0, max_value=50.0, value=10.0, step=0.1, format="%.1f", key="discount_rate_input")
+            forecast_years = st.number_input("予測期間（年）", min_value=1, max_value=10, value=st.session_state.dcf_forecast_years, step=1, key="forecast_years_input")
+            revenue_growth = st.number_input("予想売上成長率（%）", min_value=-50.0, max_value=100.0, value=st.session_state.dcf_revenue_growth, step=0.1, format="%.1f", key="revenue_growth_input")
+            discount_rate = st.number_input("割引率（%）", min_value=1.0, max_value=50.0, value=st.session_state.dcf_discount_rate, step=0.1, format="%.1f", key="discount_rate_input")
         
         with col2:
-            net_margin = st.number_input("目標純利益率（%）", min_value=0.0, max_value=100.0, value=float(auto_data['profit_margin']), step=0.1, format="%.1f", key="net_margin_input")
-            
-            # PER ratio with proper error handling and unique key
-            try:
-                per_value = float(auto_data.get('pe_ratio', 20.0))
-                per_value = max(1.0, min(100.0, per_value))
-            except (TypeError, ValueError):
-                per_value = 20.0
-                
-            industry_per = st.number_input("PER倍率", min_value=1.0, max_value=100.0, value=per_value, step=0.1, format="%.1f", key="per_input")
-            
-            # Calculate PSR ratio from current data with proper error handling
-            try:
-                current_market_cap = float(auto_data['current_price']) * float(auto_data['shares_outstanding'])
-                current_psr = current_market_cap / float(auto_data['revenue']) if float(auto_data['revenue']) > 0 else 5.0
-                # Ensure PSR is within reasonable bounds
-                current_psr = max(0.1, min(50.0, current_psr))
-            except (TypeError, ZeroDivisionError, ValueError):
-                current_psr = 5.0
-                
-            psr_ratio = st.number_input("PSR倍率", min_value=0.1, max_value=50.0, value=float(current_psr), step=0.1, format="%.1f", key="psr_input")
-            
-            # PBR ratio with proper error handling
-            try:
-                pbr_value = float(auto_data.get('pb_ratio', 3.0))
-                pbr_value = max(0.1, min(50.0, pbr_value))
-            except (TypeError, ValueError):
-                pbr_value = 3.0
-                
-            pbr_ratio = st.number_input("PBR倍率", min_value=0.1, max_value=50.0, value=pbr_value, step=0.1, format="%.1f", key="pbr_input")
+            net_margin = st.number_input("目標純利益率（%）", min_value=0.0, max_value=100.0, value=st.session_state.dcf_net_margin, step=0.1, format="%.1f", key="net_margin_input")
+            industry_per = st.number_input("PER倍率", min_value=1.0, max_value=100.0, value=st.session_state.dcf_per, step=0.1, format="%.1f", key="per_input")
+            psr_ratio = st.number_input("PSR倍率", min_value=0.1, max_value=50.0, value=st.session_state.dcf_psr, step=0.1, format="%.1f", key="psr_input")
+            pbr_ratio = st.number_input("PBR倍率", min_value=0.1, max_value=50.0, value=st.session_state.dcf_pbr, step=0.1, format="%.1f", key="pbr_input")
+        
+        # Update session state with current values
+        st.session_state.dcf_forecast_years = forecast_years
+        st.session_state.dcf_revenue_growth = revenue_growth
+        st.session_state.dcf_discount_rate = discount_rate
+        st.session_state.dcf_net_margin = net_margin
+        st.session_state.dcf_per = industry_per
+        st.session_state.dcf_psr = psr_ratio
+        st.session_state.dcf_pbr = pbr_ratio
         
         # Use live data for calculations
         revenue = auto_data['revenue'] * 1_000_000  # Convert back to actual USD
