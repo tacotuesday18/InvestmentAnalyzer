@@ -576,20 +576,51 @@ if analyze_button and selected_ticker:
                             # Translate key financial statement items to Japanese
                             income_translations = {
                                 'Total Revenue': '売上高',
-                                'Gross Profit': '売上総利益',
-                                'Operating Income': '営業利益',
-                                'EBITDA': 'EBITDA',
-                                'Net Income': '純利益',
-                                'Basic EPS': '基本的EPS',
-                                'Diluted EPS': '希薄化EPS',
                                 'Cost Of Revenue': '売上原価',
-                                'Operating Expense': '営業費用',
+                                'Gross Profit': '売上総利益',
                                 'Research And Development': '研究開発費',
                                 'Selling General And Administration': '販売費及び一般管理費',
+                                'Operating Expense': '営業費用',
+                                'Operating Income': '営業利益',
+                                'EBITDA': 'EBITDA',
                                 'Interest Expense': '支払利息',
                                 'Tax Provision': '税金費用',
-                                'Net Income Common Stockholders': '普通株主に帰属する純利益'
+                                'Net Income': '純利益',
+                                'Net Income Common Stockholders': '普通株主に帰属する純利益',
+                                'Basic EPS': '基本的EPS',
+                                'Diluted EPS': '希薄化EPS'
                             }
+                            
+                            # Define proper order for income statement (revenue at top)
+                            income_order = [
+                                'Total Revenue',
+                                'Cost Of Revenue', 
+                                'Gross Profit',
+                                'Research And Development',
+                                'Selling General And Administration',
+                                'Operating Expense',
+                                'Operating Income',
+                                'EBITDA',
+                                'Interest Expense',
+                                'Tax Provision',
+                                'Net Income',
+                                'Net Income Common Stockholders',
+                                'Basic EPS',
+                                'Diluted EPS'
+                            ]
+                            
+                            # Reorder the dataframe according to standard income statement order
+                            reordered_rows = []
+                            for item in income_order:
+                                if item in income_df.index:
+                                    reordered_rows.append(item)
+                            
+                            # Add any remaining items not in our predefined order
+                            for item in income_df.index:
+                                if item not in reordered_rows:
+                                    reordered_rows.append(item)
+                            
+                            income_df = income_df.reindex(reordered_rows)
                             
                             # Format values in billions/millions
                             income_formatted = income_df.copy()

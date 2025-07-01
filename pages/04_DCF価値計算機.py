@@ -691,9 +691,20 @@ if selected_ticker:
             final_year_revenue = forecasted_data['revenue'].iloc[-1]
             final_year_net_income = forecasted_data['net_income'].iloc[-1]
             
-            # 簡易的な純資産（自己資本）の推定（通常は貸借対照表から）
-            # ここでは純利益の10倍と仮定
-            estimated_equity = final_year_net_income * 10
+            # 現在の純資産（自己資本）を取得
+            try:
+                current_book_value = float(auto_data.get('book_value', 0))
+                if current_book_value <= 0:
+                    # フォールバック：現在の時価総額をPBRで割る
+                    current_market_cap = float(auto_data['current_price']) * float(auto_data['shares_outstanding'])
+                    current_book_value = current_market_cap / max(float(auto_data.get('pb_ratio', 3.0)), 0.1)
+            except (TypeError, ValueError, ZeroDivisionError):
+                # 最終フォールバック：純利益の10倍
+                current_book_value = final_year_net_income * 10
+            
+            # 将来の純資産推定（保守的に現在の純資産 + 累積純利益の50%）
+            cumulative_net_income = sum(forecasted_data['net_income'])
+            estimated_equity = current_book_value + (cumulative_net_income * 0.5)
             
             # 業界平均倍率を使った企業価値評価
             per_valuation = final_year_net_income * industry_per
