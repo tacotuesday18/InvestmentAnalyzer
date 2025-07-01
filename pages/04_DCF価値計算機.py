@@ -538,14 +538,44 @@ if selected_ticker:
         with col4:
             st.metric("成長率", f"{auto_data['historical_growth']:.1f}%", delta="Historical")
         
-        # Initialize session state for input values only when ticker changes
-        if st.session_state.get("last_ticker") != selected_ticker:
+        # Initialize session state defaults
+        if "dcf_forecast_years" not in st.session_state:
             st.session_state.dcf_forecast_years = 3
+        if "dcf_revenue_growth" not in st.session_state:
             st.session_state.dcf_revenue_growth = float(auto_data['historical_growth'])
+        if "dcf_discount_rate" not in st.session_state:
             st.session_state.dcf_discount_rate = 10.0
+        if "dcf_net_margin" not in st.session_state:
+            st.session_state.dcf_net_margin = float(auto_data['profit_margin'])
+        if "dcf_per" not in st.session_state:
+            try:
+                per_value = float(auto_data.get('pe_ratio', 20.0))
+                per_value = max(1.0, min(100.0, per_value))
+            except (TypeError, ValueError):
+                per_value = 20.0
+            st.session_state.dcf_per = per_value
+        if "dcf_psr" not in st.session_state:
+            try:
+                current_market_cap = float(auto_data['current_price']) * float(auto_data['shares_outstanding'])
+                current_psr = current_market_cap / float(auto_data['revenue']) if float(auto_data['revenue']) > 0 else 5.0
+                current_psr = max(0.1, min(50.0, current_psr))
+            except (TypeError, ZeroDivisionError, ValueError):
+                current_psr = 5.0
+            st.session_state.dcf_psr = current_psr
+        if "dcf_pbr" not in st.session_state:
+            try:
+                pbr_value = float(auto_data.get('pb_ratio', 3.0))
+                pbr_value = max(0.1, min(50.0, pbr_value))
+            except (TypeError, ValueError):
+                pbr_value = 3.0
+            st.session_state.dcf_pbr = pbr_value
+
+        # Update values only when ticker changes
+        if st.session_state.get("last_ticker") != selected_ticker:
+            st.session_state.dcf_revenue_growth = float(auto_data['historical_growth'])
             st.session_state.dcf_net_margin = float(auto_data['profit_margin'])
             
-            # PER ratio initialization
+            # Update PER ratio
             try:
                 per_value = float(auto_data.get('pe_ratio', 20.0))
                 per_value = max(1.0, min(100.0, per_value))
@@ -553,7 +583,7 @@ if selected_ticker:
                 per_value = 20.0
             st.session_state.dcf_per = per_value
             
-            # PSR ratio initialization
+            # Update PSR ratio
             try:
                 current_market_cap = float(auto_data['current_price']) * float(auto_data['shares_outstanding'])
                 current_psr = current_market_cap / float(auto_data['revenue']) if float(auto_data['revenue']) > 0 else 5.0
@@ -562,7 +592,7 @@ if selected_ticker:
                 current_psr = 5.0
             st.session_state.dcf_psr = current_psr
             
-            # PBR ratio initialization
+            # Update PBR ratio
             try:
                 pbr_value = float(auto_data.get('pb_ratio', 3.0))
                 pbr_value = max(0.1, min(50.0, pbr_value))
