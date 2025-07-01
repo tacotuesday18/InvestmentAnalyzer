@@ -530,13 +530,21 @@ if selected_ticker:
         col1, col2 = st.columns(2)
         
         with col1:
-            forecast_years = st.number_input("予測期間（年）", min_value=1, max_value=10, value=3, step=1)
-            revenue_growth = st.number_input("予想売上成長率（%）", min_value=-50.0, max_value=100.0, value=auto_data['historical_growth'], step=0.1, format="%.1f")
-            discount_rate = st.number_input("割引率（%）", min_value=1.0, max_value=50.0, value=10.0, step=0.1, format="%.1f")
+            forecast_years = st.number_input("予測期間（年）", min_value=1, max_value=10, value=3, step=1, key="forecast_years_input")
+            revenue_growth = st.number_input("予想売上成長率（%）", min_value=-50.0, max_value=100.0, value=float(auto_data['historical_growth']), step=0.1, format="%.1f", key="revenue_growth_input")
+            discount_rate = st.number_input("割引率（%）", min_value=1.0, max_value=50.0, value=10.0, step=0.1, format="%.1f", key="discount_rate_input")
         
         with col2:
-            net_margin = st.number_input("目標純利益率（%）", min_value=0.0, max_value=100.0, value=float(auto_data['profit_margin']), step=0.1, format="%.1f")
-            industry_per = st.number_input("PER倍率", min_value=1.0, max_value=100.0, value=float(auto_data['pe_ratio']), step=0.1, format="%.1f")
+            net_margin = st.number_input("目標純利益率（%）", min_value=0.0, max_value=100.0, value=float(auto_data['profit_margin']), step=0.1, format="%.1f", key="net_margin_input")
+            
+            # PER ratio with proper error handling and unique key
+            try:
+                per_value = float(auto_data.get('pe_ratio', 20.0))
+                per_value = max(1.0, min(100.0, per_value))
+            except (TypeError, ValueError):
+                per_value = 20.0
+                
+            industry_per = st.number_input("PER倍率", min_value=1.0, max_value=100.0, value=per_value, step=0.1, format="%.1f", key="per_input")
             
             # Calculate PSR ratio from current data with proper error handling
             try:
