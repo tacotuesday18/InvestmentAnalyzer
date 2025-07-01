@@ -535,13 +535,28 @@ if selected_ticker:
             discount_rate = st.number_input("割引率（%）", min_value=1.0, max_value=50.0, value=10.0, step=0.1, format="%.1f")
         
         with col2:
-            net_margin = st.number_input("目標純利益率（%）", min_value=0.0, max_value=100.0, value=auto_data['profit_margin'], step=0.1, format="%.1f")
-            industry_per = st.number_input("PER倍率", min_value=1.0, max_value=100.0, value=auto_data['pe_ratio'], step=1.0)
-            # Calculate PSR ratio from current data
-            current_market_cap = auto_data['current_price'] * auto_data['shares_outstanding']
-            current_psr = current_market_cap / auto_data['revenue'] if auto_data['revenue'] > 0 else 5.0
-            psr_ratio = st.number_input("PSR倍率", min_value=0.1, max_value=50.0, value=current_psr, step=0.1, format="%.1f")
-            pbr_ratio = st.number_input("PBR倍率", min_value=0.1, max_value=50.0, value=auto_data['pb_ratio'], step=0.1, format="%.1f")
+            net_margin = st.number_input("目標純利益率（%）", min_value=0.0, max_value=100.0, value=float(auto_data['profit_margin']), step=0.1, format="%.1f")
+            industry_per = st.number_input("PER倍率", min_value=1.0, max_value=100.0, value=float(auto_data['pe_ratio']), step=0.1, format="%.1f")
+            
+            # Calculate PSR ratio from current data with proper error handling
+            try:
+                current_market_cap = float(auto_data['current_price']) * float(auto_data['shares_outstanding'])
+                current_psr = current_market_cap / float(auto_data['revenue']) if float(auto_data['revenue']) > 0 else 5.0
+                # Ensure PSR is within reasonable bounds
+                current_psr = max(0.1, min(50.0, current_psr))
+            except (TypeError, ZeroDivisionError, ValueError):
+                current_psr = 5.0
+                
+            psr_ratio = st.number_input("PSR倍率", min_value=0.1, max_value=50.0, value=float(current_psr), step=0.1, format="%.1f", key="psr_input")
+            
+            # PBR ratio with proper error handling
+            try:
+                pbr_value = float(auto_data.get('pb_ratio', 3.0))
+                pbr_value = max(0.1, min(50.0, pbr_value))
+            except (TypeError, ValueError):
+                pbr_value = 3.0
+                
+            pbr_ratio = st.number_input("PBR倍率", min_value=0.1, max_value=50.0, value=pbr_value, step=0.1, format="%.1f", key="pbr_input")
         
         # Use live data for calculations
         revenue = auto_data['revenue'] * 1_000_000  # Convert back to actual USD
