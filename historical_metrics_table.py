@@ -137,11 +137,10 @@ def create_historical_metrics_table(ticker, current_pe=None, current_pb=None, cu
             # Add interpretation note
             st.markdown("""
             **📝 解釈のポイント:**
-            - **PER (株価収益率)**: 現在値が過去平均より低い場合、割安の可能性。市場平均・業界平均との比較も重要
+            - **PER (株価収益率)**: 現在値が過去平均より低い場合、割安の可能性。市場平均との比較も重要
             - **PSR (株価売上高倍率)**: 売上高に対する評価の妥当性を示す。成長企業では高くなる傾向
             - **PBR (株価純資産倍率)**: 純資産に対する市場評価を表す。1倍未満は理論的割安
             - **市場平均**: S&P500・NASDAQとの比較で相対的なバリュエーションを判断
-            - **業界平均**: 同業他社との比較で業界内でのポジション評価が可能
             """)
             
             # Show explanation of market average calculations
@@ -170,13 +169,7 @@ def create_historical_metrics_table(ticker, current_pe=None, current_pb=None, cu
                         - PBR: {nasdaq_pb:.1f}x
                         """)
                     
-                    with col3:
-                        st.markdown(f"""
-                        **{sector_name}業界**
-                        - PER: {industry_pe:.1f}x
-                        - PSR: {industry_ps:.1f}x
-                        - PBR: {industry_pb:.1f}x
-                        """)
+
             
         else:
             st.info("📊 現在、この銘柄の主要指標データが利用できません")

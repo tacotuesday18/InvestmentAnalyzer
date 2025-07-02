@@ -256,13 +256,7 @@ def create_historical_metrics_table_with_gemini(ticker, current_pe=None, current
                         - PBR: {nasdaq_pb:.1f}x
                         """)
                     
-                    with col3:
-                        st.markdown(f"""
-                        **{sector_name}業界**
-                        - PER: {industry_pe:.1f}x
-                        - PSR: {industry_ps:.1f}x
-                        - PBR: {industry_pb:.1f}x
-                        """)
+
             
         else:
             st.info("📊 現在、この銘柄の主要指標データが利用できません")
