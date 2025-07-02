@@ -73,8 +73,7 @@ def create_historical_metrics_table(ticker, current_pe=None, current_pb=None, cu
                 '5-Year Average': get_historical_average(chatgpt_metrics, 'pe', '5y', current_pe),
                 '10-Year Average': get_historical_average(chatgpt_metrics, 'pe', '10y', current_pe),
                 'S&P500': f"{sp500_pe:.1f}x",
-                'NASDAQ': f"{nasdaq_pe:.1f}x",
-                '業界平均': f"{industry_pe:.1f}x"
+                'NASDAQ': f"{nasdaq_pe:.1f}x"
             }
             table_data.append(pe_row)
         
@@ -88,8 +87,7 @@ def create_historical_metrics_table(ticker, current_pe=None, current_pb=None, cu
                 '5-Year Average': get_historical_average(chatgpt_metrics, 'ps', '5y', current_ps),
                 '10-Year Average': get_historical_average(chatgpt_metrics, 'ps', '10y', current_ps),
                 'S&P500': f"{sp500_ps:.1f}x",
-                'NASDAQ': f"{nasdaq_ps:.1f}x",
-                '業界平均': f"{industry_ps:.1f}x"
+                'NASDAQ': f"{nasdaq_ps:.1f}x"
             }
             table_data.append(ps_row)
         
@@ -103,8 +101,7 @@ def create_historical_metrics_table(ticker, current_pe=None, current_pb=None, cu
                 '5-Year Average': get_historical_average(chatgpt_metrics, 'pb', '5y', current_pb),
                 '10-Year Average': get_historical_average(chatgpt_metrics, 'pb', '10y', current_pb),
                 'S&P500': f"{sp500_pb:.1f}x",
-                'NASDAQ': f"{nasdaq_pb:.1f}x",
-                '業界平均': f"{industry_pb:.1f}x"
+                'NASDAQ': f"{nasdaq_pb:.1f}x"
             }
             table_data.append(pb_row)
         
@@ -114,7 +111,7 @@ def create_historical_metrics_table(ticker, current_pe=None, current_pb=None, cu
             
             # Display title similar to the example
             st.markdown(f"""
-            ### 📊 {ticker}のPER、PSR、PBR比率と市場平均・業界平均の比較表
+            ### 📊 {ticker}のPER、PSR、PBR比率と市場平均の比較表
             
             以下は{ticker}の主要バリュエーション指標の現在値、過去平均値、市場平均値の比較です：
             """)
