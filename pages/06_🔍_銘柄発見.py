@@ -193,10 +193,10 @@ st.markdown("""
 st.markdown("""
 <div class="page-header">
     <div class="page-title">🔍 銘柄発見</div>
-    <div class="page-subtitle">2,000銘柄以上から投資スタイルに合った企業を発見</div>
+    <div class="page-subtitle">米国株式2,000銘柄以上から投資スタイルに合った企業を発見</div>
     <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px; border-radius: 8px; margin: 15px 0; font-size: 14px;">
-        <strong>🌍 検索対象:</strong> S&P500 • NASDAQ • ダウ30 • Russell2000 • 国際株式(ADR) • 成長株 • バイオテック • フィンテック • クリーンエネルギー • 暗号通貨関連株など<br>
-        <strong>📊 包括的データベース:</strong> 主要取引所の2,000銘柄以上をリアルタイム分析
+        <strong>🇺🇸 検索対象:</strong> S&P500 • NASDAQ • ダウ30 • Russell2000 • 成長株 • バイオテック • フィンテック • クリーンエネルギー • 暗号通貨関連株など<br>
+        <strong>📊 米国株式データベース:</strong> 主要取引所の2,000銘柄以上をリアルタイム分析 • 投資スタイル別検索 • 業界別検索
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -432,16 +432,53 @@ if st.button("🔍 銘柄を検索", use_container_width=True, type="primary"):
     
     with st.spinner("条件に合う銘柄を検索中..."):
         # Get all market stocks for comprehensive screening
-        if "All" in selected_sectors or not selected_sectors:
-            available_tickers = get_all_market_stocks()
+        if search_method == "業界別":
+            # Industry-based filtering
+            if selected_industry == "すべての業界":
+                available_tickers = get_all_market_stocks()
+            else:
+                # Map Japanese industry names to sector keys
+                industry_mapping = {
+                    "テクノロジー": "Technology",
+                    "ヘルスケア・バイオテック": "Healthcare", 
+                    "金融サービス": "Financials",
+                    "消費者向けサービス": "Consumer Discretionary",
+                    "消費者向け日用品": "Consumer Staples",
+                    "エネルギー・石油ガス": "Energy",
+                    "クリーンエネルギー・再生可能エネルギー": "Clean Energy",
+                    "電気自動車・自動車": "Automotive",
+                    "不動産・REIT": "Real Estate",
+                    "産業・製造業": "Industrial",
+                    "素材・鉱業": "Materials", 
+                    "通信・メディア": "Telecommunications",
+                    "公益事業": "Utilities",
+                    "エンターテイメント・メディア": "Entertainment",
+                    "ゲーミング・カジノ": "Gaming",
+                    "大麻・代替投資": "Cannabis",
+                    "暗号通貨関連": "Crypto-Related",
+                    "小売・Eコマース": "Retail"
+                }
+                
+                sector_key = industry_mapping.get(selected_industry)
+                sector_mapping = get_stock_sector_mapping()
+                available_tickers = []
+                
+                if sector_key and sector_key in sector_mapping:
+                    available_tickers = sector_mapping[sector_key]
+                else:
+                    available_tickers = get_all_market_stocks()
         else:
-            # Filter by sector from comprehensive market stocks
-            sector_mapping = get_stock_sector_mapping()
-            available_tickers = []
-            for sector in selected_sectors:
-                if sector != "All" and sector in sector_mapping:
-                    available_tickers.extend(sector_mapping[sector])
-            available_tickers = list(set(available_tickers))
+            # Original sector-based filtering for investment style search
+            if "All" in selected_sectors or not selected_sectors:
+                available_tickers = get_all_market_stocks()
+            else:
+                # Filter by sector from comprehensive market stocks
+                sector_mapping = get_stock_sector_mapping()
+                available_tickers = []
+                for sector in selected_sectors:
+                    if sector != "All" and sector in sector_mapping:
+                        available_tickers.extend(sector_mapping[sector])
+                available_tickers = list(set(available_tickers))
         
         # Use comprehensive market coverage - remove artificial limit
         # Now screening from thousands of stocks instead of just 200
