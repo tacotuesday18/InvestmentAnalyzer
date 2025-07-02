@@ -114,12 +114,11 @@ def get_all_market_stocks():
     """Get comprehensive list of all major market stocks including 500+ additional stocks"""
     all_stocks = []
     
-    # Add major indices
+    # Add major US indices only
     all_stocks.extend(get_sp500_tickers())
     all_stocks.extend(get_nasdaq100_tickers()) 
     all_stocks.extend(get_dow30_tickers())
     all_stocks.extend(get_russell2000_sample())
-    all_stocks.extend(get_international_stocks())
     
     # Add comprehensive additional stocks for broader market coverage
     additional_mid_caps = [
@@ -144,9 +143,8 @@ def get_all_market_stocks():
         "FSLR", "ENPH", "SEDG", "RUN", "NOVA", "CSIQ", "JKS", "DQ", "SOL", "MAXN",
         "BE", "PLUG", "FCEL", "BLDP", "HYLN", "NKLA", "RIDE", "FSR", "LCID", "RIVN",
         
-        # International ADRs
-        "BABA", "JD", "PDD", "BIDU", "NTES", "TME", "IQ", "VIPS", "WB", "ASML",
-        "SAP", "NVO", "UL", "TSM", "TM", "HMC", "NSANY", "SNE", "SONY", "SNY",
+        # Additional US Growth Stocks
+        "RBLX", "RIVN", "LCID", "SPCE", "DKNG", "PENN", "MGM", "WYNN", "LVS", "ROKU",
         
         # Meme Stocks & Popular Retail
         "BB", "NOK", "PLTR", "SPCE", "WISH", "CLOV", "SKLZ", "PROG", "PRTY", "BBBY", 

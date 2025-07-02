@@ -241,39 +241,83 @@ st.markdown("### 🎯 スクリーニング条件を設定")
 col1, col2 = st.columns([2, 1])
 
 with col1:
-    st.markdown("**投資スタイルを選択 (プリセット条件)**")
-    investment_style = st.selectbox(
-        "",
-        ["カスタム設定", "成長株投資", "バリュー株投資", "配当株投資", "安定株投資"],
-        label_visibility="collapsed"
+    # Search method selection
+    search_method = st.radio(
+        "検索方法を選択",
+        ["投資スタイル別", "業界別"],
+        horizontal=True,
+        help="投資スタイル別：成長株、バリュー株、配当株から選択 | 業界別：特定の業界から銘柄を探す"
     )
+    
+    if search_method == "投資スタイル別":
+        st.markdown("**投資スタイルを選択 (プリセット条件)**")
+        investment_style = st.selectbox(
+            "",
+            ["カスタム設定", "成長株投資", "バリュー株投資", "配当株投資", "安定株投資"],
+            label_visibility="collapsed"
+        )
+    else:
+        st.markdown("**業界を選択**")
+        industry_options = [
+            "すべての業界",
+            "テクノロジー", 
+            "ヘルスケア・バイオテック",
+            "金融サービス",
+            "消費者向けサービス", 
+            "消費者向け日用品",
+            "エネルギー・石油ガス",
+            "クリーンエネルギー・再生可能エネルギー",
+            "電気自動車・自動車",
+            "不動産・REIT",
+            "産業・製造業", 
+            "素材・鉱業",
+            "通信・メディア",
+            "公益事業",
+            "エンターテイメント・メディア",
+            "ゲーミング・カジノ",
+            "大麻・代替投資",
+            "暗号通貨関連",
+            "小売・Eコマース"
+        ]
+        selected_industry = st.selectbox(
+            "",
+            industry_options,
+            label_visibility="collapsed"
+        )
 
 with col2:
     if st.button("🔄 条件をリセット", use_container_width=True):
         st.rerun()
 
-# Set default values based on investment style
-if investment_style == "成長株投資":
-    default_revenue_growth = (15.0, 50.0)
-    default_roe = (15.0, 100.0)
-    default_per = (0.0, 30.0)
-    default_market_cap = (1.0, 5000.0)
-elif investment_style == "バリュー株投資":
-    default_revenue_growth = (0.0, 50.0)
-    default_roe = (10.0, 100.0)
-    default_per = (0.0, 15.0)
-    default_market_cap = (10.0, 5000.0)
-elif investment_style == "配当株投資":
-    default_revenue_growth = (0.0, 50.0)
-    default_roe = (8.0, 100.0)
-    default_per = (0.0, 25.0)
-    default_market_cap = (5.0, 5000.0)
-elif investment_style == "安定株投資":
-    default_revenue_growth = (0.0, 50.0)
-    default_roe = (10.0, 100.0)
-    default_per = (0.0, 20.0)
-    default_market_cap = (100.0, 5000.0)
-else:  # カスタム設定
+# Set default values based on search method
+if search_method == "投資スタイル別":
+    if investment_style == "成長株投資":
+        default_revenue_growth = (15.0, 50.0)
+        default_roe = (15.0, 100.0)
+        default_per = (0.0, 30.0)
+        default_market_cap = (1.0, 5000.0)
+    elif investment_style == "バリュー株投資":
+        default_revenue_growth = (0.0, 50.0)
+        default_roe = (10.0, 100.0)
+        default_per = (0.0, 15.0)
+        default_market_cap = (10.0, 5000.0)
+    elif investment_style == "配当株投資":
+        default_revenue_growth = (0.0, 50.0)
+        default_roe = (8.0, 100.0)
+        default_per = (0.0, 25.0)
+        default_market_cap = (5.0, 5000.0)
+    elif investment_style == "安定株投資":
+        default_revenue_growth = (0.0, 50.0)
+        default_roe = (10.0, 100.0)
+        default_per = (0.0, 20.0)
+        default_market_cap = (100.0, 5000.0)
+    else:  # カスタム設定
+        default_revenue_growth = (0.0, 50.0)
+        default_roe = (0.0, 100.0)
+        default_per = (0.0, 50.0)
+        default_market_cap = (0.1, 5000.0)
+else:  # 業界別検索
+    # Industry-based search uses more relaxed default criteria
     default_revenue_growth = (0.0, 50.0)
     default_roe = (0.0, 100.0)
     default_per = (0.0, 50.0)
