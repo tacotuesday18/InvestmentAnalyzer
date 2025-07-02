@@ -120,25 +120,31 @@ def create_historical_metrics_table_with_gemini(ticker, current_pe=None, current
         # Create table data
         table_data = []
         
-        # Get market and industry averages
-        sp500_pe, nasdaq_pe, industry_pe = 22.0, 25.0, 20.0  # Market averages
-        sp500_ps, nasdaq_ps, industry_ps = 2.8, 3.2, 2.5
-        sp500_pb, nasdaq_pb, industry_pb = 4.2, 4.8, 3.5
+        # Get real market and industry averages using live data
+        from market_averages import get_comprehensive_market_data, format_market_data_explanation
         
-        # Get sector for industry comparison
-        sector = info.get('sector', 'Technology')
+        market_data = get_comprehensive_market_data(info)
         
-        # Adjust industry averages based on sector
-        if 'Technology' in sector:
-            industry_pe, industry_ps, industry_pb = 28.0, 6.5, 5.2
-        elif 'Healthcare' in sector:
-            industry_pe, industry_ps, industry_pb = 25.0, 4.8, 3.8
-        elif 'Financial' in sector:
-            industry_pe, industry_ps, industry_pb = 12.0, 2.2, 1.8
-        elif 'Consumer' in sector:
-            industry_pe, industry_ps, industry_pb = 22.0, 2.8, 3.2
-        elif 'Industrial' in sector:
-            industry_pe, industry_ps, industry_pb = 18.0, 2.0, 2.8
+        if market_data:
+            sp500_pe = market_data['sp500']['pe']
+            sp500_ps = market_data['sp500']['ps'] 
+            sp500_pb = market_data['sp500']['pb']
+            
+            nasdaq_pe = market_data['nasdaq']['pe']
+            nasdaq_ps = market_data['nasdaq']['ps']
+            nasdaq_pb = market_data['nasdaq']['pb']
+            
+            industry_pe = market_data['industry']['pe']
+            industry_ps = market_data['industry']['ps']
+            industry_pb = market_data['industry']['pb']
+            
+            sector_name = market_data['sector_name']
+        else:
+            # Fallback only if API completely fails
+            sp500_pe, nasdaq_pe, industry_pe = 22.0, 25.0, 20.0
+            sp500_ps, nasdaq_ps, industry_ps = 2.8, 3.2, 2.5
+            sp500_pb, nasdaq_pb, industry_pb = 4.2, 4.8, 3.5
+            sector_name = info.get('sector', 'Technology')
 
         # PER Ratio row (Japanese terminology)
         if current_pe and current_pe > 0:
@@ -227,6 +233,40 @@ def create_historical_metrics_table_with_gemini(ticker, current_pe=None, current
             # Display trend analysis if available
             if gemini_metrics and gemini_metrics.get('market_context'):
                 st.info(f"💡 **市場コンテキスト**: {gemini_metrics['market_context']}")
+            
+            # Show explanation of market average calculations
+            if market_data:
+                with st.expander("📊 市場平均値の算出方法を表示"):
+                    explanation = format_market_data_explanation(market_data, sector_name)
+                    st.markdown(explanation)
+                    
+                    # Show actual values used
+                    st.markdown("**現在使用中の実際の市場平均値:**")
+                    col1, col2, col3 = st.columns(3)
+                    
+                    with col1:
+                        st.markdown(f"""
+                        **S&P500**
+                        - PER: {sp500_pe:.1f}x
+                        - PSR: {sp500_ps:.1f}x  
+                        - PBR: {sp500_pb:.1f}x
+                        """)
+                    
+                    with col2:
+                        st.markdown(f"""
+                        **NASDAQ**
+                        - PER: {nasdaq_pe:.1f}x
+                        - PSR: {nasdaq_ps:.1f}x
+                        - PBR: {nasdaq_pb:.1f}x
+                        """)
+                    
+                    with col3:
+                        st.markdown(f"""
+                        **{sector_name}業界**
+                        - PER: {industry_pe:.1f}x
+                        - PSR: {industry_ps:.1f}x
+                        - PBR: {industry_pb:.1f}x
+                        """)
             
         else:
             st.info("📊 現在、この銘柄の主要指標データが利用できません")
