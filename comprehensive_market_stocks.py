@@ -54,16 +54,44 @@ def get_russell2000_sample():
     ]
 
 def get_international_stocks():
-    """Get major international stocks (ADRs and direct listings)"""
+    """Get major international stocks (ADRs and direct listings) - significantly expanded"""
     return [
-        # Japanese stocks
-        "TM", "SONY", "NTT", "MUFG", "SMFG", "HMC", "SNE",
-        # European stocks  
+        # Japanese stocks (Expanded)
+        "TM", "SONY", "NTT", "MUFG", "SMFG", "HMC", "SNE", "NSANY", "FUJIY", "CAJ", 
+        "KYOCY", "CANNY", "HTHIY", "NTDOY", "SZKMY", "SFTBY", "NMR", "MFG", "SFM",
+        
+        # European stocks (Expanded)
         "ASML", "SAP", "NVO", "NESN", "ROCHE", "NOVN", "UL", "BP", "SHELL", "VOD",
-        # Chinese stocks
+        "SAN", "BBVA", "SNY", "GSK", "AZN", "RDS.A", "RDS.B", "BT", "ING", "ABN",
+        "CS", "UBS", "DB", "BCS", "LYG", "NOKIA", "NOK", "ERIC", "TEF", "VIV",
+        "DT", "TI", "STM", "INFINEON", "ASMLY", "MC", "OR", "LVMH", "HERMES", "ADIDAS",
+        
+        # Chinese stocks (Expanded)
         "BABA", "JD", "PDD", "BIDU", "NIO", "XPEV", "LI", "TME", "NTES", "WB",
-        # Other international
-        "TSM", "SHOP", "SPOT", "SE", "GRAB", "BEKE", "TAL", "EDU", "YMM", "VIPS"
+        "HUYA", "YY", "MOMO", "GOTU", "TAL", "EDU", "NEW", "GOOS", "RLX", "DIDI",
+        "BYDDY", "KNDI", "SOLO", "AYRO", "IQ", "VIPS", "DOYU", "YMM", "BEKE",
+        
+        # Taiwanese Semiconductors
+        "TSM", "UMC", "ASX", "HIMX", "MCHP", "QCOM", "TXN", "ON", "SWKS", "QRVO",
+        
+        # Canadian Stocks
+        "SHOP", "SPOT", "TRI", "CNQ", "SU", "IMO", "CVE", "MEG", "WCP", "BTE",
+        "WEED", "ACB", "CRON", "HEXO", "OGI", "FIRE", "EMH", "HUGE", "VIDA", "ZENA",
+        
+        # South Korean ADRs
+        "LPL", "PKX", "SID", "SSL", "WIT", "KB", "SHG", "LFC", "YPF", "CX",
+        
+        # Indian ADRs
+        "WIT", "RDY", "TTM", "INFY", "HDB", "IBN", "WF", "VEDL", "SSTK", "SIFY",
+        
+        # Brazilian ADRs
+        "VALE", "PBR", "ITUB", "BBD", "ABV", "CBD", "ERJ", "SBS", "BAK", "UGP",
+        
+        # Israeli Tech ADRs
+        "CHKP", "CYBR", "NICE", "MNDY", "WIX", "FVRR", "NNOX", "RSKD", "TEVA", "MGIC",
+        
+        # Australian/Other
+        "BHP", "RIO", "WBK", "SHPGY", "WKHHY", "CIOXY", "DPOSY", "FTAI", "SE", "GRAB"
     ]
 
 def get_sector_etfs():
@@ -93,13 +121,59 @@ def get_all_market_stocks():
     all_stocks.extend(get_russell2000_sample())
     all_stocks.extend(get_international_stocks())
     
-    # Add popular individual stocks
-    popular_stocks = [
-        "ZOOM", "ZM", "UBER", "LYFT", "SNAP", "TWTR", "SQ", "SHOP", "SPOT", "RBLX",
-        "COIN", "HOOD", "DKNG", "PENN", "MGM", "WYNN", "LVS", "MRNA", "BNTX", "JNJ",
-        "PFE", "NVAX", "INO", "VXRT", "OCGN", "PROG", "PRTY", "BBBY", "EXPR", "KOSS"
+    # Add comprehensive additional stocks for broader market coverage
+    additional_mid_caps = [
+        # Technology Mid-Caps
+        "PLTR", "DDOG", "SNOW", "CRWD", "ZS", "OKTA", "TWLO", "ESTC", "DOCU", "COUP", 
+        "SPLK", "NOW", "VEEV", "TEAM", "HUBS", "ZEN", "BILL", "SMAR", "GTLB", "FIVN",
+        "PATH", "AI", "SMCI", "RBLX", "U", "FSLY", "NET", "CFLT", "MDB", "ZOOM", "ZM",
+        
+        # Healthcare & Biotech
+        "TDOC", "ILMN", "MKTX", "INCY", "ALNY", "BMRN", "SGEN", "EXAS", "TWST", "NVTA",
+        "PACB", "RXRX", "DNA", "CRSP", "EDIT", "NTLA", "BEAM", "PRIME", "MRNA", "BNTX",
+        
+        # FinTech & Digital Payments
+        "SOFI", "AFRM", "UPST", "LC", "OPEN", "RKT", "HOOD", "COIN", "MSTR", "SQ",
+        "UBER", "LYFT", "DASH", "ABNB", "BOOKING", "EXPE", "TRIP", "GRUB", "SNAP",
+        
+        # Consumer & E-commerce
+        "PTON", "LULU", "ETSY", "W", "WAYFAIR", "CHWY", "PETS", "BARK", "WOOF", "SHOP",
+        "SPOT", "DKNG", "PENN", "MGM", "WYNN", "LVS", "CCL", "NCLH", "RCL", "TWTR",
+        
+        # Clean Energy & EVs
+        "FSLR", "ENPH", "SEDG", "RUN", "NOVA", "CSIQ", "JKS", "DQ", "SOL", "MAXN",
+        "BE", "PLUG", "FCEL", "BLDP", "HYLN", "NKLA", "RIDE", "FSR", "LCID", "RIVN",
+        
+        # International ADRs
+        "BABA", "JD", "PDD", "BIDU", "NTES", "TME", "IQ", "VIPS", "WB", "ASML",
+        "SAP", "NVO", "UL", "TSM", "TM", "HMC", "NSANY", "SNE", "SONY", "SNY",
+        
+        # Meme Stocks & Popular Retail
+        "BB", "NOK", "PLTR", "SPCE", "WISH", "CLOV", "SKLZ", "PROG", "PRTY", "BBBY", 
+        "EXPR", "KOSS", "GME", "AMC", "NAKD", "SNDL", "GNUS", "IDEX", "IZEA", "KTOV",
+        
+        # Cannabis & Emerging Themes
+        "TLRY", "APHA", "CGC", "ACB", "CRON", "HEXO", "OGI", "ZYNE", "GRWG", "IIPR",
+        "SMG", "RIOT", "MARA", "HUT", "BITF", "CAN", "HIVE", "ARBK", "BTBT", "SOS"
     ]
-    all_stocks.extend(popular_stocks)
+    all_stocks.extend(additional_mid_caps)
+    
+    # Add Russell 2000 extended sample (small caps)
+    russell_extended = [
+        "AMAT", "ADI", "ALGN", "AMD", "AMGN", "ANSS", "ASML", "ATVI", "AVGO", "BIIB",
+        "BKNG", "CDNS", "CERN", "CHTR", "COST", "CSX", "CTAS", "CTSH", "DLTR", "EA", 
+        "EBAY", "EXC", "FAST", "FISV", "GILD", "HAS", "IDXX", "ILMN", "INCY", "INTC",
+        "INTU", "ISRG", "JD", "KLAC", "LRCX", "LULU", "MAR", "MCHP", "MDLZ", "MELI",
+        "MNST", "MRNA", "MRVL", "MTCH", "MU", "NFLX", "NTES", "NVDA", "NXPI", "ODFL",
+        "OKTA", "ORLY", "PAYX", "PDD", "PEP", "PYPL", "QCOM", "REGN", "ROST", "SBUX",
+        "SGEN", "SIRI", "SNPS", "SPLK", "SWKS", "TMUS", "TSLA", "TXN", "ULTA", "VRSK",
+        "VRSN", "VRTX", "WBA", "WDAY", "XEL", "XLNX", "ZM", "ADSK", "AEP", "ALXN",
+        "ANET", "BMRN", "BIDU", "CDW", "CERN", "CTXS", "DXCM", "EA", "EXPE", "FOXA",
+        "FOX", "GOOG", "GOOGL", "HCA", "HOLX", "HSIC", "ICLR", "IPGP", "JBHT", "KHC",
+        "LBTYA", "LBTYK", "LSXMA", "LSXMK", "MXIM", "NDAQ", "NLOK", "NTAP", "PCAR",
+        "SSNC", "TTWO", "TCOM", "WDC", "WLTW", "WYNN", "XRAY", "ZION", "ZS"
+    ]
+    all_stocks.extend(russell_extended)
     
     # Add expanded database (500+ additional stocks)
     try:

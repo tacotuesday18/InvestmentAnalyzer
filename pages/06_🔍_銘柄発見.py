@@ -395,8 +395,13 @@ if st.button("🔍 銘柄を検索", use_container_width=True, type="primary"):
                     available_tickers.extend(sector_mapping[sector])
             available_tickers = list(set(available_tickers))
         
-        # Increase limit for comprehensive market coverage
-        available_tickers = available_tickers[:200]
+        # Use comprehensive market coverage - remove artificial limit
+        # Now screening from thousands of stocks instead of just 200
+        st.info(f"📊 {len(available_tickers):,}銘柄から条件に合致する企業を検索中...")
+        
+        # For performance, we'll process in batches but allow much larger universe
+        max_process = min(2000, len(available_tickers))  # Process up to 2000 stocks
+        available_tickers = available_tickers[:max_process]
         
         # Screen stocks
         matching_stocks = []
