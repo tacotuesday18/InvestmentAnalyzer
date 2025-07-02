@@ -578,11 +578,21 @@ if st.button("🔍 銘柄を検索", use_container_width=True, type="primary"):
                 if current_ratio > 0 and not (current_ratio_range[0] <= current_ratio <= current_ratio_range[1]):
                     continue
                 
+                # Get company description
+                try:
+                    stock_info = yf.Ticker(ticker)
+                    business_summary = stock_info.info.get('longBusinessSummary', '')
+                    # Get a brief description (first 200 characters)
+                    description = business_summary[:200] + "..." if len(business_summary) > 200 else business_summary
+                except:
+                    description = "事業概要データなし"
+                
                 # If all criteria pass, add to results
                 matching_stocks.append({
                     'ticker': ticker,
                     'name': data.get('name', ticker),
                     'sector': data.get('sector', 'Unknown'),
+                    'description': description,
                     'current_price': data.get('current_price', 0),
                     'market_cap': data.get('market_cap', 0),
                     'revenue_growth': revenue_growth,
@@ -605,7 +615,14 @@ if st.button("🔍 銘柄を検索", use_container_width=True, type="primary"):
         
         # Display results
         st.markdown(f"### 🎯 検索結果: {len(matching_stocks)}銘柄が条件に合致")
-        st.markdown(f"<small>分析対象: {processed_count}銘柄 | 投資スタイル: {investment_style}</small>", unsafe_allow_html=True)
+        
+        # Handle display text based on search method
+        if search_method == "業界別":
+            search_info = f"業界: {selected_industry}"
+        else:
+            search_info = f"投資スタイル: {investment_style if 'investment_style' in locals() else 'カスタム設定'}"
+        
+        st.markdown(f"<small>分析対象: {processed_count}銘柄 | {search_info}</small>", unsafe_allow_html=True)
         
         if matching_stocks:
             # Sort by market cap descending
@@ -621,6 +638,8 @@ if st.button("🔍 銘柄を検索", use_container_width=True, type="primary"):
                     st.markdown(f"**{stock['ticker']} - {stock['name']}**")
                     st.markdown(f"セクター: {stock['sector']}")
                     st.markdown(f"現在株価: ${stock['current_price']:.2f}")
+                    # Add company description
+                    st.markdown(f"<small style='color: #666;'>{stock['description']}</small>", unsafe_allow_html=True)
                 
                 with col2:
                     # Key metrics

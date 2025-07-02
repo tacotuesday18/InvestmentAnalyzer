@@ -179,7 +179,7 @@ with col1:
         else:
             selected_ticker = search_input.upper()
     else:
-        selected_ticker = st.session_state.fundamental_current_ticker
+        selected_ticker = st.session_state.get('fundamental_current_ticker', 'AAPL')
 
 with col2:
     analyze_button = st.button("📋 ファンダメンタル分析", type="primary", use_container_width=True)
