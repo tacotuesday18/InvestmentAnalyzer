@@ -4,6 +4,8 @@
 An intelligent Streamlit-based company analysis platform delivering comprehensive business insights through advanced data visualization and interactive research tools. All financial data is sourced exclusively from Yahoo Finance to ensure accuracy and authenticity.
 
 ## Recent Changes  
+- **2025-07-02**: EXPANDED STOCK DISCOVERY TO 2000+ STOCKS - Removed artificial 200-stock limit, expanded comprehensive database to include mid-caps, small-caps, international ADRs, biotech, fintech, clean energy, crypto-related stocks across all major global exchanges
+- **2025-07-02**: IMPLEMENTED REAL MARKET DATA FOR HISTORICAL METRICS - Replaced all placeholder values with authentic Yahoo Finance data for S&P500/NASDAQ averages, removed industry average columns per user request
 - **2025-06-30**: ADDED COMPREHENSIVE FINANCIAL STATEMENTS TO EARNINGS PAGE - Integrated complete quarterly financial statements (income statement, balance sheet, cash flow statement) in table format with Japanese translations and proper formatting for latest 4 quarters
 - **2025-06-28**: ADDED PRODUCT/SERVICE SUCCESS ANALYSIS - Integrated comprehensive product portfolio evaluation including success/failure analysis, revenue contribution metrics, innovation success rates, and specific product performance data with concrete examples and metrics
 - **2025-06-28**: ADDED COMPREHENSIVE GROWTH & MARKETING STRATEGY ANALYSIS - Enhanced business model section with detailed growth strategy analysis (organic vs M&A, geographic expansion, product extension), comprehensive marketing strategy evaluation (CAC/LTV, customer lifecycle, digital marketing), and customer acquisition/retention frameworks

@@ -193,7 +193,11 @@ st.markdown("""
 st.markdown("""
 <div class="page-header">
     <div class="page-title">🔍 銘柄発見</div>
-    <div class="page-subtitle">あなたの投資スタイルに合った銘柄を見つけよう</div>
+    <div class="page-subtitle">2,000銘柄以上から投資スタイルに合った企業を発見</div>
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px; border-radius: 8px; margin: 15px 0; font-size: 14px;">
+        <strong>🌍 検索対象:</strong> S&P500 • NASDAQ • ダウ30 • Russell2000 • 国際株式(ADR) • 成長株 • バイオテック • フィンテック • クリーンエネルギー • 暗号通貨関連株など<br>
+        <strong>📊 包括的データベース:</strong> 主要取引所の2,000銘柄以上をリアルタイム分析
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
