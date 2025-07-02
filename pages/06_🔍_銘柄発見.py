@@ -252,7 +252,7 @@ with col1:
     if search_method == "投資スタイル別":
         st.markdown("**投資スタイルを選択 (プリセット条件)**")
         investment_style = st.selectbox(
-            "",
+            "投資スタイル選択",
             ["カスタム設定", "成長株投資", "バリュー株投資", "配当株投資", "安定株投資"],
             label_visibility="collapsed"
         )
@@ -280,12 +280,13 @@ with col1:
             "小売・Eコマース"
         ]
         selected_industry = st.selectbox(
-            "",
+            "業界選択",
             industry_options,
             label_visibility="collapsed"
         )
 
 with col2:
+    fast_mode = st.checkbox("⚡ 高速モード", value=True, help="500銘柄を約1-2分で検索（推奨）")
     if st.button("🔄 条件をリセット", use_container_width=True):
         st.rerun()
 
@@ -484,9 +485,30 @@ if st.button("🔍 銘柄を検索", use_container_width=True, type="primary"):
         # Now screening from thousands of stocks instead of just 200
         st.info(f"📊 {len(available_tickers):,}銘柄から条件に合致する企業を検索中...")
         
-        # For performance, we'll process in batches but allow much larger universe
-        max_process = min(2000, len(available_tickers))  # Process up to 2000 stocks
+        # Optimize performance based on user selection
+        if fast_mode:
+            max_process = min(500, len(available_tickers))  # Fast mode: 500 stocks for 1-2 minute response
+            st.info("⚡ 高速モード: 上位500銘柄を約1-2分で検索します")
+        else:
+            max_process = min(2000, len(available_tickers))  # Full mode: up to 2000 stocks (slower)
+            st.info("🔍 フルモード: 最大2,000銘柄を検索します（5-10分程度）")
+        
         available_tickers = available_tickers[:max_process]
+        
+        # Pre-filter out known delisted/problematic stocks to improve performance
+        delisted_stocks = {
+            'ALXN', 'APHA', 'ATVI', 'BBBY', 'NAKD', 'SNDL', 'EXPR', 'KOSS', 'BF.B',
+            'BLUE', 'BOOKING', 'BRK.B', 'CERN', 'COUP', 'CTXS', 'CELG', 'MYL',
+            'WORK', 'XLNX', 'MXIM', 'TCOM', 'PARA', 'WBD'
+        }
+        available_tickers = [t for t in available_tickers if t not in delisted_stocks]
+        
+        # Fix common ticker naming issues
+        ticker_fixes = {
+            'BRK.B': 'BRK-B',
+            'BF.B': 'BF-B'
+        }
+        available_tickers = [ticker_fixes.get(t, t) for t in available_tickers]
         
         # Screen stocks
         matching_stocks = []

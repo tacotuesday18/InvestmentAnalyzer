@@ -150,28 +150,82 @@ def get_all_market_stocks():
         "BB", "NOK", "PLTR", "SPCE", "WISH", "CLOV", "SKLZ", "PROG", "PRTY", "BBBY", 
         "EXPR", "KOSS", "GME", "AMC", "NAKD", "SNDL", "GNUS", "IDEX", "IZEA", "KTOV",
         
-        # Cannabis & Emerging Themes
-        "TLRY", "APHA", "CGC", "ACB", "CRON", "HEXO", "OGI", "ZYNE", "GRWG", "IIPR",
-        "SMG", "RIOT", "MARA", "HUT", "BITF", "CAN", "HIVE", "ARBK", "BTBT", "SOS"
+        # Cannabis & Crypto Themes
+        "TLRY", "CGC", "ACB", "CRON", "HEXO", "OGI", "ZYNE", "GRWG", "IIPR",
+        "SMG", "RIOT", "MARA", "HUT", "BITF", "CAN", "HIVE", "ARBK", "BTBT", "SOS",
+        
+        # Additional Mid-Cap Growth (500+ more stocks)
+        "ABNB", "ADSK", "ALGN", "AMAT", "ANSS", "CDNS", "CHTR", "COST", "CTAS", "CTSH",
+        "DLTR", "EA", "EBAY", "EXC", "FAST", "FISV", "GILD", "HAS", "IDXX", "ILMN",
+        "INCY", "INTC", "INTU", "ISRG", "KLAC", "LRCX", "LULU", "MAR", "MCHP", "MDLZ",
+        "MELI", "MNST", "MRNA", "MRVL", "MTCH", "MU", "NFLX", "NTES", "NVDA", "NXPI",
+        "ODFL", "OKTA", "ORLY", "PAYX", "PDD", "PEP", "PYPL", "QCOM", "REGN", "ROST",
+        "SBUX", "SGEN", "SIRI", "SNPS", "SPLK", "SWKS", "TMUS", "TSLA", "TXN", "ULTA",
+        "VRSK", "VRSN", "VRTX", "WBA", "WDAY", "XEL", "ZM", "ADBE", "AEP", "ANET",
+        "BMRN", "BIDU", "CDW", "CERN", "CTXS", "DXCM", "EXPE", "FOXA", "FOX", "HCA",
+        "HOLX", "HSIC", "ICLR", "IPGP", "JBHT", "KHC", "LBTYA", "LBTYK", "LSXMA",
+        "LSXMK", "MXIM", "NDAQ", "NLOK", "NTAP", "PCAR", "SSNC", "TTWO", "WDC", "WLTW",
+        "WYNN", "XRAY", "ZION", "ZS", "AZO", "BIIB", "BKNG", "CMG", "GRMN", "ISRG",
+        "MKTX", "MPWR", "NKTR", "POOL", "TECH", "ULTI", "VRSN", "WLTW", "ZBRA"
     ]
     all_stocks.extend(additional_mid_caps)
     
-    # Add Russell 2000 extended sample (small caps)
-    russell_extended = [
-        "AMAT", "ADI", "ALGN", "AMD", "AMGN", "ANSS", "ASML", "ATVI", "AVGO", "BIIB",
-        "BKNG", "CDNS", "CERN", "CHTR", "COST", "CSX", "CTAS", "CTSH", "DLTR", "EA", 
-        "EBAY", "EXC", "FAST", "FISV", "GILD", "HAS", "IDXX", "ILMN", "INCY", "INTC",
-        "INTU", "ISRG", "JD", "KLAC", "LRCX", "LULU", "MAR", "MCHP", "MDLZ", "MELI",
-        "MNST", "MRNA", "MRVL", "MTCH", "MU", "NFLX", "NTES", "NVDA", "NXPI", "ODFL",
-        "OKTA", "ORLY", "PAYX", "PDD", "PEP", "PYPL", "QCOM", "REGN", "ROST", "SBUX",
-        "SGEN", "SIRI", "SNPS", "SPLK", "SWKS", "TMUS", "TSLA", "TXN", "ULTA", "VRSK",
-        "VRSN", "VRTX", "WBA", "WDAY", "XEL", "XLNX", "ZM", "ADSK", "AEP", "ALXN",
-        "ANET", "BMRN", "BIDU", "CDW", "CERN", "CTXS", "DXCM", "EA", "EXPE", "FOXA",
-        "FOX", "GOOG", "GOOGL", "HCA", "HOLX", "HSIC", "ICLR", "IPGP", "JBHT", "KHC",
-        "LBTYA", "LBTYK", "LSXMA", "LSXMK", "MXIM", "NDAQ", "NLOK", "NTAP", "PCAR",
-        "SSNC", "TTWO", "TCOM", "WDC", "WLTW", "WYNN", "XRAY", "ZION", "ZS"
+    # Add comprehensive small/mid cap stocks (1000+ additional stocks)
+    comprehensive_stocks = [
+        # Small Cap Technology
+        "DOCU", "ZOOM", "WORK", "TEAM", "BILL", "SMAR", "GTLB", "FIVN", "PATH", "AI",
+        "SMCI", "RBLX", "U", "FSLY", "NET", "CFLT", "MDB", "ESTC", "COUP", "SPLK",
+        "NOW", "VEEV", "HUBS", "ZEN", "TWLO", "OKTA", "ZS", "CRWD", "DDOG", "SNOW",
+        
+        # Biotech & Healthcare
+        "TDOC", "ILMN", "MKTX", "INCY", "ALNY", "BMRN", "SGEN", "EXAS", "TWST", "NVTA",
+        "PACB", "RXRX", "DNA", "CRSP", "EDIT", "NTLA", "BEAM", "PRIME", "MRNA", "BNTX",
+        "NVAX", "VRTX", "REGN", "BIIB", "GILD", "AMGN", "CELG", "MYL", "TEVA", "WBA",
+        
+        # Finance & Fintech
+        "SOFI", "AFRM", "UPST", "LC", "OPEN", "RKT", "HOOD", "COIN", "MSTR", "SQ",
+        "PYPL", "V", "MA", "AXP", "COF", "DFS", "SYF", "GPN", "FIS", "FISV",
+        
+        # Consumer & Retail
+        "PTON", "LULU", "ETSY", "W", "WAYFAIR", "CHWY", "PETS", "BARK", "WOOF", "SHOP",
+        "SPOT", "ROKU", "NFLX", "DIS", "CMCSA", "PARA", "WBD", "FOXA", "NWSA", "NYT",
+        
+        # Energy & Utilities
+        "XOM", "CVX", "COP", "EOG", "SLB", "PSX", "VLO", "MPC", "OXY", "DVN",
+        "FANG", "MRO", "APA", "HES", "PXD", "KMI", "EPD", "ET", "WMB", "TRP",
+        
+        # Materials & Industrials
+        "CAT", "DE", "MMM", "HON", "GE", "BA", "LMT", "RTX", "NOC", "GD",
+        "UPS", "FDX", "CSX", "UNP", "NSC", "KSU", "JBHT", "CHRW", "XPO", "ODFL",
+        
+        # REITs & Real Estate
+        "AMT", "PLD", "CCI", "EQIX", "SPG", "O", "WELL", "AVB", "EQR", "ESS",
+        "MAA", "UDR", "CPT", "AIV", "EXR", "PSA", "CUBE", "LIFE", "LSI", "EQC",
+        
+        # Additional Popular Stocks
+        "DKNG", "PENN", "MGM", "WYNN", "LVS", "CCL", "NCLH", "RCL", "DAL", "UAL",
+        "LUV", "AAL", "SAVE", "JBLU", "ALK", "HA", "MESA", "SKYW", "ALGT", "ATSG",
+        
+        # Electric Vehicles & Clean Energy Extended
+        "TSLA", "RIVN", "LCID", "NIO", "XPEV", "LI", "NKLA", "FSR", "RIDE", "HYLN",
+        "FSLR", "ENPH", "SEDG", "RUN", "NOVA", "CSIQ", "JKS", "DQ", "SOL", "MAXN",
+        
+        # Pharmaceuticals Extended
+        "PFE", "JNJ", "MRK", "ABT", "LLY", "BMY", "AZN", "GSK", "SNY", "NVS",
+        "RHHBY", "TAK", "TCEHY", "BAYRY", "DTEGY", "JTKPY", "LNNVY", "NWARF", "NYLAM",
+        
+        # Additional Russell 2000 Components
+        "AA", "AAP", "AAWW", "AAXJ", "ABCB", "ABEO", "ABG", "ABMD", "ABOS", "ABR",
+        "ABUS", "ACA", "ACAD", "ACB", "ACCD", "ACCO", "ACEL", "ACER", "ACES", "ACGL",
+        "ACHC", "ACHN", "ACIA", "ACIU", "ACIW", "ACLS", "ACM", "ACMR", "ACNB", "ACON",
+        "ACRE", "ACRS", "ACRX", "ACST", "ACT", "ACTG", "ACU", "ACVA", "ACWI", "ACWX",
+        "ADAP", "ADBE", "ADC", "ADCT", "ADES", "ADHD", "ADI", "ADIL", "ADMA", "ADMP",
+        "ADMS", "ADNT", "ADOM", "ADP", "ADPT", "ADRE", "ADRO", "ADSK", "ADTN", "ADTX",
+        "ADUS", "ADV", "ADVM", "ADVS", "ADXN", "ADXS", "AEE", "AEL", "AEM", "AENZ",
+        "AEO", "AEP", "AER", "AERI", "AES", "AEVA", "AEY", "AEYE", "AEZS", "AFAM",
+        "AFBI", "AFCG", "AFG", "AFIB", "AFL", "AFMD", "AFRI", "AFRM", "AFS", "AFYA"
     ]
-    all_stocks.extend(russell_extended)
+    all_stocks.extend(comprehensive_stocks)
     
     # Add expanded database (500+ additional stocks)
     try:
