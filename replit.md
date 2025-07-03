@@ -4,6 +4,8 @@
 An intelligent Streamlit-based company analysis platform delivering comprehensive business insights through advanced data visualization and interactive research tools. All financial data is sourced exclusively from Yahoo Finance to ensure accuracy and authenticity.
 
 ## Recent Changes  
+- **2025-07-03**: IMPLEMENTED DYNAMIC STOCK TREND STORYTELLING VISUALIZATION - Added comprehensive storytelling analysis feature with interactive charts, market sentiment analysis, key event detection, and narrative generation for enhanced user engagement and understanding
+- **2025-07-03**: FIXED STOCK DISCOVERY FILTERING - Simplified overly restrictive criteria, added time estimates for stock universe selection (250-2000 stocks), resolved KeyError crashes, now successfully returns results for all investment styles
 - **2025-07-03**: EXPANDED RUSSELL 2000 COVERAGE - Added comprehensive Russell 2000 small-cap stocks to stock discovery with business descriptions, including technology, healthcare, biotech, fintech, clean energy, meme stocks, and ETFs for complete market coverage
 - **2025-07-02**: OPTIMIZED STOCK DISCOVERY PERFORMANCE - Added fast mode (1-2 minutes) vs full mode (5-10 minutes), pre-filtered delisted stocks, improved ticker validation for better user experience
 - **2025-07-02**: FOCUSED STOCK DISCOVERY ON US STOCKS ONLY - Removed international ADRs per user request, now exclusively searches US market with 800+ comprehensive domestic stocks
@@ -54,6 +56,8 @@ An intelligent Streamlit-based company analysis platform delivering comprehensiv
 4. **DCF Calculator** - Discounted cash flow valuation tool
 5. **Earnings Analysis** - Latest earnings data and trends
 6. **Stock Discovery** - New screening tool for retail investors
+7. **Investment Education** - Educational content and tutorials
+8. **Dynamic Trend Storytelling** - Interactive storytelling visualization with sentiment analysis
 
 ### Key Features
 - Live Yahoo Finance data integration
