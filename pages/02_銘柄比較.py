@@ -486,6 +486,8 @@ if comparison_button_clicked:
         st.warning("少なくとも1つの評価方法を選択してください。")
     else:
         # Store current selection
+        # Clear any existing results to ensure fresh data fetch
+        st.session_state.stored_comparison_results = {}
         st.session_state.stored_comparison_tickers = selected_tickers.copy()
         st.session_state.stored_comparison_methods = valuation_methods.copy()
         
