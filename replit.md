@@ -4,6 +4,7 @@
 An intelligent Streamlit-based company analysis platform delivering comprehensive business insights through advanced data visualization and interactive research tools. All financial data is sourced exclusively from Yahoo Finance to ensure accuracy and authenticity.
 
 ## Recent Changes  
+- **2025-07-03**: EXPANDED RUSSELL 2000 COVERAGE - Added comprehensive Russell 2000 small-cap stocks to stock discovery with business descriptions, including technology, healthcare, biotech, fintech, clean energy, meme stocks, and ETFs for complete market coverage
 - **2025-07-02**: OPTIMIZED STOCK DISCOVERY PERFORMANCE - Added fast mode (1-2 minutes) vs full mode (5-10 minutes), pre-filtered delisted stocks, improved ticker validation for better user experience
 - **2025-07-02**: FOCUSED STOCK DISCOVERY ON US STOCKS ONLY - Removed international ADRs per user request, now exclusively searches US market with 800+ comprehensive domestic stocks
 - **2025-07-02**: ADDED INDUSTRY-BASED SEARCH TO STOCK DISCOVERY - Users can now search by specific industries (technology, healthcare, finance, etc.) in addition to investment styles (growth, value, dividend)

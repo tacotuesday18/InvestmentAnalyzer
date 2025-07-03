@@ -45,13 +45,77 @@ def get_dow30_tickers():
         "TRV", "GS", "BA", "MMM", "HON", "AMGN", "WBA", "INTC", "CSCO", "DOW"
     ]
 
-def get_russell2000_sample():
-    """Get sample of Russell 2000 small-cap stocks"""
+def get_russell2000_stocks():
+    """Get comprehensive Russell 2000 small-cap stocks"""
     return [
-        "ROKU", "PLUG", "AMC", "GME", "BB", "NOK", "SNDL", "CLOV", "WISH", "SOFI",
-        "PLTR", "SPCE", "RIOT", "MARA", "TLRY", "ACB", "SIRI", "F", "AAL", "CCL",
-        "NCLH", "RCL", "DAL", "UAL", "LUV", "JETS", "XRT", "IWM", "VTWO", "SCHA"
+        # Russell 2000 Technology Companies
+        "PLUG", "RIOT", "MARA", "PLTR", "SPCE", "SOFI", "ROKU", "SIRI", "BB", "NOK",
+        "AI", "SMCI", "PATH", "FIVN", "GTLB", "SMAR", "BILL", "ZEN", "HUBS", "TEAM",
+        "CFLT", "NET", "FSLY", "U", "RBLX", "ZOOM", "ZM", "DOCU", "COUP", "ESTC",
+        "TWLO", "OKTA", "ZS", "CRWD", "SNOW", "DDOG", "MDB", "VEEV", "NOW", "SPLK",
+        
+        # Russell 2000 Healthcare & Biotech
+        "TDOC", "EXAS", "TWST", "NVTA", "PACB", "RXRX", "DNA", "CRSP", "EDIT", "NTLA",
+        "BEAM", "PRIME", "MRNA", "BNTX", "ILMN", "MKTX", "INCY", "ALNY", "BMRN", "SGEN",
+        "VRTX", "REGN", "BIIB", "AMGN", "CELG", "GILD", "ISRG", "VRTX", "ABBV", "JNJ",
+        
+        # Russell 2000 Financial Services
+        "UPST", "LC", "OPEN", "RKT", "HOOD", "COIN", "MSTR", "SQ", "AFRM", "ALLY",
+        "COF", "FITB", "HBAN", "KEY", "RF", "ZION", "CMA", "PBCT", "CFG", "STI",
+        
+        # Russell 2000 Consumer Discretionary
+        "PTON", "LULU", "ETSY", "W", "WAYFAIR", "CHWY", "PETS", "BARK", "WOOF", "SHOP",
+        "SPOT", "DKNG", "PENN", "MGM", "WYNN", "LVS", "CCL", "NCLH", "RCL", "ABNB",
+        "UBER", "LYFT", "DASH", "GRUB", "SNAP", "PINS", "TWTR", "FB", "NFLX", "DIS",
+        
+        # Russell 2000 Energy Companies
+        "FSLR", "ENPH", "SEDG", "RUN", "NOVA", "CSIQ", "JKS", "DQ", "SOL", "MAXN",
+        "BE", "FCEL", "BLDP", "HYLN", "NKLA", "RIDE", "FSR", "LCID", "RIVN", "TSLA",
+        "XOM", "CVX", "COP", "SLB", "EOG", "PSX", "VLO", "MPC", "HES", "DVN",
+        
+        # Russell 2000 Industrial Companies
+        "CAT", "DE", "HON", "UNP", "UPS", "FDX", "GE", "MMM", "LMT", "RTX",
+        "BA", "EMR", "ETN", "PH", "CMI", "ITW", "DHR", "ROK", "DOV", "FLR",
+        
+        # Russell 2000 Materials & Mining
+        "NEM", "FCX", "GOLD", "PAAS", "HL", "CDE", "EXK", "SSRM", "WPM", "FNV",
+        "SLV", "GLD", "GDXJ", "SILJ", "COPX", "REMX", "PICK", "GUNR", "DBB", "DBA",
+        
+        # Russell 2000 Real Estate
+        "AMT", "PLD", "CCI", "EQIX", "PSA", "EXR", "AVB", "EQR", "UDR", "CPT",
+        "ESS", "MAA", "AIV", "BXP", "VTR", "WELL", "PEAK", "DOC", "MPW", "OHI",
+        
+        # Russell 2000 Consumer Staples
+        "WMT", "PG", "KO", "PEP", "COST", "WBA", "CVS", "TGT", "HD", "LOW",
+        "AMZN", "SBUX", "MCD", "NKE", "DG", "DLTR", "KR", "SYY", "ADM", "TSN",
+        
+        # Russell 2000 Communication Services
+        "GOOGL", "GOOG", "META", "NFLX", "DIS", "CMCSA", "VZ", "T", "TMUS", "DISH",
+        "CHTR", "FOXA", "FOX", "PARA", "WBD", "NWSA", "NWS", "IPG", "OMC", "TTWO",
+        
+        # Russell 2000 Utilities
+        "NEE", "DUK", "SO", "D", "EXC", "XEL", "SRE", "AEP", "PCG", "ED",
+        "ETR", "ES", "FE", "EIX", "PPL", "CMS", "DTE", "ATO", "NI", "LNT",
+        
+        # Popular Meme & Retail Trading Stocks in Russell 2000
+        "AMC", "GME", "BBBY", "SNDL", "CLOV", "WISH", "TLRY", "ACB", "PROG", "PRTY",
+        "SKLZ", "GOEV", "WKHS", "BLNK", "CHPT", "EVGO", "VLTA", "QS", "ARVL", "NKLA",
+        
+        # Russell 2000 REITs and Infrastructure
+        "SPG", "REG", "KIM", "MAC", "TCO", "WPG", "CBL", "PEI", "SKT", "WRI",
+        "FRT", "KRG", "RPT", "ROIC", "UE", "BRX", "CDR", "SRC", "AKR", "RPAI",
+        
+        # Russell 2000 Small-Cap Growth
+        "ROKU", "ZM", "PTON", "UBER", "LYFT", "DASH", "ABNB", "COIN", "HOOD", "RBLX",
+        "DKNG", "PENN", "MGM", "WYNN", "LVS", "NCLH", "CCL", "RCL", "AAL", "DAL",
+        
+        # Russell 2000 ETFs for reference
+        "IWM", "VTWO", "SCHA", "IJR", "RUT", "URTY", "UWM", "TWM", "RWM", "SRTY"
     ]
+
+def get_russell2000_sample():
+    """Get sample of Russell 2000 small-cap stocks for backward compatibility"""
+    return get_russell2000_stocks()[:30]  # Return first 30 for sample
 
 def get_international_stocks():
     """Get major international stocks (ADRs and direct listings) - significantly expanded"""
@@ -111,14 +175,14 @@ def get_sector_etfs():
     }
 
 def get_all_market_stocks():
-    """Get comprehensive list of all major market stocks including 500+ additional stocks"""
+    """Get comprehensive list of all major market stocks including Russell 2000"""
     all_stocks = []
     
-    # Add major US indices only
+    # Add major US indices (now includes full Russell 2000)
     all_stocks.extend(get_sp500_tickers())
     all_stocks.extend(get_nasdaq100_tickers()) 
     all_stocks.extend(get_dow30_tickers())
-    all_stocks.extend(get_russell2000_sample())
+    all_stocks.extend(get_russell2000_stocks())  # Full Russell 2000 instead of sample
     
     # Add comprehensive additional stocks for broader market coverage
     additional_mid_caps = [
