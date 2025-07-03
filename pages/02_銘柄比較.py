@@ -349,48 +349,20 @@ if st.button("🔄 データ更新", key="refresh_all_data"):
     st.success("データを更新しました！")
     st.rerun()
 
-# Search and filter interface
-col1, col2 = st.columns([3, 1])
-
-with col1:
-    search_query = st.text_input(
-        "", 
-        placeholder="企業名またはティッカーシンボルを入力 (例: Apple, Microsoft, AAPL, MSFT)", 
-        help="企業名の一部またはティッカーシンボルで検索できます",
-        label_visibility="collapsed"
-    )
-
-with col2:
-    categories = ["All"] + get_all_categories()
-    selected_category = st.selectbox("カテゴリー", categories)
-
-# Apply search and category filters
-if search_query:
-    search_results = search_stocks_by_name(search_query)
-    if search_results:
-        available_tickers = search_results[:50]
-    else:
-        st.warning(f"'{search_query}' に一致する銘柄が見つかりません")
-        available_tickers = get_all_tickers()[:50]
-else:
-    available_tickers = get_all_tickers()
-
-if selected_category != "All":
-    category_tickers = get_stocks_by_category(selected_category)
-    if search_query:
-        # Intersection of search results and category
-        available_tickers = [t for t in available_tickers if t in category_tickers]
-    else:
-        available_tickers = category_tickers
+# Initial stock selection
+available_tickers = get_all_tickers()[:100]  # Start with top 100 stocks
 
 # Add company search functionality
 st.markdown("### 🔍 企業検索")
 search_input = st.text_input(
     "企業名またはティッカーシンボルを入力",
-    placeholder="例: Apple, Microsoft, AAPL, MSFT",
+    placeholder="例: Apple, Microsoft, AAPL, MSFT, Disney",
     help="企業名（日本語・英語）またはティッカーシンボルで検索",
     key="comparison_search_input"
 )
+
+# Create a clean copy of available tickers as strings only
+clean_available_tickers = [str(ticker) for ticker in available_tickers if isinstance(ticker, str)]
 
 # Process search input and add to available tickers
 if search_input:
@@ -400,18 +372,18 @@ if search_input:
         found_ticker = search_results[0]['ticker']
         st.success(f"検索結果: {search_results[0]['name']} ({found_ticker})")
         # Add to available tickers if not already there
-        if found_ticker not in available_tickers:
-            available_tickers.append(found_ticker)
+        if found_ticker not in clean_available_tickers:
+            clean_available_tickers.insert(0, found_ticker)  # Add at beginning for easy selection
     else:
         # Try to use the input as ticker directly
         direct_ticker = search_input.upper()
         st.info(f"直接ティッカーとして使用: {direct_ticker}")
-        if direct_ticker not in available_tickers:
-            available_tickers.append(direct_ticker)
+        if direct_ticker not in clean_available_tickers:
+            clean_available_tickers.insert(0, direct_ticker)
 
 # Create options with company names
 ticker_options = {}
-for ticker in available_tickers:
+for ticker in clean_available_tickers:
     stock_info = get_stock_info(ticker)
     ticker_options[ticker] = f"{ticker} - {stock_info['name']}"
 
@@ -420,7 +392,7 @@ st.markdown("**比較銘柄選択**")
 selected_tickers = st.multiselect(
     "比較する銘柄を選択してください（最大8つ）",
     options=list(ticker_options.keys()),
-    format_func=lambda x: ticker_options[x],
+    format_func=lambda x: ticker_options.get(x, x),
     default=list(ticker_options.keys())[:2] if len(ticker_options) >= 2 else [],
     help="複数の銘柄を選択して財務指標を比較できます"
 )

@@ -628,6 +628,20 @@ def get_enhanced_estimates(ticker):
             'roe': 25.5,
             'shares_outstanding': 1200.0,
             'dividend_yield': 0.0
+        },
+        'DIS': {
+            'name': 'The Walt Disney Company',
+            'industry': 'Entertainment',
+            'sector': 'Communication Services',
+            'revenue': 82722,  # 2024 actual revenue in millions
+            'net_income': 2354,  # 2024 actual net income in millions
+            'historical_growth': 1.2,  # Recent growth rate
+            'profit_margin': 2.8,
+            'pe_ratio': 39.5,  # Calculated from current metrics
+            'pb_ratio': 1.4,
+            'roe': 3.5,
+            'shares_outstanding': 1822.0,  # millions of shares
+            'dividend_yield': 0.7  # Disney has modest dividend
         }
     }
     
