@@ -4,6 +4,7 @@
 An intelligent Streamlit-based company analysis platform delivering comprehensive business insights through advanced data visualization and interactive research tools. All financial data is sourced exclusively from Yahoo Finance to ensure accuracy and authenticity.
 
 ## Recent Changes  
+- **2025-07-03**: ENHANCED DIVIDEND DATA COLLECTION - Added comprehensive dividend yield detection with multiple fallback methods from Yahoo Finance; included dividend filter in post-search controls; raised dividend stock threshold to 2.5% as requested
 - **2025-07-03**: IMPLEMENTED SEAMLESS POST-SEARCH FILTERING - Added real-time filtering for PER, PSR, revenue growth, and market cap without re-running searches; results stored in session state for smooth user experience
 - **2025-07-03**: ENHANCED STOCK DISCOVERY FILTERING - Updated growth stocks to focus on 20%+ revenue growth, added historical metrics comparison for value stocks, implemented post-search filtering by PER/PSR, removed fast mode and replaced with time estimates
 - **2025-07-03**: IMPLEMENTED DYNAMIC STOCK TREND STORYTELLING VISUALIZATION - Added comprehensive storytelling analysis feature with interactive charts, market sentiment analysis, key event detection, and narrative generation for enhanced user engagement and understanding

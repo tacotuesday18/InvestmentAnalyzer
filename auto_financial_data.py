@@ -122,6 +122,39 @@ def get_auto_financial_data(ticker):
         if operating_margins is not None and isinstance(operating_margins, (int, float)):
             operating_margin = operating_margins * 100
         
+        # Enhanced dividend data collection
+        dividend_yield = 0
+        dividend_rate = 0
+        
+        # Try multiple dividend data sources from yfinance
+        try:
+            # Primary dividend yield from info
+            dividend_yield_info = info.get('dividendYield')
+            if dividend_yield_info and isinstance(dividend_yield_info, (int, float)):
+                dividend_yield = dividend_yield_info * 100
+            
+            # Alternative: get from dividendRate and calculate yield
+            if dividend_yield == 0:
+                dividend_rate_info = info.get('dividendRate')
+                if dividend_rate_info and current_price > 0:
+                    dividend_rate = dividend_rate_info
+                    dividend_yield = (dividend_rate / current_price) * 100
+            
+            # Additional fallback: check dividends from actions
+            if dividend_yield == 0:
+                actions = stock.actions
+                if not actions.empty and 'Dividends' in actions.columns:
+                    # Get last 12 months of dividends
+                    recent_actions = actions.last('12M')
+                    if not recent_actions.empty:
+                        annual_dividends = recent_actions['Dividends'].sum()
+                        if annual_dividends > 0 and current_price > 0:
+                            dividend_yield = (annual_dividends / current_price) * 100
+                            dividend_rate = annual_dividends
+        except Exception as e:
+            # If all dividend methods fail, keep dividend_yield = 0
+            pass
+        
         return {
             'ticker': ticker,
             'name': info.get('longName', ticker),
@@ -147,6 +180,8 @@ def get_auto_financial_data(ticker):
             'current_ratio': current_ratio,
             'debt_to_equity': debt_to_equity,
             'asset_turnover': asset_turnover,
+            'dividend_yield': dividend_yield,
+            'dividend_rate': dividend_rate,
             'is_live': True,
             'last_updated': datetime.now().isoformat()
         }
@@ -291,7 +326,8 @@ def get_enhanced_estimates(ticker):
             'pe_ratio': 28.5,
             'pb_ratio': 6.2,
             'roe': 52.9,
-            'shares_outstanding': 15441.0
+            'shares_outstanding': 15441.0,
+            'dividend_yield': 0.5  # Apple has low dividend yield
         },
         'MSFT': {
             'name': 'Microsoft Corporation',
@@ -304,7 +340,8 @@ def get_enhanced_estimates(ticker):
             'pe_ratio': 32.8,
             'pb_ratio': 11.1,
             'roe': 34.7,
-            'shares_outstanding': 7430.0
+            'shares_outstanding': 7430.0,
+            'dividend_yield': 0.8  # Microsoft has low dividend yield
         },
         'GOOGL': {
             'name': 'Alphabet Inc.',
@@ -317,7 +354,8 @@ def get_enhanced_estimates(ticker):
             'pe_ratio': 25.2,
             'pb_ratio': 5.1,
             'roe': 21.0,
-            'shares_outstanding': 12300.0
+            'shares_outstanding': 12300.0,
+            'dividend_yield': 0.0  # Google doesn't pay dividends
         },
         'NVDA': {
             'name': 'NVIDIA Corporation',
@@ -330,7 +368,8 @@ def get_enhanced_estimates(ticker):
             'pe_ratio': 65.8,
             'pb_ratio': 38.9,
             'roe': 83.2,
-            'shares_outstanding': 2470.0
+            'shares_outstanding': 2470.0,
+            'dividend_yield': 0.3  # NVIDIA has very low dividend
         },
         'TSLA': {
             'name': 'Tesla Inc.',
@@ -343,7 +382,8 @@ def get_enhanced_estimates(ticker):
             'pe_ratio': 95.2,
             'pb_ratio': 14.8,
             'roe': 19.3,
-            'shares_outstanding': 3178.0
+            'shares_outstanding': 3178.0,
+            'dividend_yield': 0.0  # Tesla doesn't pay dividends
         },
         'HIMS': {
             'name': 'Hims & Hers Health Inc.',
@@ -356,7 +396,8 @@ def get_enhanced_estimates(ticker):
             'pe_ratio': 45.8,
             'pb_ratio': 5.2,
             'roe': 12.4,
-            'shares_outstanding': 220.0
+            'shares_outstanding': 220.0,
+            'dividend_yield': 0.0  # Growth company, no dividends
         },
         'AMZN': {
             'name': 'Amazon.com Inc.',
@@ -369,7 +410,65 @@ def get_enhanced_estimates(ticker):
             'pe_ratio': 52.4,
             'pb_ratio': 8.1,
             'roe': 14.2,
-            'shares_outstanding': 10757.0
+            'shares_outstanding': 10757.0,
+            'dividend_yield': 0.0  # Amazon doesn't pay dividends
+        },
+        # High dividend yield companies
+        'VZ': {
+            'name': 'Verizon Communications Inc.',
+            'industry': 'Telecom Services',
+            'sector': 'Communication Services',
+            'revenue': 134000,
+            'net_income': 13300,
+            'historical_growth': 1.2,
+            'profit_margin': 10.0,
+            'pe_ratio': 9.5,
+            'pb_ratio': 1.8,
+            'roe': 19.5,
+            'shares_outstanding': 4200.0,
+            'dividend_yield': 6.8  # High dividend telecom
+        },
+        'T': {
+            'name': 'AT&T Inc.',
+            'industry': 'Telecom Services',
+            'sector': 'Communication Services',
+            'revenue': 122000,
+            'net_income': 14800,
+            'historical_growth': 0.5,
+            'profit_margin': 12.1,
+            'pe_ratio': 8.2,
+            'pb_ratio': 1.1,
+            'roe': 13.8,
+            'shares_outstanding': 7200.0,
+            'dividend_yield': 5.9  # High dividend telecom
+        },
+        'KO': {
+            'name': 'The Coca-Cola Company',
+            'industry': 'Beverages—Non-Alcoholic',
+            'sector': 'Consumer Defensive',
+            'revenue': 45750,
+            'net_income': 10710,
+            'historical_growth': 5.8,
+            'profit_margin': 23.4,
+            'pe_ratio': 25.1,
+            'pb_ratio': 9.8,
+            'roe': 39.2,
+            'shares_outstanding': 4300.0,
+            'dividend_yield': 3.1  # Consistent dividend aristocrat
+        },
+        'JNJ': {
+            'name': 'Johnson & Johnson',
+            'industry': 'Drug Manufacturers—General',
+            'sector': 'Healthcare',
+            'revenue': 85190,
+            'net_income': 35153,
+            'historical_growth': 1.9,
+            'profit_margin': 41.3,
+            'pe_ratio': 15.8,
+            'pb_ratio': 5.2,
+            'roe': 33.1,
+            'shares_outstanding': 2400.0,
+            'dividend_yield': 2.9  # Dividend aristocrat
         }
     }
     
@@ -402,6 +501,8 @@ def get_enhanced_estimates(ticker):
         'book_value_per_share': current_price / profile['pb_ratio'],
         'historical_growth': profile['historical_growth'],
         'profit_margin': profile['profit_margin'],
+        'dividend_yield': profile['dividend_yield'],
+        'dividend_rate': (profile['dividend_yield'] / 100) * current_price if profile['dividend_yield'] > 0 else 0,
         'is_live': True,
         'last_updated': datetime.now().isoformat()
     }

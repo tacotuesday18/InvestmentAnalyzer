@@ -614,8 +614,8 @@ st.markdown('</div>', unsafe_allow_html=True)
 if search_method == "簡単検索（おすすめ）":
     st.markdown("### 🚀 検索開始")
     if actual_style == "配当株投資":
-        st.markdown("**準備完了！** 配当利回り0.5%以上の配当株を検索します。検索後にフィルターで利回りを調整できます。")
-        search_button_text = "💎 配当株を検索開始！"
+        st.markdown("**準備完了！** 配当利回り2.5%以上の優良配当株を検索します。検索後にフィルターで利回りを調整できます。")
+        search_button_text = "💎 配当利回り2.5%以上で検索開始！"
     else:
         st.markdown("**準備完了！** 下のボタンを押すだけで、あなたにピッタリの銘柄を見つけます。")
         search_button_text = f"🎯 {actual_style}で検索開始！"
@@ -735,8 +735,8 @@ if st.button(search_button_text, use_container_width=True, type="primary"):
                         should_include = True
                         
                 elif actual_style == "配当株投資":
-                    # Dividend: Include any stock with dividend yield above 0.5% (lower threshold for better coverage)
-                    if dividend_yield >= 0.5:
+                    # Dividend: Include stocks with dividend yield above 2.5% as requested
+                    if dividend_yield >= 2.5:
                         should_include = True
                         
                 elif actual_style == "安定株投資":
