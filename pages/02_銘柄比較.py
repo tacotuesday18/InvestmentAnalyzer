@@ -17,8 +17,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from stock_data import get_stock_data, get_available_tickers, compare_valuations, get_industry_average
 from stock_data import update_stock_price, fetch_tradingview_price, refresh_stock_prices
 from stock_data import load_sample_data, ensure_sample_data_dir, SAMPLE_DATA_DIR
-from comprehensive_stock_data import search_stocks_by_name, get_stock_info
-from comprehensive_market_stocks import get_all_market_stocks, get_stock_info_enhanced
+from comprehensive_stock_data import search_stocks_by_name, get_all_tickers, get_stock_info, get_stocks_by_category, get_all_categories
 from real_time_fetcher import fetch_current_stock_price, fetch_comprehensive_data, show_live_price_indicator, display_market_status
 from yahoo_finance_data import get_yahoo_finance_data, calculate_growth_rate
 from historical_metrics_chart import display_historical_metrics_chart
@@ -341,7 +340,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # 利用可能なティッカーシンボル（数百銘柄）
-available_tickers = get_all_market_stocks()  # Already returns list of ticker strings
+available_tickers = get_all_tickers()
 
 # データ更新ボタン
 if st.button("🔄 データ更新", key="refresh_all_data"):
@@ -350,98 +349,53 @@ if st.button("🔄 データ更新", key="refresh_all_data"):
     st.success("データを更新しました！")
     st.rerun()
 
-# Company search section - using same pattern as business model and earnings pages
+# Initial stock selection
+available_tickers = get_all_tickers()[:100]  # Start with top 100 stocks
+
+# Add company search functionality
 st.markdown("### 🔍 企業検索")
+search_input = st.text_input(
+    "企業名またはティッカーシンボルを入力",
+    placeholder="例: Apple, Microsoft, AAPL, MSFT, Disney",
+    help="企業名（日本語・英語）またはティッカーシンボルで検索",
+    key="comparison_search_input"
+)
 
-col1, col2 = st.columns([3, 1])
+# Create a clean copy of available tickers as strings only
+clean_available_tickers = [str(ticker) for ticker in available_tickers if isinstance(ticker, str)]
 
-with col1:
-    search_input = st.text_input(
-        "企業名またはティッカーシンボルを入力",
-        placeholder="例: Apple, Microsoft, AAPL, MSFT, Disney",
-        help="企業名（日本語・英語）またはティッカーシンボルで検索",
-        value=st.session_state.get('comparison_search_input', '')
-    )
-    
-    if search_input:
-        st.session_state.comparison_search_input = search_input
-        from comprehensive_stock_data import search_stocks_by_name
-        results = search_stocks_by_name(search_input)
-        
-        if results:
-            # Display search results
-            st.success(f"検索結果: {results[0]['name']} ({results[0]['ticker']})")
-            selected_ticker = results[0]['ticker']
-        else:
-            # Try direct ticker input
-            selected_ticker = search_input.upper()
-            st.info(f"直接ティッカーとして使用: {selected_ticker}")
+# Process search input and add to available tickers
+if search_input:
+    from comprehensive_stock_data import search_stocks_by_name
+    search_results = search_stocks_by_name(search_input)
+    if search_results:
+        found_ticker = search_results[0]['ticker']
+        st.success(f"検索結果: {search_results[0]['name']} ({found_ticker})")
+        # Add to available tickers if not already there
+        if found_ticker not in clean_available_tickers:
+            clean_available_tickers.insert(0, found_ticker)  # Add at beginning for easy selection
     else:
-        selected_ticker = None
-
-with col2:
-    # Clear search button
-    if st.button("検索クリア", help="検索をクリアして最初から選択"):
-        st.session_state.comparison_search_input = ""
-        st.rerun()
-
-# Add clear selection button
-col_a, col_b = st.columns([2, 1])
-with col_b:
-    if st.button("選択をリセット", help="選択した銘柄をすべてクリア"):
-        st.session_state.selected_comparison_tickers = []
-        st.rerun()
-
-# Create expanded ticker list for multiselect  
-available_tickers = get_all_market_stocks()  # Get all 888+ market stocks (returns list of ticker strings)
-
-# If search found a ticker, add it to the beginning of the list
-if selected_ticker and selected_ticker not in available_tickers:
-    available_tickers.insert(0, selected_ticker)
+        # Try to use the input as ticker directly
+        direct_ticker = search_input.upper()
+        st.info(f"直接ティッカーとして使用: {direct_ticker}")
+        if direct_ticker not in clean_available_tickers:
+            clean_available_tickers.insert(0, direct_ticker)
 
 # Create options with company names
 ticker_options = {}
-for ticker in available_tickers:
-    # Use enhanced stock info for better company names
-    stock_info = get_stock_info_enhanced(ticker)
-    if stock_info:
-        ticker_options[ticker] = f"{ticker} - {stock_info['name']}"
-    else:
-        # Fallback to basic info
-        basic_info = get_stock_info(ticker)
-        ticker_options[ticker] = f"{ticker} - {basic_info['name']}"
+for ticker in clean_available_tickers:
+    stock_info = get_stock_info(ticker)
+    ticker_options[ticker] = f"{ticker} - {stock_info['name']}"
 
 # 統合された銘柄選択（最大8つまで）
 st.markdown("**比較銘柄選択**")
-st.info(f"📈 利用可能銘柄数: {len(available_tickers)}+ (S&P500, NASDAQ, Russell 2000など全主要市場)")
-
-with col_a:
-    st.markdown("*検索で見つからない銘柄も直接ティッカーを入力すれば利用できます*")
-
-# Use session state to maintain user selections
-if 'selected_comparison_tickers' not in st.session_state:
-    # Only set default on first load
-    if selected_ticker and selected_ticker in ticker_options:
-        st.session_state.selected_comparison_tickers = [selected_ticker]
-    else:
-        st.session_state.selected_comparison_tickers = ['AAPL', 'MSFT'] if all(t in ticker_options for t in ['AAPL', 'MSFT']) else list(ticker_options.keys())[:2]
-
-# If user just searched for a new ticker, add it to their selection
-if selected_ticker and selected_ticker not in st.session_state.selected_comparison_tickers and selected_ticker in ticker_options:
-    st.session_state.selected_comparison_tickers.append(selected_ticker)
-
 selected_tickers = st.multiselect(
     "比較する銘柄を選択してください（最大8つ）",
     options=list(ticker_options.keys()),
     format_func=lambda x: ticker_options.get(x, x),
-    default=st.session_state.selected_comparison_tickers,
-    help="複数の銘柄を選択して財務指標を比較できます",
-    key='multiselect_comparison_tickers'
+    default=list(ticker_options.keys())[:2] if len(ticker_options) >= 2 else [],
+    help="複数の銘柄を選択して財務指標を比較できます"
 )
-
-# Update session state when user changes selection
-if selected_tickers != st.session_state.selected_comparison_tickers:
-    st.session_state.selected_comparison_tickers = selected_tickers
 
 # Continue with selected tickers for analysis
 
