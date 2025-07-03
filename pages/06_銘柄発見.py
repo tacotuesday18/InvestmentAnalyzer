@@ -614,8 +614,8 @@ st.markdown('</div>', unsafe_allow_html=True)
 if search_method == "簡単検索（おすすめ）":
     st.markdown("### 🚀 検索開始")
     if actual_style == "配当株投資":
-        st.markdown("**準備完了！** 配当利回り2%以上の優良配当株を検索します。")
-        search_button_text = "💎 配当利回り2%以上で検索開始！"
+        st.markdown("**準備完了！** 配当利回り0.5%以上の配当株を検索します。検索後にフィルターで利回りを調整できます。")
+        search_button_text = "💎 配当株を検索開始！"
     else:
         st.markdown("**準備完了！** 下のボタンを押すだけで、あなたにピッタリの銘柄を見つけます。")
         search_button_text = f"🎯 {actual_style}で検索開始！"
@@ -735,8 +735,8 @@ if st.button(search_button_text, use_container_width=True, type="primary"):
                         should_include = True
                         
                 elif actual_style == "配当株投資":
-                    # Dividend: Include any stock with dividend yield above 1%
-                    if dividend_yield >= 1.0:
+                    # Dividend: Include any stock with dividend yield above 0.5% (lower threshold for better coverage)
+                    if dividend_yield >= 0.5:
                         should_include = True
                         
                 elif actual_style == "安定株投資":
@@ -810,7 +810,7 @@ if 'search_results' in st.session_state and st.session_state['search_results']:
     with result_col2:
         if st.button("🗑️ 検索結果をクリア", key="clear_results"):
             # Clear all session state related to search
-            for key in ["search_results", "processed_count", "search_info", "per_filter", "psr_filter", "growth_filter", "cap_filter"]:
+            for key in ["search_results", "processed_count", "search_info", "per_filter", "psr_filter", "growth_filter", "cap_filter", "dividend_filter"]:
                 if key in st.session_state:
                     del st.session_state[key]
             st.rerun()
@@ -819,7 +819,7 @@ if 'search_results' in st.session_state and st.session_state['search_results']:
     with st.expander("🔧 結果を絞り込み（リアルタイム）", expanded=False):
         st.markdown("**検索結果をリアルタイムで絞り込み：**")
         
-        filter_col1, filter_col2, filter_col3, filter_col4 = st.columns(4)
+        filter_col1, filter_col2, filter_col3, filter_col4, filter_col5 = st.columns(5)
         
         with filter_col1:
             # PER filter
@@ -888,6 +888,23 @@ if 'search_results' in st.session_state and st.session_state['search_results']:
             else:
                 cap_filter = None
         
+        with filter_col5:
+            # Dividend yield filter - especially important for dividend stocks
+            dividend_values = [s['dividend_yield'] for s in matching_stocks if s['dividend_yield'] > 0]
+            if dividend_values:
+                min_dividend, max_dividend = min(dividend_values), max(dividend_values)
+                dividend_filter = st.slider(
+                    "配当利回り (%)",
+                    min_value=float(min_dividend),
+                    max_value=float(max_dividend),
+                    value=(float(min_dividend), float(max_dividend)),
+                    step=0.1,
+                    help="配当を支払う銘柄のみ",
+                    key="dividend_filter"
+                )
+            else:
+                dividend_filter = None
+        
         # Apply filters in real-time without triggering rerun
         filtered_stocks = matching_stocks.copy()
         
@@ -908,6 +925,10 @@ if 'search_results' in st.session_state and st.session_state['search_results']:
             filtered_stocks = [s for s in filtered_stocks 
                              if cap_filter[0] <= (s['market_cap'] / 1000) <= cap_filter[1]]
         
+        if dividend_filter:
+            filtered_stocks = [s for s in filtered_stocks 
+                             if s['dividend_yield'] > 0 and (dividend_filter[0] <= s['dividend_yield'] <= dividend_filter[1])]
+        
         # Show filter results immediately
         filter_col_result1, filter_col_result2 = st.columns(2)
         with filter_col_result1:
@@ -915,10 +936,16 @@ if 'search_results' in st.session_state and st.session_state['search_results']:
         with filter_col_result2:
             st.markdown(f"**絞り込み後: {len(filtered_stocks)}銘柄**")
         
+        # Special message for dividend stock users
+        if dividend_filter:
+            dividend_stocks_count = len([s for s in filtered_stocks if s['dividend_yield'] > 0])
+            if dividend_stocks_count > 0:
+                st.info(f"💰 {dividend_stocks_count}銘柄が配当利回り{dividend_filter[0]:.1f}%-{dividend_filter[1]:.1f}%の範囲にあります")
+        
         # Clear filters button
         if st.button("🔄 フィルターをクリア", key="clear_filters"):
             # Reset all filter keys
-            for key in ["per_filter", "psr_filter", "growth_filter", "cap_filter"]:
+            for key in ["per_filter", "psr_filter", "growth_filter", "cap_filter", "dividend_filter"]:
                 if key in st.session_state:
                     del st.session_state[key]
             st.rerun()
