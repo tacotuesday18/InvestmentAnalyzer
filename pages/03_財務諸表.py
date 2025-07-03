@@ -4,7 +4,7 @@ import yfinance as yf
 from auto_financial_data import get_auto_financial_data
 from format_helpers import format_currency, format_large_number
 from earnings_scraper import get_website_text_content, analyze_earnings_call
-from gemini_historical_metrics import create_historical_metrics_table_with_gemini
+from gemini_historical_metrics import create_historical_metrics_table_with_ai
 import numpy as np
 import requests
 import trafilatura
@@ -531,7 +531,7 @@ if selected_ticker:
     current_ps = info.get('priceToSalesTrailing12Months', None)
     
     # Display historical metrics table
-    create_historical_metrics_table_with_gemini(selected_ticker, current_pe, current_pb, current_ps)
+    create_historical_metrics_table_with_ai(selected_ticker, current_pe, current_pb, current_ps)
     st.markdown("</div>", unsafe_allow_html=True)
 
 # Footer

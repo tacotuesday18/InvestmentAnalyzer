@@ -750,22 +750,22 @@ if analyze_button and selected_ticker:
                 st.error(f"財務諸表データの取得中にエラーが発生しました: {str(e)}")
             
             # Historical metrics table (as requested by user)
-            st.markdown('<div class="section-header">📈 過去のメトリクス比較</div>', unsafe_allow_html=True)
-            create_historical_metrics_table_with_gemini(selected_ticker, pe_ratio, pb_ratio, ps_ratio)
+            st.markdown('<div class="section-header">過去のメトリクス比較</div>', unsafe_allow_html=True)
+            create_historical_metrics_table_with_ai(selected_ticker, pe_ratio, pb_ratio, ps_ratio)
             
             # Quarterly Business Developments Section  
-            st.markdown('<div class="section-header">🎙️ 決算説明会トランスクリプト</div>', unsafe_allow_html=True)
+            st.markdown('<div class="section-header">決算説明会トランスクリプト</div>', unsafe_allow_html=True)
             
             # Enhanced quarterly business analysis
             with st.spinner("最新決算の具体的なビジネス展開を分析中..."):
                 try:
                     # Always use Gemini due to OpenAI quota issues
                     st.info("Gemini APIを使用して最新の決算分析を生成中...")
-                    quarterly_developments = extract_quarterly_business_developments_with_gemini(selected_ticker)
-                    qa_analysis = generate_qa_section_analysis_with_gemini(selected_ticker)
+                    quarterly_developments = extract_quarterly_business_developments_with_ai(selected_ticker)
+                    qa_analysis = generate_qa_section_analysis_with_ai(selected_ticker)
                     
                     if quarterly_developments:
-                        st.markdown("### 📊 最新四半期の具体的なビジネス展開")
+                        st.markdown("### 最新四半期の具体的なビジネス展開")
                         
                         col1, col2 = st.columns(2)
                         

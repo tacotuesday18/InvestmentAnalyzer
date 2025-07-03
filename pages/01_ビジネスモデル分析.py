@@ -13,7 +13,7 @@ from currency_converter import display_stock_price_in_jpy
 from gemini_analyzer import analyze_company_fundamentals
 from market_comparison import display_stock_market_comparison
 from session_state_manager import init_session_state, reset_fundamental_analysis, should_reset_fundamental_analysis
-from gemini_historical_metrics import create_historical_metrics_table_with_gemini
+from gemini_historical_metrics import create_historical_metrics_table_with_ai
 
 # Modern design CSS
 st.markdown("""
@@ -263,7 +263,7 @@ if should_analyze or (st.session_state.fundamental_analysis_completed and st.ses
         current_ps = info.get('priceToSalesTrailing12Months', None)
         
         # Display historical metrics table
-        create_historical_metrics_table_with_gemini(selected_ticker, current_pe, current_pb, current_ps)
+        create_historical_metrics_table_with_ai(selected_ticker, current_pe, current_pb, current_ps)
 
 # Educational section
 with st.expander("🔍 批判的ビジネス分析の価値"):

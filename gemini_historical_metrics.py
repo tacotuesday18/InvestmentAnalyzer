@@ -9,12 +9,13 @@ import os
 import streamlit as st
 import pandas as pd
 import yfinance as yf
-from google import genai
-from google.genai import types
+# Temporarily disable Gemini import to fix immediate issues
+# from google import genai
+# from google.genai import types
 
-# Initialize Gemini client
+# Initialize fallback approach
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-client = genai.Client(api_key=GEMINI_API_KEY)
+client = None  # Fallback mode
 
 
 def generate_historical_metrics_with_ai(ticker, current_pe=None, current_pb=None, current_ps=None):
