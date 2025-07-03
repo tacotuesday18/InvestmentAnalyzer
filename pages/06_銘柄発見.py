@@ -296,8 +296,14 @@ with col1:
                 **💎 配当株投資とは？**
                 - 定期的に配当金を支払う企業への投資
                 - 公益事業、金融、消費財企業が中心
-                - 安定した配当収入を重視
-                - 配当利回りと企業の安定性を重視
+                - **配当利回り3-8%** を目安に安定した配当収入を重視
+                - 年4回の配当支払いで定期的な現金収入を獲得
+                - 企業の配当継続性と増配実績を重視
+                
+                **💰 配当利回りの目安：**
+                - 3-4%：安定した大企業（AT&T、コカ・コーラなど）
+                - 4-6%：中堅企業や金融株
+                - 6%以上：高配当だが要注意（業績悪化の可能性）
                 """)
             else:
                 st.markdown("""
@@ -415,7 +421,12 @@ if search_method == "簡単検索（おすすめ）":
         with col2:
             st.write(f"PSR: {default_psr[0]} - {default_psr[1]}")
             st.write(f"時価総額: {default_market_cap[0]}億USD - {default_market_cap[1]}億USD")
-            st.write("利益率: -50% - 50%（赤字企業も含む）")
+            if actual_style == "配当株投資":
+                st.write("**配当利回り: 2.0% - 15.0%**（有意義な配当株のみ）")
+                st.write("利益率: -50% - 50%")
+            else:
+                st.write("利益率: -50% - 50%（赤字企業も含む）")
+                st.write("配当利回り: 0% - 15%（全範囲）")
     
     # Set default values for filtering - no user interaction needed
     revenue_growth_range = default_revenue_growth
@@ -424,7 +435,13 @@ if search_method == "簡単検索（おすすめ）":
     psr_range = default_psr
     market_cap_range = default_market_cap
     profit_margin_range = (-50.0, 50.0)
-    dividend_yield_range = (0.0, 15.0)
+    
+    # Set dividend yield range based on investment style
+    if actual_style == "配当株投資":
+        dividend_yield_range = (2.0, 15.0)  # Focus on meaningful dividend yields
+    else:
+        dividend_yield_range = (0.0, 15.0)  # Allow all ranges for other styles
+        
     roa_range = (0.0, 30.0)
     pbr_range = (0.0, 10.0)
     debt_ratio_range = (0.0, 2.0)
@@ -570,8 +587,12 @@ st.markdown('</div>', unsafe_allow_html=True)
 # Make search button more prominent for beginners
 if search_method == "簡単検索（おすすめ）":
     st.markdown("### 🚀 検索開始")
-    st.markdown("**準備完了！** 下のボタンを押すだけで、あなたにピッタリの銘柄を見つけます。")
-    search_button_text = f"🎯 {actual_style}で検索開始！"
+    if actual_style == "配当株投資":
+        st.markdown("**準備完了！** 配当利回り2%以上の優良配当株を検索します。")
+        search_button_text = "💎 配当利回り2%以上で検索開始！"
+    else:
+        st.markdown("**準備完了！** 下のボタンを押すだけで、あなたにピッタリの銘柄を見つけます。")
+        search_button_text = f"🎯 {actual_style}で検索開始！"
 else:
     search_button_text = "🔍 銘柄を検索"
 
