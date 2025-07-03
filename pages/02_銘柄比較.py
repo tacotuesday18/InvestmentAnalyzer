@@ -19,7 +19,7 @@ from stock_data import update_stock_price, fetch_tradingview_price, refresh_stoc
 from stock_data import load_sample_data, ensure_sample_data_dir, SAMPLE_DATA_DIR
 from comprehensive_stock_data import search_stocks_by_name, get_all_tickers, get_stock_info, get_stocks_by_category, get_all_categories
 from real_time_fetcher import fetch_current_stock_price, fetch_comprehensive_data, show_live_price_indicator, display_market_status
-from yahoo_finance_data import get_yahoo_finance_data, calculate_growth_rate
+from auto_financial_data import get_auto_financial_data, calculate_growth_rate
 from historical_metrics_chart import display_historical_metrics_chart
 from market_comparison import display_stock_market_comparison, create_individual_stock_comparison_chart
 from session_state_manager import init_session_state, reset_comparison_analysis, should_reset_comparison_analysis
@@ -349,8 +349,8 @@ if st.button("🔄 データ更新", key="refresh_all_data"):
     st.success("データを更新しました！")
     st.rerun()
 
-# Initial stock selection
-available_tickers = get_all_tickers()[:100]  # Start with top 100 stocks
+# Initial stock selection - expand to more stocks
+available_tickers = get_all_tickers()[:500]  # Start with top 500 stocks
 
 # Add company search functionality
 st.markdown("### 🔍 企業検索")
@@ -501,14 +501,14 @@ if comparison_button_clicked:
                 status_text.text(f"Fetching data for {ticker_upper}...")
                 progress_bar.progress((i + 0.5) / len(selected_tickers))
                 
-                auto_data = get_yahoo_finance_data(ticker_upper)
-                if auto_data:
+                auto_data = get_auto_financial_data(ticker_upper)
+                if auto_data and 'error' not in auto_data:
                     # Calculate valuations using live data - ensure ticker matches
                     result = {
                         "ticker": ticker_upper,  # Store ticker for verification
-                        "name": auto_data['name'],
-                        "industry": auto_data['industry'],
-                        "current_price": auto_data['current_price'],
+                        "name": auto_data.get('name', ticker_upper),
+                        "industry": auto_data.get('industry', 'N/A'),
+                        "current_price": auto_data.get('current_price', 0),
                         "valuation_methods": {}
                     }
                     

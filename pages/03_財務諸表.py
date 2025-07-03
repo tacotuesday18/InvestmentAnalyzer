@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import yfinance as yf
-from yahoo_finance_data import get_yahoo_finance_data
+from auto_financial_data import get_auto_financial_data
 from format_helpers import format_currency, format_large_number
 from earnings_scraper import get_website_text_content, analyze_earnings_call
 from gemini_historical_metrics import create_historical_metrics_table_with_ai
@@ -208,8 +208,8 @@ st.markdown("""
 # Import comprehensive stock database
 from comprehensive_stock_data import search_stocks_by_name, get_all_tickers, get_stock_info, get_stocks_by_category, get_all_categories
 
-# 企業選択（数百銘柄対応）
-available_tickers = get_all_tickers()
+# 企業選択（500銘柄対応）
+available_tickers = get_all_tickers()[:500]
 
 # Enhanced stock selection with company name search
 st.markdown("### 📈 企業選択")
@@ -269,21 +269,23 @@ with col2:
 if selected_ticker:
     with st.spinner("最新の財務データを取得中..."):
         # Get comprehensive financial data
-        auto_data = get_yahoo_finance_data(selected_ticker)
+        auto_data = get_auto_financial_data(selected_ticker)
         
-        if auto_data:
+        if auto_data and 'error' not in auto_data:
             # Basic company info
             st.markdown("<div class='card'>", unsafe_allow_html=True)
             col1, col2, col3, col4 = st.columns(4)
             
             with col1:
                 st.markdown("<div class='metric-card'>", unsafe_allow_html=True)
-                st.metric("企業名", auto_data['name'])
+                company_name = auto_data.get('name', selected_ticker)
+                st.metric("企業名", company_name)
                 st.markdown("</div>", unsafe_allow_html=True)
             
             with col2:
                 st.markdown("<div class='metric-card'>", unsafe_allow_html=True)
-                st.metric("業界", auto_data['industry'])
+                industry = auto_data.get('industry', 'N/A')
+                st.metric("業界", industry)
                 st.markdown("</div>", unsafe_allow_html=True)
             
             with col3:
