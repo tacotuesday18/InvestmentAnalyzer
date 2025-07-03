@@ -341,7 +341,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # 利用可能なティッカーシンボル（数百銘柄）
-available_tickers = [stock['ticker'] for stock in get_all_market_stocks()]
+available_tickers = get_all_market_stocks()  # Already returns list of ticker strings
 
 # データ更新ボタン
 if st.button("🔄 データ更新", key="refresh_all_data"):
@@ -393,7 +393,7 @@ with col_b:
         st.rerun()
 
 # Create expanded ticker list for multiselect  
-available_tickers = [stock['ticker'] for stock in get_all_market_stocks()]  # Get all 888+ market stocks
+available_tickers = get_all_market_stocks()  # Get all 888+ market stocks (returns list of ticker strings)
 
 # If search found a ticker, add it to the beginning of the list
 if selected_ticker and selected_ticker not in available_tickers:
