@@ -4,6 +4,7 @@
 An intelligent Streamlit-based company analysis platform delivering comprehensive business insights through advanced data visualization and interactive research tools. All financial data is sourced exclusively from Yahoo Finance to ensure accuracy and authenticity.
 
 ## Recent Changes  
+- **2025-07-03**: ENHANCED BUSINESS FUNDAMENTALS FRAMEWORK - Implemented comprehensive due diligence analysis framework covering 7 key areas: business model & value proposition, products & customer base, competitive positioning, management & culture, business risks, growth drivers, and ESG factors; updated from critical analysis approach to balanced investment evaluation methodology
 - **2025-07-03**: IMPROVED USER EXPERIENCE - Removed verbose "Using enhanced estimates" messages during stock discovery for cleaner interface; updated business model analysis from "critical research report" to balanced "due diligence report" focusing on investment opportunities and risks rather than negative bias
 - **2025-07-03**: FIXED DIVIDEND DATA ACCURACY - Resolved wildly incorrect dividend yields (300%+) by implementing proper data validation, format detection, and reasonable caps (0-15%); added major dividend-paying stocks to enhanced profiles; confirmed accurate yields for VZ (6.8%), T (5.9%), XOM (3.6%), CVX (4.8%), KO (3.1%)
 - **2025-07-03**: ENHANCED DIVIDEND DATA COLLECTION - Added comprehensive dividend yield detection with multiple fallback methods from Yahoo Finance; included dividend filter in post-search controls; raised dividend stock threshold to 2.5% as requested
