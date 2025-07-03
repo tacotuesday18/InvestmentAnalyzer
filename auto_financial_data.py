@@ -1,6 +1,6 @@
 import yfinance as yf
-import streamlit as st
 from datetime import datetime
+import streamlit as st
 import pandas as pd
 
 def get_auto_financial_data(ticker):
@@ -13,9 +13,26 @@ def get_auto_financial_data(ticker):
         stock = yf.Ticker(ticker)
         info = stock.info
         
-        # Get current price
-        hist = stock.history(period="1d")
-        current_price = float(hist['Close'].iloc[-1]) if not hist.empty else 0
+        # Validate that we got actual data from Yahoo Finance
+        if not info or len(info) < 5:
+            print(f"Yahoo Finance returned insufficient data for {ticker}")
+            return get_enhanced_estimates(ticker)
+        
+        # Get current price with better error handling
+        current_price = 0
+        try:
+            hist = stock.history(period="1d")
+            if not hist.empty:
+                current_price = float(hist['Close'].iloc[-1])
+            else:
+                # Try getting from info as fallback
+                current_price = info.get('currentPrice', info.get('regularMarketPrice', 0))
+        except Exception as e:
+            current_price = info.get('currentPrice', info.get('regularMarketPrice', 0))
+            
+        if current_price <= 0:
+            print(f"Could not get valid current price for {ticker}")
+            return get_enhanced_estimates(ticker)
         
         # Get financials
         financials = stock.financials
@@ -63,12 +80,31 @@ def get_auto_financial_data(ticker):
         # Calculate growth rate
         growth_rate = calculate_growth_rate(stock)
         
-        # Get accurate financial ratios directly from Yahoo Finance
+        # Get accurate financial ratios directly from Yahoo Finance with validation
         trailing_eps = info.get('trailingEps')
-        trailing_pe = info.get('trailingPE') 
+        trailing_pe = info.get('trailingPE')
+        forward_pe = info.get('forwardPE') 
         price_to_book = info.get('priceToBook')
         price_to_sales = info.get('priceToSalesTrailing12Months')
         return_on_equity = info.get('returnOnEquity')
+        
+        # Use forward PE if trailing PE is not available
+        if trailing_pe is None and forward_pe is not None:
+            trailing_pe = forward_pe
+            
+        # Calculate PE ratio manually if not available from Yahoo Finance
+        if trailing_pe is None and trailing_eps is not None and trailing_eps > 0 and current_price > 0:
+            trailing_pe = current_price / trailing_eps
+            
+        # Calculate PB ratio manually if not available
+        if price_to_book is None and book_value_per_share > 0 and current_price > 0:
+            price_to_book = current_price / book_value_per_share
+            
+        # Calculate PS ratio manually if not available
+        if price_to_sales is None and revenue > 0 and shares_outstanding > 0:
+            revenue_per_share = revenue / shares_outstanding
+            if revenue_per_share > 0:
+                price_to_sales = current_price / revenue_per_share
         
         # Calculate ROA from balance sheet data
         roa = None
@@ -169,8 +205,7 @@ def get_auto_financial_data(ticker):
                     actions = stock.actions
                     if not actions.empty and 'Dividends' in actions.columns:
                         # Get dividends from last 12 months using proper date filtering
-                        import pandas as pd
-                        from datetime import datetime, timedelta
+                        from datetime import timedelta
                         
                         one_year_ago = datetime.now() - timedelta(days=365)
                         recent_dividends = actions[actions.index >= one_year_ago]['Dividends']
@@ -190,6 +225,26 @@ def get_auto_financial_data(ticker):
             # If all dividend methods fail, keep dividend_yield = 0
             dividend_yield = 0
             dividend_rate = 0
+        
+        # Final validation - ensure all metrics are reasonable or None
+        def validate_ratio(value, min_val=0, max_val=1000):
+            """Validate financial ratios to ensure they're reasonable"""
+            if value is None:
+                return None
+            try:
+                val = float(value)
+                if min_val <= val <= max_val:
+                    return val
+                else:
+                    return None
+            except (TypeError, ValueError):
+                return None
+        
+        # Apply validation to key ratios
+        trailing_pe = validate_ratio(trailing_pe, 0, 500)
+        price_to_book = validate_ratio(price_to_book, 0, 100)
+        price_to_sales = validate_ratio(price_to_sales, 0, 100)
+        dividend_yield = validate_ratio(dividend_yield, 0, 15)
         
         return {
             'ticker': ticker,
@@ -660,6 +715,12 @@ def get_enhanced_estimates(ticker):
     except:
         current_price = 150.0
     
+    # For enhanced estimates, try to get some live data if possible
+    market_cap = current_price * profile['shares_outstanding']
+    ps_ratio = market_cap / profile['revenue'] if profile['revenue'] > 0 else None
+    book_value_per_share = current_price / profile['pb_ratio'] if profile['pb_ratio'] > 0 else None
+    dividend_rate = (profile['dividend_yield'] / 100) * current_price if profile['dividend_yield'] > 0 else 0
+    
     return {
         'ticker': ticker,
         'name': profile['name'],
@@ -667,20 +728,20 @@ def get_enhanced_estimates(ticker):
         'sector': profile['sector'],
         'country': 'US',
         'current_price': current_price,
-        'market_cap': current_price * profile['shares_outstanding'],
+        'market_cap': market_cap,
         'revenue': profile['revenue'],
         'net_income': profile['net_income'],
         'eps': profile['net_income'] / profile['shares_outstanding'],
         'pe_ratio': profile['pe_ratio'],
         'pb_ratio': profile['pb_ratio'],
-        'ps_ratio': (current_price * profile['shares_outstanding']) / profile['revenue'],
+        'ps_ratio': ps_ratio,
         'roe': profile['roe'],
         'shares_outstanding': profile['shares_outstanding'],
-        'book_value_per_share': current_price / profile['pb_ratio'],
+        'book_value_per_share': book_value_per_share,
         'historical_growth': profile['historical_growth'],
         'profit_margin': profile['profit_margin'],
         'dividend_yield': profile['dividend_yield'],
-        'dividend_rate': (profile['dividend_yield'] / 100) * current_price if profile['dividend_yield'] > 0 else 0,
-        'is_live': True,
+        'dividend_rate': dividend_rate,
+        'is_live': False,  # Mark as enhanced estimate, not live
         'last_updated': datetime.now().isoformat()
     }
