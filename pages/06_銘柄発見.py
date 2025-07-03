@@ -791,174 +791,221 @@ if st.button(search_button_text, use_container_width=True, type="primary"):
         progress_bar.empty()
         status_text.empty()
         
-        # Display results
+        # Store results in session state to prevent re-searching when filtering
+        st.session_state['search_results'] = matching_stocks
+        st.session_state['processed_count'] = processed_count
+        st.session_state['search_info'] = f"業界: {selected_industry}" if search_method == "業界別" else f"投資スタイル: {investment_style if 'investment_style' in locals() else 'カスタム設定'}"
+
+# Display results (whether from fresh search or session state)
+if 'search_results' in st.session_state and st.session_state['search_results']:
+    matching_stocks = st.session_state['search_results']
+    processed_count = st.session_state.get('processed_count', len(matching_stocks))
+    search_info = st.session_state.get('search_info', 'Unknown')
+    
+    # Header with clear button
+    result_col1, result_col2 = st.columns([3, 1])
+    with result_col1:
         st.markdown(f"### 検索結果: {len(matching_stocks)}銘柄が条件に合致")
-        
-        # Handle display text based on search method
-        if search_method == "業界別":
-            search_info = f"業界: {selected_industry}"
-        else:
-            search_info = f"投資スタイル: {investment_style if 'investment_style' in locals() else 'カスタム設定'}"
-        
         st.markdown(f"<small>分析対象: {processed_count}銘柄 | {search_info}</small>", unsafe_allow_html=True)
+    with result_col2:
+        if st.button("🗑️ 検索結果をクリア", key="clear_results"):
+            # Clear all session state related to search
+            for key in ["search_results", "processed_count", "search_info", "per_filter", "psr_filter", "growth_filter", "cap_filter"]:
+                if key in st.session_state:
+                    del st.session_state[key]
+            st.rerun()
+    
+    # Add seamless post-search filtering controls
+    with st.expander("🔧 結果を絞り込み（リアルタイム）", expanded=False):
+        st.markdown("**検索結果をリアルタイムで絞り込み：**")
         
-        # Add post-search filtering controls
-        if matching_stocks:
-            with st.expander("🔧 結果を絞り込み"):
-                st.markdown("**検索結果をさらに絞り込んでください：**")
-                
-                filter_col1, filter_col2, filter_col3 = st.columns(3)
-                
-                with filter_col1:
-                    # PER filter
-                    per_values = [s['pe_ratio'] for s in matching_stocks if s['is_profitable'] and s['pe_ratio'] > 0]
-                    if per_values:
-                        min_per, max_per = min(per_values), max(per_values)
-                        per_filter = st.slider(
-                            "PER 範囲",
-                            min_value=float(min_per),
-                            max_value=float(max_per),
-                            value=(float(min_per), float(max_per)),
-                            step=0.5,
-                            help="収益性のある銘柄のみ対象"
-                        )
-                    else:
-                        per_filter = None
-                
-                with filter_col2:
-                    # PSR filter  
-                    psr_values = [s['ps_ratio'] for s in matching_stocks if s['ps_ratio'] > 0]
-                    if psr_values:
-                        min_psr, max_psr = min(psr_values), max(psr_values)
-                        psr_filter = st.slider(
-                            "PSR 範囲",
-                            min_value=float(min_psr),
-                            max_value=float(max_psr),
-                            value=(float(min_psr), float(max_psr)),
-                            step=0.1,
-                            help="全銘柄が対象"
-                        )
-                    else:
-                        psr_filter = None
-                
-                with filter_col3:
-                    # Market cap filter
-                    market_caps = [s['market_cap'] / 1000 for s in matching_stocks if s['market_cap'] > 0]
-                    if market_caps:
-                        min_cap, max_cap = min(market_caps), max(market_caps)
-                        cap_filter = st.slider(
-                            "時価総額 (億ドル)",
-                            min_value=float(min_cap),
-                            max_value=float(max_cap),
-                            value=(float(min_cap), float(max_cap)),
-                            step=0.1
-                        )
-                    else:
-                        cap_filter = None
-                
-                # Apply filters
-                filtered_stocks = matching_stocks.copy()
-                
-                if per_filter:
-                    filtered_stocks = [s for s in filtered_stocks 
-                                     if not s['is_profitable'] or not s['pe_ratio'] > 0 or 
-                                     (per_filter[0] <= s['pe_ratio'] <= per_filter[1])]
-                
-                if psr_filter:
-                    filtered_stocks = [s for s in filtered_stocks 
-                                     if s['ps_ratio'] <= 0 or (psr_filter[0] <= s['ps_ratio'] <= psr_filter[1])]
-                
-                if cap_filter:
-                    filtered_stocks = [s for s in filtered_stocks 
-                                     if cap_filter[0] <= (s['market_cap'] / 1000) <= cap_filter[1]]
-                
-                st.markdown(f"**絞り込み後: {len(filtered_stocks)}銘柄**")
-                
-                # Use filtered results for display
-                matching_stocks = filtered_stocks
+        filter_col1, filter_col2, filter_col3, filter_col4 = st.columns(4)
         
-        if matching_stocks:
-            # Sort by market cap descending
-            matching_stocks.sort(key=lambda x: x['market_cap'], reverse=True)
+        with filter_col1:
+            # PER filter
+            per_values = [s['pe_ratio'] for s in matching_stocks if s['is_profitable'] and s['pe_ratio'] > 0]
+            if per_values:
+                min_per, max_per = min(per_values), max(per_values)
+                per_filter = st.slider(
+                    "PER 範囲",
+                    min_value=float(min_per),
+                    max_value=float(max_per),
+                    value=(float(min_per), float(max_per)),
+                    step=0.5,
+                    help="収益性のある銘柄のみ対象",
+                    key="per_filter"
+                )
+            else:
+                per_filter = None
+        
+        with filter_col2:
+            # PSR filter  
+            psr_values = [s['ps_ratio'] for s in matching_stocks if s['ps_ratio'] > 0]
+            if psr_values:
+                min_psr, max_psr = min(psr_values), max(psr_values)
+                psr_filter = st.slider(
+                    "PSR 範囲",
+                    min_value=float(min_psr),
+                    max_value=float(max_psr),
+                    value=(float(min_psr), float(max_psr)),
+                    step=0.1,
+                    help="全銘柄が対象",
+                    key="psr_filter"
+                )
+            else:
+                psr_filter = None
+        
+        with filter_col3:
+            # Revenue growth filter
+            growth_values = [s['revenue_growth'] for s in matching_stocks if s['revenue_growth'] is not None]
+            if growth_values:
+                min_growth, max_growth = min(growth_values), max(growth_values)
+                growth_filter = st.slider(
+                    "売上成長率 (%)",
+                    min_value=float(min_growth),
+                    max_value=float(max_growth),
+                    value=(float(min_growth), float(max_growth)),
+                    step=1.0,
+                    help="売上成長率で絞り込み",
+                    key="growth_filter"
+                )
+            else:
+                growth_filter = None
+        
+        with filter_col4:
+            # Market cap filter
+            market_caps = [s['market_cap'] / 1000 for s in matching_stocks if s['market_cap'] > 0]
+            if market_caps:
+                min_cap, max_cap = min(market_caps), max(market_caps)
+                cap_filter = st.slider(
+                    "時価総額 (億ドル)",
+                    min_value=float(min_cap),
+                    max_value=float(max_cap),
+                    value=(float(min_cap), float(max_cap)),
+                    step=0.1,
+                    key="cap_filter"
+                )
+            else:
+                cap_filter = None
+        
+        # Apply filters in real-time without triggering rerun
+        filtered_stocks = matching_stocks.copy()
+        
+        if per_filter:
+            filtered_stocks = [s for s in filtered_stocks 
+                             if not s['is_profitable'] or not s['pe_ratio'] > 0 or 
+                             (per_filter[0] <= s['pe_ratio'] <= per_filter[1])]
+        
+        if psr_filter:
+            filtered_stocks = [s for s in filtered_stocks 
+                             if s['ps_ratio'] <= 0 or (psr_filter[0] <= s['ps_ratio'] <= psr_filter[1])]
+        
+        if growth_filter:
+            filtered_stocks = [s for s in filtered_stocks 
+                             if s['revenue_growth'] is None or (growth_filter[0] <= s['revenue_growth'] <= growth_filter[1])]
+        
+        if cap_filter:
+            filtered_stocks = [s for s in filtered_stocks 
+                             if cap_filter[0] <= (s['market_cap'] / 1000) <= cap_filter[1]]
+        
+        # Show filter results immediately
+        filter_col_result1, filter_col_result2 = st.columns(2)
+        with filter_col_result1:
+            st.markdown(f"**絞り込み前: {len(matching_stocks)}銘柄**")
+        with filter_col_result2:
+            st.markdown(f"**絞り込み後: {len(filtered_stocks)}銘柄**")
+        
+        # Clear filters button
+        if st.button("🔄 フィルターをクリア", key="clear_filters"):
+            # Reset all filter keys
+            for key in ["per_filter", "psr_filter", "growth_filter", "cap_filter"]:
+                if key in st.session_state:
+                    del st.session_state[key]
+            st.rerun()
+    
+    # Use filtered results for display
+    display_stocks = filtered_stocks if 'filtered_stocks' in locals() else matching_stocks
+        
+    if display_stocks:
+        # Sort by market cap descending
+        display_stocks.sort(key=lambda x: x['market_cap'], reverse=True)
+        
+        # Display results in cards
+        for i, stock in enumerate(display_stocks[:20]):  # Show top 20 results
+            st.markdown('<div class="result-card">', unsafe_allow_html=True)
             
-            # Display results in cards
-            for i, stock in enumerate(matching_stocks[:20]):  # Show top 20 results
-                st.markdown('<div class="result-card">', unsafe_allow_html=True)
+            col1, col2, col3 = st.columns([2, 2, 1])
+            
+            with col1:
+                st.markdown(f"**{stock['ticker']} - {stock['name']}**")
+                st.markdown(f"セクター: {stock['sector']}")
+                st.markdown(f"現在株価: ${stock['current_price']:.2f}")
+                # Add company description
+                st.markdown(f"<small style='color: #666;'>{stock['description']}</small>", unsafe_allow_html=True)
+            
+            with col2:
+                # Key metrics
+                if stock['revenue_growth'] > 0:
+                    st.markdown(f"<span class='metric-badge'>成長率 {stock['revenue_growth']:.1f}%</span>", unsafe_allow_html=True)
+                if stock['roe'] > 0:
+                    st.markdown(f"<span class='metric-badge'>ROE {stock['roe']:.1f}%</span>", unsafe_allow_html=True)
                 
-                col1, col2, col3 = st.columns([2, 2, 1])
+                # Show both PER and PSR for all stocks
+                if stock['is_profitable'] and stock['pe_ratio'] > 0:
+                    st.markdown(f"<span class='metric-badge'>PER {stock['pe_ratio']:.1f}</span>", unsafe_allow_html=True)
                 
-                with col1:
-                    st.markdown(f"**{stock['ticker']} - {stock['name']}**")
-                    st.markdown(f"セクター: {stock['sector']}")
-                    st.markdown(f"現在株価: ${stock['current_price']:.2f}")
-                    # Add company description
-                    st.markdown(f"<small style='color: #666;'>{stock['description']}</small>", unsafe_allow_html=True)
+                if stock['ps_ratio'] > 0:
+                    st.markdown(f"<span class='metric-badge'>PSR {stock['ps_ratio']:.1f}</span>", unsafe_allow_html=True)
                 
-                with col2:
-                    # Key metrics
-                    if stock['revenue_growth'] > 0:
-                        st.markdown(f"<span class='metric-badge'>成長率 {stock['revenue_growth']:.1f}%</span>", unsafe_allow_html=True)
-                    if stock['roe'] > 0:
-                        st.markdown(f"<span class='metric-badge'>ROE {stock['roe']:.1f}%</span>", unsafe_allow_html=True)
-                    
+                # Show dividend yield if available
+                if stock['dividend_yield'] > 0:
+                    st.markdown(f"<span class='metric-badge'>配当利回り {stock['dividend_yield']:.1f}%</span>", unsafe_allow_html=True)
+            
+            with col3:
+                market_cap_billions = stock['market_cap'] / 1000
+                st.metric("時価総額", f"${market_cap_billions:.1f}B")
+            
+            # Detailed metrics in expandable section
+            with st.expander(f"{stock['ticker']} 詳細データ"):
+                metric_col1, metric_col2, metric_col3 = st.columns(3)
+                
+                with metric_col1:
+                    st.write(f"**売上成長率:** {stock['revenue_growth']:.1f}%")
+                    st.write(f"**ROE:** {stock['roe']:.1f}%")
+                    st.write(f"**ROA:** {stock['roa']:.1f}%")
+                
+                with metric_col2:
                     # Show both PER and PSR for all stocks
                     if stock['is_profitable'] and stock['pe_ratio'] > 0:
-                        st.markdown(f"<span class='metric-badge'>PER {stock['pe_ratio']:.1f}</span>", unsafe_allow_html=True)
+                        st.write(f"**PER:** {stock['pe_ratio']:.1f}")
+                    else:
+                        st.write("**PER:** N/A (赤字)")
                     
                     if stock['ps_ratio'] > 0:
-                        st.markdown(f"<span class='metric-badge'>PSR {stock['ps_ratio']:.1f}</span>", unsafe_allow_html=True)
+                        st.write(f"**PSR:** {stock['ps_ratio']:.1f}")
+                    else:
+                        st.write("**PSR:** N/A")
                     
-                    # Show dividend yield if available
-                    if stock['dividend_yield'] > 0:
-                        st.markdown(f"<span class='metric-badge'>配当利回り {stock['dividend_yield']:.1f}%</span>", unsafe_allow_html=True)
+                    st.write(f"**PBR:** {stock['pb_ratio']:.1f}")
+                    st.write(f"**純利益率:** {stock['profit_margin']:.1f}%")
                 
-                with col3:
-                    market_cap_billions = stock['market_cap'] / 1000
-                    st.metric("時価総額", f"${market_cap_billions:.1f}B")
-                
-                # Detailed metrics in expandable section
-                with st.expander(f"{stock['ticker']} 詳細データ"):
-                    metric_col1, metric_col2, metric_col3 = st.columns(3)
-                    
-                    with metric_col1:
-                        st.write(f"**売上成長率:** {stock['revenue_growth']:.1f}%")
-                        st.write(f"**ROE:** {stock['roe']:.1f}%")
-                        st.write(f"**ROA:** {stock['roa']:.1f}%")
-                    
-                    with metric_col2:
-                        # Show both PER and PSR for all stocks
-                        if stock['is_profitable'] and stock['pe_ratio'] > 0:
-                            st.write(f"**PER:** {stock['pe_ratio']:.1f}")
-                        else:
-                            st.write("**PER:** N/A (赤字)")
-                        
-                        if stock['ps_ratio'] > 0:
-                            st.write(f"**PSR:** {stock['ps_ratio']:.1f}")
-                        else:
-                            st.write("**PSR:** N/A")
-                        
-                        st.write(f"**PBR:** {stock['pb_ratio']:.1f}")
-                        st.write(f"**純利益率:** {stock['profit_margin']:.1f}%")
-                    
-                    with metric_col3:
-                        st.write(f"**負債比率:** {stock['debt_ratio']:.2f}")
-                        st.write(f"**時価総額:** ${market_cap_billions:.1f}B")
-                
-                st.markdown('</div>', unsafe_allow_html=True)
+                with metric_col3:
+                    st.write(f"**負債比率:** {stock['debt_ratio']:.2f}")
+                    st.write(f"**時価総額:** ${market_cap_billions:.1f}B")
             
-
+            st.markdown('</div>', unsafe_allow_html=True)
+    
+    else:
+        st.warning("条件に合致する銘柄が見つかりませんでした。条件を緩和して再検索してください。")
         
-        else:
-            st.warning("条件に合致する銘柄が見つかりませんでした。条件を緩和して再検索してください。")
-            
-            # Suggestions for better results
-            st.markdown("""
-            ### 💡 検索のコツ
-            - 条件範囲を広げてみてください
-            - 投資スタイルのプリセットを試してみてください
-            - 特定のセクターに絞り込んでみてください
-            - 時価総額の範囲を調整してみてください
-            """)
+        # Suggestions for better results
+        st.markdown("""
+        ### 💡 検索のコツ
+        - 条件範囲を広げてみてください
+        - 投資スタイルのプリセットを試してみてください  
+        - 特定のセクターに絞り込んでみてください
+        - 時価総額の範囲を調整してみてください
+        """)
 
 # Investment tips
 with st.expander("💡 投資のアドバイス"):
