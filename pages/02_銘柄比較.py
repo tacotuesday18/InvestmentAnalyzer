@@ -349,51 +349,76 @@ if st.button("🔄 データ更新", key="refresh_all_data"):
     st.success("データを更新しました！")
     st.rerun()
 
-# Initial stock selection
+# Company search section - using same pattern as business model and earnings pages
+st.markdown("### 🔍 企業検索")
+
+col1, col2 = st.columns([3, 1])
+
+with col1:
+    search_input = st.text_input(
+        "企業名またはティッカーシンボルを入力",
+        placeholder="例: Apple, Microsoft, AAPL, MSFT, Disney",
+        help="企業名（日本語・英語）またはティッカーシンボルで検索",
+        value=st.session_state.get('comparison_search_input', '')
+    )
+    
+    if search_input:
+        st.session_state.comparison_search_input = search_input
+        from comprehensive_stock_data import search_stocks_by_name
+        results = search_stocks_by_name(search_input)
+        
+        if results:
+            # Display search results
+            st.success(f"検索結果: {results[0]['name']} ({results[0]['ticker']})")
+            selected_ticker = results[0]['ticker']
+        else:
+            # Try direct ticker input
+            selected_ticker = search_input.upper()
+            st.info(f"直接ティッカーとして使用: {selected_ticker}")
+    else:
+        selected_ticker = None
+
+with col2:
+    # Clear search button
+    if st.button("検索クリア", help="検索をクリアして最初から選択"):
+        st.session_state.comparison_search_input = ""
+        st.rerun()
+
+# Create ticker list for multiselect
 available_tickers = get_all_tickers()[:100]  # Start with top 100 stocks
 
-# Add company search functionality
-st.markdown("### 🔍 企業検索")
-search_input = st.text_input(
-    "企業名またはティッカーシンボルを入力",
-    placeholder="例: Apple, Microsoft, AAPL, MSFT, Disney",
-    help="企業名（日本語・英語）またはティッカーシンボルで検索",
-    key="comparison_search_input"
-)
-
-# Create a clean copy of available tickers as strings only
-clean_available_tickers = [str(ticker) for ticker in available_tickers if isinstance(ticker, str)]
-
-# Process search input and add to available tickers
-if search_input:
-    from comprehensive_stock_data import search_stocks_by_name
-    search_results = search_stocks_by_name(search_input)
-    if search_results:
-        found_ticker = search_results[0]['ticker']
-        st.success(f"検索結果: {search_results[0]['name']} ({found_ticker})")
-        # Add to available tickers if not already there
-        if found_ticker not in clean_available_tickers:
-            clean_available_tickers.insert(0, found_ticker)  # Add at beginning for easy selection
-    else:
-        # Try to use the input as ticker directly
-        direct_ticker = search_input.upper()
-        st.info(f"直接ティッカーとして使用: {direct_ticker}")
-        if direct_ticker not in clean_available_tickers:
-            clean_available_tickers.insert(0, direct_ticker)
+# If search found a ticker, add it to the beginning of the list
+if selected_ticker and selected_ticker not in available_tickers:
+    available_tickers.insert(0, selected_ticker)
 
 # Create options with company names
 ticker_options = {}
-for ticker in clean_available_tickers:
+for ticker in available_tickers:
     stock_info = get_stock_info(ticker)
     ticker_options[ticker] = f"{ticker} - {stock_info['name']}"
 
 # 統合された銘柄選択（最大8つまで）
 st.markdown("**比較銘柄選択**")
+
+# Set default selection based on search results
+default_selection = []
+if selected_ticker and selected_ticker in ticker_options:
+    # If search found a ticker, use it plus one more popular stock
+    default_selection = [selected_ticker]
+    if len(ticker_options) >= 2:
+        for ticker in ticker_options.keys():
+            if ticker != selected_ticker and ticker in ['AAPL', 'MSFT', 'GOOGL', 'AMZN']:
+                default_selection.append(ticker)
+                break
+elif len(ticker_options) >= 2:
+    # Default to popular stocks
+    default_selection = list(ticker_options.keys())[:2]
+
 selected_tickers = st.multiselect(
     "比較する銘柄を選択してください（最大8つ）",
     options=list(ticker_options.keys()),
     format_func=lambda x: ticker_options.get(x, x),
-    default=list(ticker_options.keys())[:2] if len(ticker_options) >= 2 else [],
+    default=default_selection,
     help="複数の銘柄を選択して財務指標を比較できます"
 )
 
