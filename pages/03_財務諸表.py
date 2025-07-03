@@ -208,37 +208,15 @@ st.markdown("""
 # Import comprehensive stock database
 from comprehensive_stock_data import search_stocks_by_name, get_all_tickers, get_stock_info, get_stocks_by_category, get_all_categories
 
-# 企業選択（500銘柄対応）
-available_tickers = get_all_tickers()[:500]
+# 企業選択（数百銘柄対応）
+available_tickers = get_all_tickers()
 
 # Enhanced stock selection with company name search
 st.markdown("### 📈 企業選択")
 
 col1, col2 = st.columns([3, 1])
 
-with col1:
-    search_input = st.text_input(
-        "企業名またはティッカーシンボルを入力",
-        placeholder="例: Apple, Microsoft, AAPL, MSFT",
-        help="企業名（日本語・英語）またはティッカーシンボルで検索",
-        key="financial_search_input"
-    )
-    
-    # Process search input
-    if search_input:
-        search_results = search_stocks_by_name(search_input)
-        if search_results:
-            found_ticker = search_results[0]['ticker']
-            st.success(f"検索結果: {search_results[0]['name']} ({found_ticker})")
-            # Add to available tickers if not already there
-            if found_ticker not in available_tickers:
-                available_tickers.append(found_ticker)
-        else:
-            # Try to use the input as ticker directly
-            direct_ticker = search_input.upper()
-            st.info(f"直接ティッカーとして使用: {direct_ticker}")
-            if direct_ticker not in available_tickers:
-                available_tickers.append(direct_ticker)
+
 
 with col2:
     categories = ["All"] + get_all_categories()
@@ -271,21 +249,19 @@ if selected_ticker:
         # Get comprehensive financial data
         auto_data = get_auto_financial_data(selected_ticker)
         
-        if auto_data and 'error' not in auto_data:
+        if auto_data:
             # Basic company info
             st.markdown("<div class='card'>", unsafe_allow_html=True)
             col1, col2, col3, col4 = st.columns(4)
             
             with col1:
                 st.markdown("<div class='metric-card'>", unsafe_allow_html=True)
-                company_name = auto_data.get('name', selected_ticker)
-                st.metric("企業名", company_name)
+                st.metric("企業名", auto_data['name'])
                 st.markdown("</div>", unsafe_allow_html=True)
             
             with col2:
                 st.markdown("<div class='metric-card'>", unsafe_allow_html=True)
-                industry = auto_data.get('industry', 'N/A')
-                st.metric("業界", industry)
+                st.metric("業界", auto_data['industry'])
                 st.markdown("</div>", unsafe_allow_html=True)
             
             with col3:

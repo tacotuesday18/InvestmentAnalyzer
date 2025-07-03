@@ -349,50 +349,54 @@ if st.button("🔄 データ更新", key="refresh_all_data"):
     st.success("データを更新しました！")
     st.rerun()
 
-# Initial stock selection - expand to more stocks
-available_tickers = get_all_tickers()[:500]  # Start with top 500 stocks
+# Search and filter interface
+col1, col2 = st.columns([3, 1])
 
-# Add company search functionality
-st.markdown("### 🔍 企業検索")
-search_input = st.text_input(
-    "企業名またはティッカーシンボルを入力",
-    placeholder="例: Apple, Microsoft, AAPL, MSFT, Disney",
-    help="企業名（日本語・英語）またはティッカーシンボルで検索",
-    key="comparison_search_input"
-)
+with col1:
+    search_query = st.text_input(
+        "", 
+        placeholder="企業名またはティッカーシンボルを入力 (例: Apple, Microsoft, AAPL, MSFT)", 
+        help="企業名の一部またはティッカーシンボルで検索できます",
+        label_visibility="collapsed"
+    )
 
-# Create a clean copy of available tickers as strings only
-clean_available_tickers = [str(ticker) for ticker in available_tickers if isinstance(ticker, str)]
+with col2:
+    categories = ["All"] + get_all_categories()
+    selected_category = st.selectbox("カテゴリー", categories)
 
-# Process search input and add to available tickers
-if search_input:
-    from comprehensive_stock_data import search_stocks_by_name
-    search_results = search_stocks_by_name(search_input)
+# Apply search and category filters
+if search_query:
+    search_results = search_stocks_by_name(search_query)
     if search_results:
-        found_ticker = search_results[0]['ticker']
-        st.success(f"検索結果: {search_results[0]['name']} ({found_ticker})")
-        # Add to available tickers if not already there
-        if found_ticker not in clean_available_tickers:
-            clean_available_tickers.insert(0, found_ticker)  # Add at beginning for easy selection
+        available_tickers = search_results[:50]
     else:
-        # Try to use the input as ticker directly
-        direct_ticker = search_input.upper()
-        st.info(f"直接ティッカーとして使用: {direct_ticker}")
-        if direct_ticker not in clean_available_tickers:
-            clean_available_tickers.insert(0, direct_ticker)
+        st.warning(f"'{search_query}' に一致する銘柄が見つかりません")
+        available_tickers = get_all_tickers()[:50]
+else:
+    available_tickers = get_all_tickers()
+
+if selected_category != "All":
+    category_tickers = get_stocks_by_category(selected_category)
+    if search_query:
+        # Intersection of search results and category
+        available_tickers = [t for t in available_tickers if t in category_tickers]
+    else:
+        available_tickers = category_tickers
 
 # Create options with company names
 ticker_options = {}
-for ticker in clean_available_tickers:
+for ticker in available_tickers:
     stock_info = get_stock_info(ticker)
     ticker_options[ticker] = f"{ticker} - {stock_info['name']}"
+
+
 
 # 統合された銘柄選択（最大8つまで）
 st.markdown("**比較銘柄選択**")
 selected_tickers = st.multiselect(
     "比較する銘柄を選択してください（最大8つ）",
     options=list(ticker_options.keys()),
-    format_func=lambda x: ticker_options.get(x, x),
+    format_func=lambda x: ticker_options[x],
     default=list(ticker_options.keys())[:2] if len(ticker_options) >= 2 else [],
     help="複数の銘柄を選択して財務指標を比較できます"
 )
@@ -502,13 +506,13 @@ if comparison_button_clicked:
                 progress_bar.progress((i + 0.5) / len(selected_tickers))
                 
                 auto_data = get_auto_financial_data(ticker_upper)
-                if auto_data and 'error' not in auto_data:
+                if auto_data:
                     # Calculate valuations using live data - ensure ticker matches
                     result = {
                         "ticker": ticker_upper,  # Store ticker for verification
-                        "name": auto_data.get('name', ticker_upper),
-                        "industry": auto_data.get('industry', 'N/A'),
-                        "current_price": auto_data.get('current_price', 0),
+                        "name": auto_data['name'],
+                        "industry": auto_data['industry'],
+                        "current_price": auto_data['current_price'],
                         "valuation_methods": {}
                     }
                     
