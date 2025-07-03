@@ -4,6 +4,7 @@ import logging
 from google import genai
 from google.genai import types
 import yfinance as yf
+from twitter_sentiment_analyzer import TwitterDueDiligenceAnalyzer
 
 # Initialize Gemini client
 client = genai.Client(api_key=os.environ.get("GOOGLE_API_KEY"))
@@ -16,6 +17,10 @@ def analyze_company_fundamentals(ticker):
         # Get company data
         stock = yf.Ticker(ticker)
         info = stock.info
+        
+        # Get Twitter sentiment analysis for comprehensive due diligence
+        twitter_analyzer = TwitterDueDiligenceAnalyzer()
+        social_analysis = twitter_analyzer.generate_social_due_diligence_summary(ticker, info.get('longName', ticker))
         
         # Prepare company data for analysis
         company_data = {
@@ -35,12 +40,23 @@ def analyze_company_fundamentals(ticker):
         
         prompt = f"""
 {company_data['name']} ({company_data['ticker']})の長期投資家向けの包括的なデューデリジェンス調査を作成してください。
-財務比率は一切使用せず、優れた投資家が重視する企業の本質的な競争力と持続的成長要因に焦点を当てた詳細分析を提供してください。
+財務データ、市場データ、そしてソーシャルメディア分析を統合した多角的な視点から詳細分析を提供してください。
 
 企業名: {company_data['name']} ({company_data['ticker']})
 セクター: {company_data['sector']}
 業界: {company_data['industry']}
 事業概要: {company_data['business_summary']}
+
+## ソーシャルメディア投資家情勢
+**Twitter分析結果**: 
+- 全体センチメント: {social_analysis.get('sentiment_analysis', {}).get('overall_sentiment', 'データなし')}
+- 投資家議論数: {social_analysis.get('sentiment_analysis', {}).get('tweet_count', 0)}件
+- 主要テーマ: {', '.join(social_analysis.get('sentiment_analysis', {}).get('key_themes', [])[:3])}
+- 強気シグナル: {', '.join(social_analysis.get('sentiment_analysis', {}).get('bullish_signals', [])[:3])}
+- 弱気シグナル: {', '.join(social_analysis.get('sentiment_analysis', {}).get('bearish_signals', [])[:3])}
+- 機関投資家関連議論: {len(social_analysis.get('institutional_insights', {}).get('insights', []))}件
+
+このソーシャルメディア分析結果も踏まえ、投資家コミュニティの視点や懸念点も考慮して以下の分析を行ってください。
 
 まず、魅力的な企業ビジョンのヘッドラインで分析レポートを開始してください：
 

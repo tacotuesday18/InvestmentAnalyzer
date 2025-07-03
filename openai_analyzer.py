@@ -6,6 +6,7 @@ import json
 import logging
 import os
 from openai import OpenAI
+from twitter_sentiment_analyzer import TwitterDueDiligenceAnalyzer
 
 # Initialize OpenAI client
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")

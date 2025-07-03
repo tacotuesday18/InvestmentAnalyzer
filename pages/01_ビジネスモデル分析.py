@@ -212,8 +212,11 @@ if should_analyze or (st.session_state.fundamental_analysis_completed and st.ses
                     'info': info
                 }
                 
-                # Generate real-time fundamental analysis using Gemini AI
-                st.session_state.fundamental_analysis_report = analyze_company_fundamentals(selected_ticker)
+                # Generate comprehensive due diligence analysis using Gemini AI, OpenAI, and Twitter
+                from comprehensive_due_diligence_analyzer import get_comprehensive_due_diligence_report
+                comprehensive_report = get_comprehensive_due_diligence_report(selected_ticker)
+                st.session_state.fundamental_analysis_report = comprehensive_report.get('fundamental_analysis', {}).get('report_content', 'レポート生成に失敗しました')
+                st.session_state.comprehensive_dd_report = comprehensive_report
                 st.session_state.fundamental_analysis_completed = True
                 
             except Exception as e:
