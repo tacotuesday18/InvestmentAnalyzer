@@ -341,7 +341,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # 利用可能なティッカーシンボル（数百銘柄）
-available_tickers = get_all_tickers()
+available_tickers = [stock['ticker'] for stock in get_all_market_stocks()]
 
 # データ更新ボタン
 if st.button("🔄 データ更新", key="refresh_all_data"):
