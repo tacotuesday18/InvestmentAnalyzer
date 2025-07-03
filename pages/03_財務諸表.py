@@ -216,7 +216,29 @@ st.markdown("### 📈 企業選択")
 
 col1, col2 = st.columns([3, 1])
 
-
+with col1:
+    search_input = st.text_input(
+        "企業名またはティッカーシンボルを入力",
+        placeholder="例: Apple, Microsoft, AAPL, MSFT",
+        help="企業名（日本語・英語）またはティッカーシンボルで検索",
+        key="financial_search_input"
+    )
+    
+    # Process search input
+    if search_input:
+        search_results = search_stocks_by_name(search_input)
+        if search_results:
+            found_ticker = search_results[0]['ticker']
+            st.success(f"検索結果: {search_results[0]['name']} ({found_ticker})")
+            # Add to available tickers if not already there
+            if found_ticker not in available_tickers:
+                available_tickers.append(found_ticker)
+        else:
+            # Try to use the input as ticker directly
+            direct_ticker = search_input.upper()
+            st.info(f"直接ティッカーとして使用: {direct_ticker}")
+            if direct_ticker not in available_tickers:
+                available_tickers.append(direct_ticker)
 
 with col2:
     categories = ["All"] + get_all_categories()

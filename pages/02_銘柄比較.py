@@ -383,13 +383,37 @@ if selected_category != "All":
     else:
         available_tickers = category_tickers
 
+# Add company search functionality
+st.markdown("### 🔍 企業検索")
+search_input = st.text_input(
+    "企業名またはティッカーシンボルを入力",
+    placeholder="例: Apple, Microsoft, AAPL, MSFT",
+    help="企業名（日本語・英語）またはティッカーシンボルで検索",
+    key="comparison_search_input"
+)
+
+# Process search input and add to available tickers
+if search_input:
+    from comprehensive_stock_data import search_stocks_by_name
+    search_results = search_stocks_by_name(search_input)
+    if search_results:
+        found_ticker = search_results[0]['ticker']
+        st.success(f"検索結果: {search_results[0]['name']} ({found_ticker})")
+        # Add to available tickers if not already there
+        if found_ticker not in available_tickers:
+            available_tickers.append(found_ticker)
+    else:
+        # Try to use the input as ticker directly
+        direct_ticker = search_input.upper()
+        st.info(f"直接ティッカーとして使用: {direct_ticker}")
+        if direct_ticker not in available_tickers:
+            available_tickers.append(direct_ticker)
+
 # Create options with company names
 ticker_options = {}
 for ticker in available_tickers:
     stock_info = get_stock_info(ticker)
     ticker_options[ticker] = f"{ticker} - {stock_info['name']}"
-
-
 
 # 統合された銘柄選択（最大8つまで）
 st.markdown("**比較銘柄選択**")

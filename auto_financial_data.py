@@ -63,12 +63,34 @@ def get_auto_financial_data(ticker):
         # Calculate growth rate
         growth_rate = calculate_growth_rate(stock)
         
-        # Get accurate financial ratios directly from Yahoo Finance
+        # Calculate accurate financial ratios from actual financial data
         trailing_eps = info.get('trailingEps')
-        trailing_pe = info.get('trailingPE') 
-        price_to_book = info.get('priceToBook')
+        trailing_pe = info.get('trailingPE')
+        
+        # Calculate PE ratio from net income and current price for accuracy
+        if net_income and shares_outstanding and current_price and shares_outstanding > 0:
+            calculated_eps = net_income / shares_outstanding
+            if calculated_eps > 0:
+                calculated_pe = current_price / calculated_eps
+                # Use calculated PE if it's reasonable (between 1 and 500)
+                if 1 <= calculated_pe <= 500:
+                    trailing_pe = calculated_pe
+                    trailing_eps = calculated_eps
+        
+        # Calculate PS ratio from revenue and market cap for accuracy
         price_to_sales = info.get('priceToSalesTrailing12Months')
+        if revenue and market_cap and revenue > 0:
+            calculated_ps = market_cap / revenue
+            if calculated_ps > 0:
+                price_to_sales = calculated_ps
+        
+        price_to_book = info.get('priceToBook')
         return_on_equity = info.get('returnOnEquity')
+        
+        # Calculate PEG ratio from PE and growth rate
+        peg_ratio = None
+        if trailing_pe and growth_rate and growth_rate > 0:
+            peg_ratio = trailing_pe / growth_rate
         
         # Calculate ROA from balance sheet data
         roa = None
@@ -205,6 +227,7 @@ def get_auto_financial_data(ticker):
             'pe_ratio': trailing_pe,
             'pb_ratio': price_to_book,
             'ps_ratio': price_to_sales,
+            'peg_ratio': peg_ratio,
             'roe': (return_on_equity * 100) if return_on_equity else None,
             'roa': roa,
             'shares_outstanding': shares_outstanding,
@@ -674,6 +697,7 @@ def get_enhanced_estimates(ticker):
         'pe_ratio': profile['pe_ratio'],
         'pb_ratio': profile['pb_ratio'],
         'ps_ratio': (current_price * profile['shares_outstanding']) / profile['revenue'],
+        'peg_ratio': profile['pe_ratio'] / profile['historical_growth'] if profile['historical_growth'] > 0 else None,
         'roe': profile['roe'],
         'shares_outstanding': profile['shares_outstanding'],
         'book_value_per_share': current_price / profile['pb_ratio'],
