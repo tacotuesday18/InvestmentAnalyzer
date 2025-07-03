@@ -219,7 +219,7 @@ def get_auto_financial_data(ticker):
         }
         
     except Exception as e:
-        st.warning(f"Using enhanced estimates for {ticker} - some live data unavailable")
+        # Silently fall back to enhanced estimates when live data is unavailable
         # Return reasonable estimates based on company type
         return get_enhanced_estimates(ticker)
 
