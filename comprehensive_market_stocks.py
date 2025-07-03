@@ -109,8 +109,7 @@ def get_russell2000_stocks():
         "ROKU", "ZM", "PTON", "UBER", "LYFT", "DASH", "ABNB", "COIN", "HOOD", "RBLX",
         "DKNG", "PENN", "MGM", "WYNN", "LVS", "NCLH", "CCL", "RCL", "AAL", "DAL",
         
-        # Russell 2000 ETFs for reference
-        "IWM", "VTWO", "SCHA", "IJR", "RUT", "URTY", "UWM", "TWM", "RWM", "SRTY"
+
     ]
 
 def get_russell2000_sample():

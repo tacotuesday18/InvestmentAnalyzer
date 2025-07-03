@@ -448,11 +448,7 @@ COMPREHENSIVE_STOCKS = {
     "PINS": {"name": "Pinterest Inc.", "category": "Communication Services", "index": "Russell2000", "business": "Visual discovery and social media platform"},
     "TWTR": {"name": "Twitter Inc.", "category": "Communication Services", "index": "Russell2000", "business": "Social media and microblogging platform"},
     
-    # Russell 2000 ETFs
-    "IWM": {"name": "iShares Russell 2000 ETF", "category": "ETFs", "index": "Russell2000", "business": "Small-cap equity ETF tracking Russell 2000"},
-    "VTWO": {"name": "Vanguard Russell 2000 ETF", "category": "ETFs", "index": "Russell2000", "business": "Small-cap value ETF"},
-    "SCHA": {"name": "Schwab US Small-Cap ETF", "category": "ETFs", "index": "Russell2000", "business": "Broad small-cap equity exposure"},
-    "IJR": {"name": "iShares Core S&P Small-Cap ETF", "category": "ETFs", "index": "Russell2000", "business": "Small-cap equity ETF"},
+
 }
 
 def search_stocks_by_name(query):

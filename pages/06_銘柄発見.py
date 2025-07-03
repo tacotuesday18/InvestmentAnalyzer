@@ -548,10 +548,19 @@ if st.button("🔍 銘柄を検索", use_container_width=True, type="primary"):
                 if not (roa_range[0] <= roa <= roa_range[1]):
                     continue
                 
-                # PER
+                # PER and PSR - Use PSR for unprofitable stocks
                 per = data.get('pe_ratio', 0) or 0
-                if per > 0 and not (per_range[0] <= per <= per_range[1]):
-                    continue
+                psr = data.get('ps_ratio', 0) or 0
+                
+                # For unprofitable stocks (negative or no earnings), use PSR instead of PER
+                if profit_margin <= 0 or per <= 0:
+                    # Use PSR screening for unprofitable high-growth stocks
+                    if psr > 0 and not (1.0 <= psr <= 50.0):  # Reasonable PSR range for growth stocks
+                        continue
+                else:
+                    # Use PER screening for profitable stocks
+                    if per > 0 and not (per_range[0] <= per <= per_range[1]):
+                        continue
                 
                 # PBR
                 pbr = data.get('pb_ratio', 0) or 0
@@ -606,10 +615,12 @@ if st.button("🔍 銘柄を検索", use_container_width=True, type="primary"):
                     'roe': roe,
                     'roa': roa,
                     'pe_ratio': per,
+                    'ps_ratio': psr,
                     'pb_ratio': pbr,
                     'profit_margin': profit_margin,
                     'debt_ratio': debt_ratio,
                     'current_ratio': current_ratio,
+                    'is_profitable': profit_margin > 0 and per > 0,
                     'data': data
                 })
                 
@@ -654,8 +665,12 @@ if st.button("🔍 銘柄を検索", use_container_width=True, type="primary"):
                         st.markdown(f"<span class='metric-badge'>成長率 {stock['revenue_growth']:.1f}%</span>", unsafe_allow_html=True)
                     if stock['roe'] > 0:
                         st.markdown(f"<span class='metric-badge'>ROE {stock['roe']:.1f}%</span>", unsafe_allow_html=True)
-                    if stock['pe_ratio'] > 0:
+                    
+                    # Show PSR for unprofitable stocks, PER for profitable stocks
+                    if stock['is_profitable'] and stock['pe_ratio'] > 0:
                         st.markdown(f"<span class='metric-badge'>PER {stock['pe_ratio']:.1f}</span>", unsafe_allow_html=True)
+                    elif not stock['is_profitable'] and stock['ps_ratio'] > 0:
+                        st.markdown(f"<span class='metric-badge'>PSR {stock['ps_ratio']:.1f}</span>", unsafe_allow_html=True)
                 
                 with col3:
                     market_cap_billions = stock['market_cap'] / 1000
@@ -671,7 +686,14 @@ if st.button("🔍 銘柄を検索", use_container_width=True, type="primary"):
                         st.write(f"**ROA:** {stock['roa']:.1f}%")
                     
                     with metric_col2:
-                        st.write(f"**PER:** {stock['pe_ratio']:.1f}")
+                        # Show PSR for unprofitable stocks, PER for profitable stocks
+                        if stock['is_profitable'] and stock['pe_ratio'] > 0:
+                            st.write(f"**PER:** {stock['pe_ratio']:.1f}")
+                        elif not stock['is_profitable'] and stock['ps_ratio'] > 0:
+                            st.write(f"**PSR:** {stock['ps_ratio']:.1f}")
+                        else:
+                            st.write("**PER/PSR:** N/A")
+                        
                         st.write(f"**PBR:** {stock['pb_ratio']:.1f}")
                         st.write(f"**純利益率:** {stock['profit_margin']:.1f}%")
                     
