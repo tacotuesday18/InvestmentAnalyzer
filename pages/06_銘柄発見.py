@@ -666,10 +666,11 @@ if st.button("🔍 銘柄を検索", use_container_width=True, type="primary"):
                     if stock['roe'] > 0:
                         st.markdown(f"<span class='metric-badge'>ROE {stock['roe']:.1f}%</span>", unsafe_allow_html=True)
                     
-                    # Show PSR for unprofitable stocks, PER for profitable stocks
+                    # Show both PER and PSR for all stocks
                     if stock['is_profitable'] and stock['pe_ratio'] > 0:
                         st.markdown(f"<span class='metric-badge'>PER {stock['pe_ratio']:.1f}</span>", unsafe_allow_html=True)
-                    elif not stock['is_profitable'] and stock['ps_ratio'] > 0:
+                    
+                    if stock['ps_ratio'] > 0:
                         st.markdown(f"<span class='metric-badge'>PSR {stock['ps_ratio']:.1f}</span>", unsafe_allow_html=True)
                 
                 with col3:
@@ -686,13 +687,16 @@ if st.button("🔍 銘柄を検索", use_container_width=True, type="primary"):
                         st.write(f"**ROA:** {stock['roa']:.1f}%")
                     
                     with metric_col2:
-                        # Show PSR for unprofitable stocks, PER for profitable stocks
+                        # Show both PER and PSR for all stocks
                         if stock['is_profitable'] and stock['pe_ratio'] > 0:
                             st.write(f"**PER:** {stock['pe_ratio']:.1f}")
-                        elif not stock['is_profitable'] and stock['ps_ratio'] > 0:
+                        else:
+                            st.write("**PER:** N/A (赤字)")
+                        
+                        if stock['ps_ratio'] > 0:
                             st.write(f"**PSR:** {stock['ps_ratio']:.1f}")
                         else:
-                            st.write("**PER/PSR:** N/A")
+                            st.write("**PSR:** N/A")
                         
                         st.write(f"**PBR:** {stock['pb_ratio']:.1f}")
                         st.write(f"**純利益率:** {stock['profit_margin']:.1f}%")
