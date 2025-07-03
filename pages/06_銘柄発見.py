@@ -208,7 +208,7 @@ with st.expander("💡 投資スタイルガイド - どの投資戦略があな
     <h4>🚀 成長株投資</h4>
     <p><strong>特徴:</strong> 高い成長率を持つ企業に投資</p>
     <p><strong>適した方:</strong> リスクを取ってでも高いリターンを目指したい方</p>
-    <p><strong>スクリーニング条件:</strong> 売上成長率 > 15%, ROE > 15%, PEG < 2</p>
+    <p><strong>スクリーニング条件:</strong> 売上成長率 > 20%, ROE > 15%, PEG < 2</p>
     </div>
     
     <div class="investment-style">
@@ -306,7 +306,7 @@ with col1:
                 - 売上や利益が急成長している企業への投資
                 - テクノロジー、バイオテック、新興企業が中心
                 - 高いリターンを期待できるが、リスクも高い
-                - PSR（売上倍率）重視 - 赤字でも成長性があれば投資対象
+                - **売上成長率20%以上**を重視 - 急成長企業を発見
                 """)
             elif actual_style == "バリュー株投資":
                 st.markdown("""
@@ -314,7 +314,7 @@ with col1:
                 - 市場価値より安く取引されている企業への投資
                 - 伝統的な大企業や製造業が中心
                 - 安定したリターンを期待、リスクは中程度
-                - PER（利益倍率）重視 - 利益に対して割安な株を選択
+                - **歴史的な指標と比較**して現在割安な株を発見
                 """)
             elif actual_style == "配当株投資":
                 st.markdown("""
@@ -386,7 +386,6 @@ with col1:
             actual_style = "業界別"
 
 with col2:
-    fast_mode = st.checkbox("⚡ 高速モード", value=True, help="500銘柄を約1-2分で検索（推奨）")
     if st.button("🔄 条件をリセット", use_container_width=True):
         st.rerun()
 
@@ -394,8 +393,8 @@ with col2:
 # Handle both simple and detailed search modes
 if search_method == "簡単検索（おすすめ）" or (search_method == "詳細検索（上級者向け）" and detail_method == "投資スタイル別"):
     if actual_style == "成長株投資":
-        # Growth stocks: focus on revenue growth over 15%, very relaxed valuation
-        default_revenue_growth = (15.0, 100.0)
+        # Growth stocks: focus on revenue growth over 20%, very relaxed valuation
+        default_revenue_growth = (20.0, 100.0)
         default_roe = (-50.0, 100.0)  # Allow negative ROE for young growth companies
         default_per = (0.0, 500.0)  # Allow very high PER for growth stocks
         default_psr = (0.0, 100.0)   # Allow high PSR for growth stocks
@@ -653,14 +652,8 @@ if st.button(search_button_text, use_container_width=True, type="primary"):
         # Now screening from thousands of stocks instead of just 200
         st.info(f"📊 {len(available_tickers):,}銘柄から条件に合致する企業を検索中...")
         
-        # Optimize performance based on user selection
-        if fast_mode:
-            max_process = min(500, len(available_tickers))  # Fast mode: 500 stocks for 1-2 minute response
-            st.info("⚡ 高速モード: 上位500銘柄を約1-2分で検索します")
-        else:
-            max_process = min(2000, len(available_tickers))  # Full mode: up to 2000 stocks (slower)
-            st.info("🔍 フルモード: 最大2,000銘柄を検索します（5-10分程度）")
-        
+        # Process stocks based on selected universe size
+        max_process = min(stock_universe_size, len(available_tickers))
         available_tickers = available_tickers[:max_process]
         
         # Pre-filter out known delisted/problematic stocks to improve performance
@@ -723,15 +716,22 @@ if st.button(search_button_text, use_container_width=True, type="primary"):
                 should_include = False
                 
                 if actual_style == "成長株投資":
-                    # Growth: Include any stock with 15%+ revenue growth OR decent growth indicators
-                    if (revenue_growth >= 15 or 
-                        (revenue_growth >= 10 and roe >= 15) or
-                        (market_cap_billions >= 1 and revenue_growth >= 8)):
+                    # Growth: Focus on stocks with 20%+ revenue growth
+                    if (revenue_growth >= 20 or 
+                        (revenue_growth >= 15 and roe >= 20) or
+                        (market_cap_billions >= 1 and revenue_growth >= 15)):
                         should_include = True
                         
                 elif actual_style == "バリュー株投資":
-                    # Value: Include profitable stocks with reasonable valuation and growth
-                    if (profit_margin > 0 and per > 0 and per <= 20 and revenue_growth >= 5):
+                    # Value: Include stocks trading cheap based on historical metrics
+                    # Focus on profitable companies with reasonable valuations
+                    historical_pe = data.get('historical_pe_avg', per * 1.2) or per * 1.2  # Use 20% above current as fallback
+                    historical_pb = data.get('historical_pb_avg', pbr * 1.2) or pbr * 1.2
+                    
+                    # Value criteria: profitable + trading below historical averages OR low absolute valuations
+                    if (profit_margin > 0 and per > 0 and 
+                        ((per < historical_pe * 0.8 and pbr < historical_pb * 0.8) or  # Trading 20% below historical
+                         (per <= 15 and pbr <= 2.5 and revenue_growth >= 0))):  # Or absolute value criteria
                         should_include = True
                         
                 elif actual_style == "配当株投資":
@@ -801,6 +801,81 @@ if st.button(search_button_text, use_container_width=True, type="primary"):
             search_info = f"投資スタイル: {investment_style if 'investment_style' in locals() else 'カスタム設定'}"
         
         st.markdown(f"<small>分析対象: {processed_count}銘柄 | {search_info}</small>", unsafe_allow_html=True)
+        
+        # Add post-search filtering controls
+        if matching_stocks:
+            with st.expander("🔧 結果を絞り込み"):
+                st.markdown("**検索結果をさらに絞り込んでください：**")
+                
+                filter_col1, filter_col2, filter_col3 = st.columns(3)
+                
+                with filter_col1:
+                    # PER filter
+                    per_values = [s['pe_ratio'] for s in matching_stocks if s['is_profitable'] and s['pe_ratio'] > 0]
+                    if per_values:
+                        min_per, max_per = min(per_values), max(per_values)
+                        per_filter = st.slider(
+                            "PER 範囲",
+                            min_value=float(min_per),
+                            max_value=float(max_per),
+                            value=(float(min_per), float(max_per)),
+                            step=0.5,
+                            help="収益性のある銘柄のみ対象"
+                        )
+                    else:
+                        per_filter = None
+                
+                with filter_col2:
+                    # PSR filter  
+                    psr_values = [s['ps_ratio'] for s in matching_stocks if s['ps_ratio'] > 0]
+                    if psr_values:
+                        min_psr, max_psr = min(psr_values), max(psr_values)
+                        psr_filter = st.slider(
+                            "PSR 範囲",
+                            min_value=float(min_psr),
+                            max_value=float(max_psr),
+                            value=(float(min_psr), float(max_psr)),
+                            step=0.1,
+                            help="全銘柄が対象"
+                        )
+                    else:
+                        psr_filter = None
+                
+                with filter_col3:
+                    # Market cap filter
+                    market_caps = [s['market_cap'] / 1000 for s in matching_stocks if s['market_cap'] > 0]
+                    if market_caps:
+                        min_cap, max_cap = min(market_caps), max(market_caps)
+                        cap_filter = st.slider(
+                            "時価総額 (億ドル)",
+                            min_value=float(min_cap),
+                            max_value=float(max_cap),
+                            value=(float(min_cap), float(max_cap)),
+                            step=0.1
+                        )
+                    else:
+                        cap_filter = None
+                
+                # Apply filters
+                filtered_stocks = matching_stocks.copy()
+                
+                if per_filter:
+                    filtered_stocks = [s for s in filtered_stocks 
+                                     if not s['is_profitable'] or not s['pe_ratio'] > 0 or 
+                                     (per_filter[0] <= s['pe_ratio'] <= per_filter[1])]
+                
+                if psr_filter:
+                    filtered_stocks = [s for s in filtered_stocks 
+                                     if s['ps_ratio'] <= 0 or (psr_filter[0] <= s['ps_ratio'] <= psr_filter[1])]
+                
+                if cap_filter:
+                    filtered_stocks = [s for s in filtered_stocks 
+                                     if cap_filter[0] <= (s['market_cap'] / 1000) <= cap_filter[1]]
+                
+                st.markdown(f"**絞り込み後: {len(filtered_stocks)}銘柄**")
+                
+                # Use filtered results for display
+                matching_stocks = filtered_stocks
         
         if matching_stocks:
             # Sort by market cap descending

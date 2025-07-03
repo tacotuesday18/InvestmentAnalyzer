@@ -4,6 +4,7 @@
 An intelligent Streamlit-based company analysis platform delivering comprehensive business insights through advanced data visualization and interactive research tools. All financial data is sourced exclusively from Yahoo Finance to ensure accuracy and authenticity.
 
 ## Recent Changes  
+- **2025-07-03**: ENHANCED STOCK DISCOVERY FILTERING - Updated growth stocks to focus on 20%+ revenue growth, added historical metrics comparison for value stocks, implemented post-search filtering by PER/PSR, removed fast mode and replaced with time estimates
 - **2025-07-03**: IMPLEMENTED DYNAMIC STOCK TREND STORYTELLING VISUALIZATION - Added comprehensive storytelling analysis feature with interactive charts, market sentiment analysis, key event detection, and narrative generation for enhanced user engagement and understanding
 - **2025-07-03**: FIXED STOCK DISCOVERY FILTERING - Simplified overly restrictive criteria, added time estimates for stock universe selection (250-2000 stocks), resolved KeyError crashes, now successfully returns results for all investment styles
 - **2025-07-03**: EXPANDED RUSSELL 2000 COVERAGE - Added comprehensive Russell 2000 small-cap stocks to stock discovery with business descriptions, including technology, healthcare, biotech, fintech, clean energy, meme stocks, and ETFs for complete market coverage
