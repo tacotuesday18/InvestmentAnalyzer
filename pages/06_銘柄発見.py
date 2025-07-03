@@ -249,6 +249,15 @@ with col1:
         help="簡単検索：投資スタイルを選ぶだけで最適な条件を自動設定 | 詳細検索：すべての条件を手動で調整"
     )
     
+    # Stock universe size selection
+    st.markdown("#### 📊 検索対象の銘柄数")
+    stock_universe_size = st.selectbox(
+        "検索する銘柄数を選択",
+        [250, 500, 1000, 2000],
+        index=1,  # Default to 500
+        help="多い銘柄数ほど詳細な検索結果が得られますが、処理時間が長くなります"
+    )
+    
     if search_method == "簡単検索（おすすめ）":
         st.markdown("**🎯 投資スタイルを選択するだけ！**")
         investment_style = st.selectbox(
@@ -369,31 +378,31 @@ with col2:
 # Handle both simple and detailed search modes
 if search_method == "簡単検索（おすすめ）" or (search_method == "詳細検索（上級者向け）" and detail_method == "投資スタイル別"):
     if actual_style == "成長株投資":
-        # Growth stocks: focus on revenue growth over 15%, don't limit valuation too much
+        # Growth stocks: focus on revenue growth over 15%, very relaxed valuation
         default_revenue_growth = (15.0, 100.0)
-        default_roe = (0.0, 100.0)  # Allow negative ROE for young growth companies
-        default_per = (0.0, 200.0)  # Allow very high PER for growth stocks
-        default_psr = (0.0, 50.0)   # Allow high PSR for growth stocks
+        default_roe = (-50.0, 100.0)  # Allow negative ROE for young growth companies
+        default_per = (0.0, 500.0)  # Allow very high PER for growth stocks
+        default_psr = (0.0, 100.0)   # Allow high PSR for growth stocks
         default_market_cap = (0.1, 5000.0)  # Include small and large cap growth
     elif actual_style == "バリュー株投資":
         # Value stocks: PER less than 20, revenue growth 5%+
         default_revenue_growth = (5.0, 50.0)
         default_roe = (5.0, 100.0)
         default_per = (0.0, 20.0)   # PER less than 20
-        default_psr = (0.0, 5.0)    # Lower PSR for value stocks
+        default_psr = (0.0, 10.0)    # Relaxed PSR for value stocks
         default_market_cap = (1.0, 5000.0)
     elif actual_style == "配当株投資":
-        default_revenue_growth = (0.0, 50.0)
-        default_roe = (8.0, 100.0)
-        default_per = (0.0, 25.0)
-        default_psr = (0.0, 8.0)
-        default_market_cap = (5.0, 5000.0)
+        default_revenue_growth = (-10.0, 50.0)  # Allow slight negative growth
+        default_roe = (0.0, 100.0)  # Relaxed ROE requirement
+        default_per = (0.0, 50.0)   # Relaxed PER requirement
+        default_psr = (0.0, 20.0)   # Relaxed PSR requirement
+        default_market_cap = (1.0, 5000.0)  # Relaxed market cap requirement
     elif actual_style == "安定株投資":
-        default_revenue_growth = (0.0, 50.0)
-        default_roe = (10.0, 100.0)
-        default_per = (0.0, 20.0)
-        default_psr = (0.0, 6.0)
-        default_market_cap = (100.0, 5000.0)
+        default_revenue_growth = (-5.0, 50.0)  # Allow slight negative growth
+        default_roe = (0.0, 100.0)  # Relaxed ROE requirement
+        default_per = (0.0, 50.0)   # Relaxed PER requirement
+        default_psr = (0.0, 20.0)   # Relaxed PSR requirement
+        default_market_cap = (5.0, 5000.0)  # Relaxed market cap requirement
     else:  # カスタム設定
         default_revenue_growth = (0.0, 50.0)
         default_roe = (0.0, 100.0)
@@ -440,7 +449,7 @@ if search_method == "簡単検索（おすすめ）":
     
     # Set dividend yield range based on investment style
     if actual_style == "配当株投資":
-        dividend_yield_range = (2.0, 15.0)  # Focus on meaningful dividend yields
+        dividend_yield_range = (1.0, 15.0)  # Focus on meaningful dividend yields (reduced from 2.0 to 1.0)
     else:
         dividend_yield_range = (0.0, 15.0)  # Allow all ranges for other styles
         
@@ -602,18 +611,27 @@ else:
 if st.button(search_button_text, use_container_width=True, type="primary"):
     
     with st.spinner("条件に合う銘柄を検索中..."):
-        # Use reliable S&P 500 stocks for testing and core functionality
-        # This ensures we have valid, liquid stocks with reliable data
-        from comprehensive_market_stocks import get_sp500_tickers, get_nasdaq100_tickers
+        # Get comprehensive stock universe based on user selection
+        from comprehensive_market_stocks import get_sp500_tickers, get_nasdaq100_tickers, get_russell2000_stocks, get_all_market_stocks
         
-        # Start with reliable stocks only to fix the data display issue
-        sp500_stocks = get_sp500_tickers()
-        nasdaq100_stocks = get_nasdaq100_tickers()
-        available_tickers = list(set(sp500_stocks + nasdaq100_stocks))
+        # Build stock universe based on selected size
+        if stock_universe_size == 250:
+            sp500_stocks = get_sp500_tickers()
+            available_tickers = sp500_stocks[:250]
+        elif stock_universe_size == 500:
+            sp500_stocks = get_sp500_tickers()
+            nasdaq100_stocks = get_nasdaq100_tickers()
+            available_tickers = list(set(sp500_stocks + nasdaq100_stocks))[:500]
+        elif stock_universe_size == 1000:
+            sp500_stocks = get_sp500_tickers()
+            nasdaq100_stocks = get_nasdaq100_tickers()
+            russell2000_stocks = get_russell2000_stocks()
+            available_tickers = list(set(sp500_stocks + nasdaq100_stocks + russell2000_stocks[:500]))[:1000]
+        else:  # 2000 stocks
+            available_tickers = get_all_market_stocks()[:2000]
         
-        # Remove any problematic tickers from our reliable list
+        # Remove any problematic tickers from our list
         available_tickers = [t for t in available_tickers if t not in ['GOOGL', 'BRK.B', 'BF.B']]
-        available_tickers = available_tickers[:100]  # Start with top 100 most reliable stocks
         
         # Use comprehensive market coverage - remove artificial limit
         # Now screening from thousands of stocks instead of just 200
