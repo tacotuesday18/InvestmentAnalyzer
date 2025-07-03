@@ -249,14 +249,30 @@ with col1:
         help="簡単検索：投資スタイルを選ぶだけで最適な条件を自動設定 | 詳細検索：すべての条件を手動で調整"
     )
     
-    # Stock universe size selection
+    # Stock universe size selection with time estimates
     st.markdown("#### 📊 検索対象の銘柄数")
-    stock_universe_size = st.selectbox(
+    stock_universe_options = [
+        "250銘柄（約1-2分）",
+        "500銘柄（約2-4分）", 
+        "1000銘柄（約4-8分）",
+        "2000銘柄（約8-15分）"
+    ]
+    selected_option = st.selectbox(
         "検索する銘柄数を選択",
-        [250, 500, 1000, 2000],
+        stock_universe_options,
         index=1,  # Default to 500
         help="多い銘柄数ほど詳細な検索結果が得られますが、処理時間が長くなります"
     )
+    
+    # Extract the actual number from the selected option
+    if "250" in selected_option:
+        stock_universe_size = 250
+    elif "500" in selected_option:
+        stock_universe_size = 500
+    elif "1000" in selected_option:
+        stock_universe_size = 1000
+    else:
+        stock_universe_size = 2000
     
     if search_method == "簡単検索（おすすめ）":
         st.markdown("**🎯 投資スタイルを選択するだけ！**")
@@ -851,7 +867,6 @@ if st.button(search_button_text, use_container_width=True, type="primary"):
                     
                     with metric_col3:
                         st.write(f"**負債比率:** {stock['debt_ratio']:.2f}")
-                        st.write(f"**流動比率:** {stock['current_ratio']:.2f}")
                         st.write(f"**時価総額:** ${market_cap_billions:.1f}B")
                 
                 st.markdown('</div>', unsafe_allow_html=True)
