@@ -122,38 +122,70 @@ def get_auto_financial_data(ticker):
         if operating_margins is not None and isinstance(operating_margins, (int, float)):
             operating_margin = operating_margins * 100
         
-        # Enhanced dividend data collection
+        # Enhanced dividend data collection with validation
         dividend_yield = 0
         dividend_rate = 0
         
-        # Try multiple dividend data sources from yfinance
+        # Try multiple dividend data sources from yfinance with proper validation
         try:
-            # Primary dividend yield from info
+            # Method 1: Get dividendYield directly with proper handling of different formats
             dividend_yield_info = info.get('dividendYield')
             if dividend_yield_info and isinstance(dividend_yield_info, (int, float)):
-                dividend_yield = dividend_yield_info * 100
+                # Yahoo Finance sometimes returns dividend yield as decimal (0.03) or percentage (3.0)
+                # We need to detect which format and handle accordingly
+                if dividend_yield_info < 1:
+                    # Likely decimal format (e.g., 0.03 for 3%)
+                    potential_yield = dividend_yield_info * 100
+                elif 1 <= dividend_yield_info <= 15:
+                    # Likely already percentage format (e.g., 3.0 for 3%)
+                    potential_yield = dividend_yield_info
+                else:
+                    # Invalid yield, skip this method
+                    potential_yield = 0
+                
+                # Validate: reasonable dividend yield should be 0-15%
+                if 0 <= potential_yield <= 15:
+                    dividend_yield = potential_yield
             
-            # Alternative: get from dividendRate and calculate yield
+            # Method 2: Calculate from dividendRate and current price
             if dividend_yield == 0:
                 dividend_rate_info = info.get('dividendRate')
-                if dividend_rate_info and current_price > 0:
-                    dividend_rate = dividend_rate_info
-                    dividend_yield = (dividend_rate / current_price) * 100
+                if dividend_rate_info and isinstance(dividend_rate_info, (int, float)) and current_price > 0:
+                    # Validate: dividend rate shouldn't exceed 50% of stock price
+                    if 0 < dividend_rate_info < (current_price * 0.5):
+                        dividend_rate = dividend_rate_info
+                        potential_yield = (dividend_rate / current_price) * 100
+                        # Additional validation
+                        if 0 <= potential_yield <= 15:
+                            dividend_yield = potential_yield
             
-            # Additional fallback: check dividends from actions
+            # Method 3: Calculate from historical dividends (more reliable for some stocks)
             if dividend_yield == 0:
-                actions = stock.actions
-                if not actions.empty and 'Dividends' in actions.columns:
-                    # Get last 12 months of dividends
-                    recent_actions = actions.last('12M')
-                    if not recent_actions.empty:
-                        annual_dividends = recent_actions['Dividends'].sum()
-                        if annual_dividends > 0 and current_price > 0:
-                            dividend_yield = (annual_dividends / current_price) * 100
-                            dividend_rate = annual_dividends
+                try:
+                    actions = stock.actions
+                    if not actions.empty and 'Dividends' in actions.columns:
+                        # Get dividends from last 12 months using proper date filtering
+                        import pandas as pd
+                        from datetime import datetime, timedelta
+                        
+                        one_year_ago = datetime.now() - timedelta(days=365)
+                        recent_dividends = actions[actions.index >= one_year_ago]['Dividends']
+                        
+                        if not recent_dividends.empty:
+                            annual_dividends = recent_dividends.sum()
+                            # Validate: reasonable annual dividend
+                            if 0 < annual_dividends < (current_price * 0.5):
+                                potential_yield = (annual_dividends / current_price) * 100
+                                if 0 <= potential_yield <= 15:
+                                    dividend_yield = potential_yield
+                                    dividend_rate = annual_dividends
+                except Exception:
+                    pass
+                    
         except Exception as e:
             # If all dividend methods fail, keep dividend_yield = 0
-            pass
+            dividend_yield = 0
+            dividend_rate = 0
         
         return {
             'ticker': ticker,
@@ -469,6 +501,62 @@ def get_enhanced_estimates(ticker):
             'roe': 33.1,
             'shares_outstanding': 2400.0,
             'dividend_yield': 2.9  # Dividend aristocrat
+        },
+        'XOM': {
+            'name': 'Exxon Mobil Corporation',
+            'industry': 'Oil & Gas Integrated',
+            'sector': 'Energy',
+            'revenue': 380000,
+            'net_income': 56000,
+            'historical_growth': 8.5,
+            'profit_margin': 14.7,
+            'pe_ratio': 14.3,
+            'pb_ratio': 1.7,
+            'roe': 17.9,
+            'shares_outstanding': 4200.0,
+            'dividend_yield': 3.6  # Energy dividend stock
+        },
+        'CVX': {
+            'name': 'Chevron Corporation',
+            'industry': 'Oil & Gas Integrated',
+            'sector': 'Energy',
+            'revenue': 180000,
+            'net_income': 21400,
+            'historical_growth': 5.2,
+            'profit_margin': 11.9,
+            'pe_ratio': 15.1,
+            'pb_ratio': 1.8,
+            'roe': 12.8,
+            'shares_outstanding': 1900.0,
+            'dividend_yield': 4.8  # Energy dividend stock
+        },
+        'PG': {
+            'name': 'Procter & Gamble Company',
+            'industry': 'Household & Personal Products',
+            'sector': 'Consumer Defensive',
+            'revenue': 84000,
+            'net_income': 14650,
+            'historical_growth': 3.8,
+            'profit_margin': 17.4,
+            'pe_ratio': 25.8,
+            'pb_ratio': 8.1,
+            'roe': 31.4,
+            'shares_outstanding': 2400.0,
+            'dividend_yield': 2.6  # Dividend aristocrat
+        },
+        'COST': {
+            'name': 'Costco Wholesale Corporation',
+            'industry': 'Discount Stores',
+            'sector': 'Consumer Defensive',
+            'revenue': 249000,
+            'net_income': 7370,
+            'historical_growth': 9.1,
+            'profit_margin': 3.0,
+            'pe_ratio': 55.9,
+            'pb_ratio': 16.8,
+            'roe': 30.2,
+            'shares_outstanding': 443.0,
+            'dividend_yield': 0.5  # Growth-focused, low dividend
         }
     }
     

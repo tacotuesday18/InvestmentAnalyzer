@@ -448,7 +448,7 @@ if search_method == "簡単検索（おすすめ）":
             st.write(f"PSR: {default_psr[0]} - {default_psr[1]}")
             st.write(f"時価総額: {default_market_cap[0]}億USD - {default_market_cap[1]}億USD")
             if actual_style == "配当株投資":
-                st.write("**配当利回り: 2.0% - 15.0%**（有意義な配当株のみ）")
+                st.write("**配当利回り: 2.5% - 15.0%**（有意義な配当株のみ）")
                 st.write("利益率: -50% - 50%")
             else:
                 st.write("利益率: -50% - 50%（赤字企業も含む）")
@@ -464,7 +464,7 @@ if search_method == "簡単検索（おすすめ）":
     
     # Set dividend yield range based on investment style
     if actual_style == "配当株投資":
-        dividend_yield_range = (1.0, 15.0)  # Focus on meaningful dividend yields (reduced from 2.0 to 1.0)
+        dividend_yield_range = (2.5, 15.0)  # Focus on meaningful dividend yields (2.5% minimum as requested)
     else:
         dividend_yield_range = (0.0, 15.0)  # Allow all ranges for other styles
         
