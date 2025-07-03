@@ -8,7 +8,7 @@ from payment import PaymentProcessor
 # ページ設定
 st.set_page_config(
     page_title="企業価値分析プロ - 株式分析とDCF法による本質的価値計算",
-    page_icon="💹",
+    page_icon=None,
     layout="wide",
     initial_sidebar_state="collapsed",
     menu_items=None

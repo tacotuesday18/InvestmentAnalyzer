@@ -17,7 +17,7 @@ GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 
-def generate_historical_metrics_with_gemini(ticker, current_pe=None, current_pb=None, current_ps=None):
+def generate_historical_metrics_with_ai(ticker, current_pe=None, current_pb=None, current_ps=None):
     """
     Generate accurate historical average metrics using Gemini API
     Returns realistic historical data for 1, 3, 5, and 10 year periods
@@ -96,7 +96,7 @@ Generate realistic values appropriate for {ticker}'s sector and market cap. The 
         }
 
 
-def create_historical_metrics_table_with_gemini(ticker, current_pe=None, current_pb=None, current_ps=None):
+def create_historical_metrics_table_with_ai(ticker, current_pe=None, current_pb=None, current_ps=None):
     """
     Create a table showing current metrics vs historical averages using Gemini API
     Similar to financecharts.com format with actual data
@@ -114,8 +114,8 @@ def create_historical_metrics_table_with_gemini(ticker, current_pe=None, current
         if current_ps is None:
             current_ps = info.get('priceToSalesTrailing12Months', None)
         
-        # Generate historical averages using Gemini
-        gemini_metrics = generate_historical_metrics_with_gemini(ticker, current_pe, current_pb, current_ps)
+        # Generate historical averages using AI
+        ai_metrics = generate_historical_metrics_with_ai(ticker, current_pe, current_pb, current_ps)
         
         # Create table data
         table_data = []
@@ -151,10 +151,10 @@ def create_historical_metrics_table_with_gemini(ticker, current_pe=None, current
             pe_row = {
                 '指標': 'PER (株価収益率)',
                 '現在': f"~{current_pe:.1f}x",
-                '1年平均': get_gemini_average(gemini_metrics, 'pe_1y'),
-                '3年平均': get_gemini_average(gemini_metrics, 'pe_3y'),
-                '5年平均': get_gemini_average(gemini_metrics, 'pe_5y'),
-                '10年平均': get_gemini_average(gemini_metrics, 'pe_10y'),
+                '1年平均': get_gemini_average(ai_metrics, 'pe_1y'),
+                '3年平均': get_gemini_average(ai_metrics, 'pe_3y'),
+                '5年平均': get_gemini_average(ai_metrics, 'pe_5y'),
+                '10年平均': get_gemini_average(ai_metrics, 'pe_10y'),
                 'S&P500': f"{sp500_pe:.1f}x",
                 'NASDAQ': f"{nasdaq_pe:.1f}x"
             }
@@ -165,10 +165,10 @@ def create_historical_metrics_table_with_gemini(ticker, current_pe=None, current
             ps_row = {
                 '指標': 'PSR (株価売上高倍率)',
                 '現在': f"~{current_ps:.1f}x",
-                '1年平均': get_gemini_average(gemini_metrics, 'ps_1y'),
-                '3年平均': get_gemini_average(gemini_metrics, 'ps_3y'),
-                '5年平均': get_gemini_average(gemini_metrics, 'ps_5y'),
-                '10年平均': get_gemini_average(gemini_metrics, 'ps_10y'),
+                '1年平均': get_gemini_average(ai_metrics, 'ps_1y'),
+                '3年平均': get_gemini_average(ai_metrics, 'ps_3y'),
+                '5年平均': get_gemini_average(ai_metrics, 'ps_5y'),
+                '10年平均': get_gemini_average(ai_metrics, 'ps_10y'),
                 'S&P500': f"{sp500_ps:.1f}x",
                 'NASDAQ': f"{nasdaq_ps:.1f}x"
             }
@@ -179,10 +179,10 @@ def create_historical_metrics_table_with_gemini(ticker, current_pe=None, current
             pb_row = {
                 '指標': 'PBR (株価純資産倍率)',
                 '現在': f"~{current_pb:.1f}x",
-                '1年平均': get_gemini_average(gemini_metrics, 'pb_1y'),
-                '3年平均': get_gemini_average(gemini_metrics, 'pb_3y'),
-                '5年平均': get_gemini_average(gemini_metrics, 'pb_5y'),
-                '10年平均': get_gemini_average(gemini_metrics, 'pb_10y'),
+                '1年平均': get_gemini_average(ai_metrics, 'pb_1y'),
+                '3年平均': get_gemini_average(ai_metrics, 'pb_3y'),
+                '5年平均': get_gemini_average(ai_metrics, 'pb_5y'),
+                '10年平均': get_gemini_average(ai_metrics, 'pb_10y'),
                 'S&P500': f"{sp500_pb:.1f}x",
                 'NASDAQ': f"{nasdaq_pb:.1f}x"
             }
@@ -194,7 +194,7 @@ def create_historical_metrics_table_with_gemini(ticker, current_pe=None, current
             
             # Display title
             st.markdown(f"""
-            ### 📊 {ticker}のPER、PSR、PBR比率と市場平均・業界平均の比較表
+            ### {ticker}のPER、PSR、PBR比率と市場平均・業界平均の比較表
             
             以下は{ticker}の主要バリュエーション指標の現在値、過去平均値、市場平均値の比較です：
             """)
@@ -219,7 +219,7 @@ def create_historical_metrics_table_with_gemini(ticker, current_pe=None, current
             
             # Add interpretation note
             st.markdown("""
-            **📝 解釈のポイント:**
+            **解釈のポイント:**
             - **PER (株価収益率)**: 現在値が過去平均より低い場合、割安の可能性。市場平均との比較も重要
             - **PSR (株価売上高倍率)**: 売上高に対する評価の妥当性を示す。成長企業では高くなる傾向
             - **PBR (株価純資産倍率)**: 純資産に対する市場評価を表す。1倍未満は理論的割安
@@ -227,8 +227,8 @@ def create_historical_metrics_table_with_gemini(ticker, current_pe=None, current
             """)
             
             # Display trend analysis if available
-            if gemini_metrics and gemini_metrics.get('market_context'):
-                st.info(f"💡 **市場コンテキスト**: {gemini_metrics['market_context']}")
+            if ai_metrics and ai_metrics.get('market_context'):
+                st.info(f"**市場コンテキスト**: {ai_metrics['market_context']}")
             
             # Show explanation of market average calculations
             if market_data:
@@ -281,7 +281,7 @@ def get_gemini_average(gemini_metrics, metric_key):
         return "N/A"
 
 
-def extract_quarterly_business_developments_with_gemini(ticker, quarter_info="latest"):
+def extract_quarterly_business_developments_with_ai(ticker, quarter_info="latest"):
     """
     Extract specific quarterly business developments using Gemini API
     """
@@ -345,7 +345,7 @@ Generate realistic content in Japanese appropriate for {ticker}'s industry secto
         }
 
 
-def generate_qa_section_analysis_with_gemini(ticker):
+def generate_qa_section_analysis_with_ai(ticker):
     """
     Generate detailed Q&A section analysis using Gemini API
     """

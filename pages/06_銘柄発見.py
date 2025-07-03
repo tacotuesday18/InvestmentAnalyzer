@@ -578,14 +578,21 @@ if st.button("🔍 銘柄を検索", use_container_width=True, type="primary"):
                 if current_ratio > 0 and not (current_ratio_range[0] <= current_ratio <= current_ratio_range[1]):
                     continue
                 
-                # Get company description
+                # Get company description from existing data or fetch if needed
                 try:
-                    stock_info = yf.Ticker(ticker)
-                    business_summary = stock_info.info.get('longBusinessSummary', '')
-                    # Get a brief description (first 200 characters)
-                    description = business_summary[:200] + "..." if len(business_summary) > 200 else business_summary
-                except:
-                    description = "事業概要データなし"
+                    # Try to get description from existing data first
+                    description = data.get('business_summary', '')
+                    if not description:
+                        # If not available, fetch from yfinance
+                        stock_info = yf.Ticker(ticker)
+                        business_summary = stock_info.info.get('longBusinessSummary', '')
+                        description = business_summary[:200] + "..." if len(business_summary) > 200 else business_summary
+                    
+                    # If still no description, provide a fallback
+                    if not description:
+                        description = f"{data.get('sector', 'Unknown')}セクターの企業"
+                except Exception as e:
+                    description = f"{data.get('sector', 'Unknown')}セクターの企業"
                 
                 # If all criteria pass, add to results
                 matching_stocks.append({
@@ -614,7 +621,7 @@ if st.button("🔍 銘柄を検索", use_container_width=True, type="primary"):
         status_text.empty()
         
         # Display results
-        st.markdown(f"### 🎯 検索結果: {len(matching_stocks)}銘柄が条件に合致")
+        st.markdown(f"### 検索結果: {len(matching_stocks)}銘柄が条件に合致")
         
         # Handle display text based on search method
         if search_method == "業界別":
@@ -655,7 +662,7 @@ if st.button("🔍 銘柄を検索", use_container_width=True, type="primary"):
                     st.metric("時価総額", f"${market_cap_billions:.1f}B")
                 
                 # Detailed metrics in expandable section
-                with st.expander(f"📊 {stock['ticker']} 詳細データ"):
+                with st.expander(f"{stock['ticker']} 詳細データ"):
                     metric_col1, metric_col2, metric_col3 = st.columns(3)
                     
                     with metric_col1:

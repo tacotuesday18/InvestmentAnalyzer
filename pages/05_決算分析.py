@@ -18,15 +18,15 @@ from currency_converter import display_stock_price_in_jpy
 from format_helpers import format_currency, format_large_number
 from gemini_analyzer import generate_earnings_summary, extract_and_translate_earnings_transcript
 from openai_analyzer import (
-    generate_current_stock_metrics_with_chatgpt,
+    generate_current_stock_metrics_with_ai,
     translate_earnings_transcript_to_japanese,
     extract_quarterly_business_developments,
     generate_qa_section_analysis
 )
 from gemini_historical_metrics import (
-    create_historical_metrics_table_with_gemini,
-    extract_quarterly_business_developments_with_gemini,
-    generate_qa_section_analysis_with_gemini
+    create_historical_metrics_table_with_ai,
+    extract_quarterly_business_developments_with_ai,
+    generate_qa_section_analysis_with_ai
 )
 import yfinance as yf
 
@@ -366,58 +366,58 @@ if analyze_button and selected_ticker:
                         'info': stock.info if 'stock' in locals() else {}
                     }
                     
-                    # Generate ChatGPT analysis
-                    chatgpt_analysis = generate_current_stock_metrics_with_chatgpt(selected_ticker, financial_data)
+                    # Generate AI analysis
+                    ai_analysis = generate_current_stock_metrics_with_ai(selected_ticker, financial_data)
                     
-                    if chatgpt_analysis:
+                    if ai_analysis:
                         col1, col2 = st.columns(2)
                         
                         with col1:
-                            st.markdown("#### 📊 投資評価")
-                            if chatgpt_analysis.get('valuation_assessment'):
-                                assessment = chatgpt_analysis['valuation_assessment']
+                            st.markdown("#### 投資評価")
+                            if ai_analysis.get('valuation_assessment'):
+                                assessment = ai_analysis['valuation_assessment']
                                 color = "trend-positive" if "undervalued" in assessment.lower() else "trend-negative" if "overvalued" in assessment.lower() else ""
                                 st.markdown(f'<div class="metric-card"><div class="metric-value {color}">{assessment}</div><div class="metric-label">評価結果</div></div>', unsafe_allow_html=True)
                             
-                            if chatgpt_analysis.get('recommendation'):
-                                rec = chatgpt_analysis['recommendation']
+                            if ai_analysis.get('recommendation'):
+                                rec = ai_analysis['recommendation']
                                 rec_color = "trend-positive" if "buy" in rec.lower() else "trend-negative" if "sell" in rec.lower() else ""
                                 st.markdown(f'<div class="metric-card"><div class="metric-value {rec_color}">{rec}</div><div class="metric-label">推奨</div></div>', unsafe_allow_html=True)
                         
                         with col2:
-                            st.markdown("#### 📈 成長見通し")
-                            if chatgpt_analysis.get('growth_prospects'):
-                                st.write(chatgpt_analysis['growth_prospects'])
+                            st.markdown("#### 成長見通し")
+                            if ai_analysis.get('growth_prospects'):
+                                st.write(ai_analysis['growth_prospects'])
                             
-                            if chatgpt_analysis.get('target_price_range'):
-                                st.markdown(f"**目標株価**: {chatgpt_analysis['target_price_range']}")
+                            if ai_analysis.get('target_price_range'):
+                                st.markdown(f"**目標株価**: {ai_analysis['target_price_range']}")
                         
                         # Strengths and concerns
                         col1, col2 = st.columns(2)
                         
                         with col1:
-                            if chatgpt_analysis.get('key_strengths'):
-                                st.markdown("#### ✅ 主要な強み")
-                                for strength in chatgpt_analysis['key_strengths']:
+                            if ai_analysis.get('key_strengths'):
+                                st.markdown("#### 主要な強み")
+                                for strength in ai_analysis['key_strengths']:
                                     st.write(f"• {strength}")
                         
                         with col2:
-                            if chatgpt_analysis.get('key_concerns'):
-                                st.markdown("#### ⚠️ 懸念事項")
-                                for concern in chatgpt_analysis['key_concerns']:
+                            if ai_analysis.get('key_concerns'):
+                                st.markdown("#### 懸念事項")
+                                for concern in ai_analysis['key_concerns']:
                                     st.write(f"• {concern}")
                         
                         # Investment thesis and risks
-                        if chatgpt_analysis.get('investment_thesis'):
-                            st.markdown("#### 🎯 投資テーゼ")
-                            st.info(chatgpt_analysis['investment_thesis'])
+                        if ai_analysis.get('investment_thesis'):
+                            st.markdown("#### 投資テーゼ")
+                            st.info(ai_analysis['investment_thesis'])
                         
-                        if chatgpt_analysis.get('risk_factors'):
-                            st.markdown("#### ⚡ リスク要因")
-                            st.warning(chatgpt_analysis['risk_factors'])
+                        if ai_analysis.get('risk_factors'):
+                            st.markdown("#### リスク要因")
+                            st.warning(ai_analysis['risk_factors'])
                 
                 except Exception as e:
-                    st.error(f"ChatGPT分析の生成中にエラーが発生しました: {str(e)}")
+                    st.error(f"AI分析の生成中にエラーが発生しました: {str(e)}")
                     st.info("従来の分析を表示します")
 
             # Enhanced Investment Analysis with More Metrics

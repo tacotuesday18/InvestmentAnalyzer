@@ -25,7 +25,7 @@ def safe_json_parse(response):
         return None
 
 
-def generate_historical_metrics_with_chatgpt(ticker, current_pe=None, current_pb=None, current_ps=None):
+def generate_historical_metrics_with_ai(ticker, current_pe=None, current_pb=None, current_ps=None):
     """
     Generate accurate historical average metrics for multiple time periods using ChatGPT API
     """
@@ -85,13 +85,13 @@ Format as valid JSON only."""
         return safe_json_parse(response)
         
     except Exception as e:
-        logging.error(f"Error generating historical metrics with ChatGPT: {e}")
+        logging.error(f"Error generating historical metrics with AI: {e}")
         return None
 
 
-def generate_current_stock_metrics_with_chatgpt(ticker, financial_data):
+def generate_current_stock_metrics_with_ai(ticker, financial_data):
     """
-    Generate current stock evaluation using ChatGPT API
+    Generate current stock evaluation using AI API
     """
     try:
         prompt = f"""As an expert financial analyst, evaluate {ticker} stock based on the provided financial metrics.

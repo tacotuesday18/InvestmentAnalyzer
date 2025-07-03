@@ -182,7 +182,7 @@ with col1:
         selected_ticker = st.session_state.get('fundamental_current_ticker', 'AAPL')
 
 with col2:
-    analyze_button = st.button("📋 ファンダメンタル分析", type="primary", use_container_width=True)
+    analyze_button = st.button("ファンダメンタル分析", type="primary", use_container_width=True)
 
 # Check if we should run analysis
 should_analyze = analyze_button and selected_ticker

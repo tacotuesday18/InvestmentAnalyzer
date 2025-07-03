@@ -6,7 +6,7 @@ Based on financecharts.com style format as requested by user
 import streamlit as st
 import pandas as pd
 import yfinance as yf
-from openai_analyzer import generate_historical_metrics_with_chatgpt
+from openai_analyzer import generate_historical_metrics_with_ai
 
 
 def create_historical_metrics_table(ticker, current_pe=None, current_pb=None, current_ps=None):
@@ -27,12 +27,12 @@ def create_historical_metrics_table(ticker, current_pe=None, current_pb=None, cu
         if current_ps is None:
             current_ps = info.get('priceToSalesTrailing12Months', None)
         
-        # Generate historical averages using ChatGPT
+        # Generate historical averages using AI
         try:
-            chatgpt_metrics = generate_historical_metrics_with_chatgpt(ticker, current_pe, current_pb, current_ps)
+            ai_metrics = generate_historical_metrics_with_ai(ticker, current_pe, current_pb, current_ps)
         except Exception as e:
-            st.warning("ChatGPT分析が利用できません。デフォルト値を使用します。")
-            chatgpt_metrics = None
+            st.warning("AI分析が利用できません。デフォルト値を使用します。")
+            ai_metrics = None
         
         # Get real market and industry averages using live data
         from market_averages import get_comprehensive_market_data, format_market_data_explanation
@@ -68,10 +68,10 @@ def create_historical_metrics_table(ticker, current_pe=None, current_pb=None, cu
             pe_row = {
                 'Metric': 'PER (株価収益率)',
                 'Current': f"~{current_pe:.1f}x",
-                '1-Year Average': get_historical_average(chatgpt_metrics, 'pe', '1y', current_pe),
-                '3-Year Average': get_historical_average(chatgpt_metrics, 'pe', '3y', current_pe),
-                '5-Year Average': get_historical_average(chatgpt_metrics, 'pe', '5y', current_pe),
-                '10-Year Average': get_historical_average(chatgpt_metrics, 'pe', '10y', current_pe),
+                '1-Year Average': get_historical_average(ai_metrics, 'pe', '1y', current_pe),
+                '3-Year Average': get_historical_average(ai_metrics, 'pe', '3y', current_pe),
+                '5-Year Average': get_historical_average(ai_metrics, 'pe', '5y', current_pe),
+                '10-Year Average': get_historical_average(ai_metrics, 'pe', '10y', current_pe),
                 'S&P500': f"{sp500_pe:.1f}x",
                 'NASDAQ': f"{nasdaq_pe:.1f}x"
             }
@@ -82,10 +82,10 @@ def create_historical_metrics_table(ticker, current_pe=None, current_pb=None, cu
             ps_row = {
                 'Metric': 'PSR (株価売上高倍率)',
                 'Current': f"~{current_ps:.1f}x",
-                '1-Year Average': get_historical_average(chatgpt_metrics, 'ps', '1y', current_ps),
-                '3-Year Average': get_historical_average(chatgpt_metrics, 'ps', '3y', current_ps),
-                '5-Year Average': get_historical_average(chatgpt_metrics, 'ps', '5y', current_ps),
-                '10-Year Average': get_historical_average(chatgpt_metrics, 'ps', '10y', current_ps),
+                '1-Year Average': get_historical_average(ai_metrics, 'ps', '1y', current_ps),
+                '3-Year Average': get_historical_average(ai_metrics, 'ps', '3y', current_ps),
+                '5-Year Average': get_historical_average(ai_metrics, 'ps', '5y', current_ps),
+                '10-Year Average': get_historical_average(ai_metrics, 'ps', '10y', current_ps),
                 'S&P500': f"{sp500_ps:.1f}x",
                 'NASDAQ': f"{nasdaq_ps:.1f}x"
             }
@@ -96,10 +96,10 @@ def create_historical_metrics_table(ticker, current_pe=None, current_pb=None, cu
             pb_row = {
                 'Metric': 'PBR (株価純資産倍率)',
                 'Current': f"~{current_pb:.1f}x",
-                '1-Year Average': get_historical_average(chatgpt_metrics, 'pb', '1y', current_pb),
-                '3-Year Average': get_historical_average(chatgpt_metrics, 'pb', '3y', current_pb),
-                '5-Year Average': get_historical_average(chatgpt_metrics, 'pb', '5y', current_pb),
-                '10-Year Average': get_historical_average(chatgpt_metrics, 'pb', '10y', current_pb),
+                '1-Year Average': get_historical_average(ai_metrics, 'pb', '1y', current_pb),
+                '3-Year Average': get_historical_average(ai_metrics, 'pb', '3y', current_pb),
+                '5-Year Average': get_historical_average(ai_metrics, 'pb', '5y', current_pb),
+                '10-Year Average': get_historical_average(ai_metrics, 'pb', '10y', current_pb),
                 'S&P500': f"{sp500_pb:.1f}x",
                 'NASDAQ': f"{nasdaq_pb:.1f}x"
             }
