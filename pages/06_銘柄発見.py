@@ -691,60 +691,44 @@ if st.button(search_button_text, use_container_width=True, type="primary"):
                 
                 processed_count += 1
                 
-                # Check screening criteria
-                passes_screen = True
-                
-                # Revenue growth
+                # Simplified screening - Extract key metrics
                 revenue_growth = data.get('historical_growth', 0) or 0
-                if not (revenue_growth_range[0] <= revenue_growth <= revenue_growth_range[1]):
-                    continue
-                
-                # ROE
-                roe = data.get('roe', 0) or 0
-                if not (roe_range[0] <= roe <= roe_range[1]):
-                    continue
-                
-                # ROA
-                roa = data.get('roa', 0) or 0
-                if not (roa_range[0] <= roa <= roa_range[1]):
-                    continue
-                
-                # PER and PSR filtering - Now both are filtered separately
                 per = data.get('pe_ratio', 0) or 0
                 psr = data.get('ps_ratio', 0) or 0
-                
-                # PSR filtering for all stocks (including unprofitable ones)
-                if psr > 0 and not (psr_range[0] <= psr <= psr_range[1]):
-                    continue
-                
-                # PER filtering only for profitable stocks (ignore unprofitable ones)
-                if per > 0 and profit_margin > 0:
-                    if not (per_range[0] <= per <= per_range[1]):
-                        continue
-                
-                # PBR
-                pbr = data.get('pb_ratio', 0) or 0
-                if pbr > 0 and not (pbr_range[0] <= pbr <= pbr_range[1]):
-                    continue
-                
-                # Profit margin
                 profit_margin = data.get('profit_margin', 0) or 0
-                if not (profit_margin_range[0] <= profit_margin <= profit_margin_range[1]):
-                    continue
-                
-                # Market cap (convert to billions)
                 market_cap_billions = (data.get('market_cap', 0) or 0) / 1000
-                if not (market_cap_range[0] <= market_cap_billions <= market_cap_range[1]):
-                    continue
-                
-                # Debt ratio
-                debt_ratio = data.get('debt_to_equity', 0) or 0
-                if not (debt_ratio_range[0] <= debt_ratio <= debt_ratio_range[1]):
-                    continue
-                
-                # Dividend yield filtering
                 dividend_yield = data.get('dividend_yield', 0) or 0
-                if not (dividend_yield_range[0] <= dividend_yield <= dividend_yield_range[1]):
+                roe = data.get('roe', 0) or 0
+                pbr = data.get('pb_ratio', 0) or 0
+                debt_ratio = data.get('debt_to_equity', 0) or 0
+                roa = data.get('roa', 0) or 0
+                
+                # Only apply basic filters that are essential for each investment style
+                should_include = False
+                
+                if actual_style == "成長株投資":
+                    # Growth: Include any stock with 15%+ revenue growth OR decent growth indicators
+                    if (revenue_growth >= 15 or 
+                        (revenue_growth >= 10 and roe >= 15) or
+                        (market_cap_billions >= 1 and revenue_growth >= 8)):
+                        should_include = True
+                        
+                elif actual_style == "バリュー株投資":
+                    # Value: Include profitable stocks with reasonable valuation and growth
+                    if (profit_margin > 0 and per > 0 and per <= 20 and revenue_growth >= 5):
+                        should_include = True
+                        
+                elif actual_style == "配当株投資":
+                    # Dividend: Include any stock with dividend yield above 1%
+                    if dividend_yield >= 1.0:
+                        should_include = True
+                        
+                elif actual_style == "安定株投資":
+                    # Stability: Include large profitable companies
+                    if (market_cap_billions >= 1.0 and profit_margin > 0):
+                        should_include = True
+                
+                if not should_include:
                     continue
                 
                 # Get company description from existing data or fetch if needed
