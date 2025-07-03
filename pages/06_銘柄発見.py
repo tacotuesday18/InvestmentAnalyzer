@@ -295,33 +295,39 @@ if search_method == "投資スタイル別":
     if investment_style == "成長株投資":
         default_revenue_growth = (15.0, 50.0)
         default_roe = (15.0, 100.0)
-        default_per = (0.0, 30.0)
+        default_per = (0.0, 80.0)  # Allow high PER for growth stocks
+        default_psr = (0.0, 20.0)  # Allow high PSR for growth stocks
         default_market_cap = (1.0, 5000.0)
     elif investment_style == "バリュー株投資":
         default_revenue_growth = (0.0, 50.0)
         default_roe = (10.0, 100.0)
         default_per = (0.0, 15.0)
+        default_psr = (0.0, 5.0)  # Lower PSR for value stocks
         default_market_cap = (10.0, 5000.0)
     elif investment_style == "配当株投資":
         default_revenue_growth = (0.0, 50.0)
         default_roe = (8.0, 100.0)
         default_per = (0.0, 25.0)
+        default_psr = (0.0, 8.0)
         default_market_cap = (5.0, 5000.0)
     elif investment_style == "安定株投資":
         default_revenue_growth = (0.0, 50.0)
         default_roe = (10.0, 100.0)
         default_per = (0.0, 20.0)
+        default_psr = (0.0, 6.0)
         default_market_cap = (100.0, 5000.0)
     else:  # カスタム設定
         default_revenue_growth = (0.0, 50.0)
         default_roe = (0.0, 100.0)
-        default_per = (0.0, 50.0)
+        default_per = (0.0, 100.0)
+        default_psr = (0.0, 30.0)
         default_market_cap = (0.1, 5000.0)
 else:  # 業界別検索
     # Industry-based search uses more relaxed default criteria
     default_revenue_growth = (0.0, 50.0)
     default_roe = (0.0, 100.0)
-    default_per = (0.0, 50.0)
+    default_per = (0.0, 100.0)
+    default_psr = (0.0, 30.0)
     default_market_cap = (0.1, 5000.0)
 
 # Screening criteria
@@ -361,12 +367,21 @@ with col2:
     st.markdown("**バリュエーション**")
     
     per_range = st.slider(
-        "PER",
+        "PER (収益性のある株式のみ)",
+        min_value=0.0,
+        max_value=200.0,  # Increased for high-growth stocks
+        value=(0.0, 100.0),  # More inclusive default
+        step=1.0,
+        help="株価収益率（高成長株は高PERでも対象に含む）"
+    )
+    
+    psr_range = st.slider(
+        "PSR (全ての株式)",
         min_value=0.0,
         max_value=50.0,
-        value=default_per,
+        value=default_psr,
         step=0.5,
-        help="株価収益率"
+        help="株価売上高倍率（成長株や赤字企業の評価に重要）"
     )
     
     pbr_range = st.slider(
@@ -380,11 +395,11 @@ with col2:
     
     profit_margin_range = st.slider(
         "純利益率 (%)",
-        min_value=0.0,
+        min_value=-50.0,  # Allow negative margins for unprofitable growth stocks
         max_value=50.0,
-        value=(0.0, 50.0),
+        value=(-20.0, 50.0),  # More inclusive default
         step=1.0,
-        help="売上に対する純利益の割合"
+        help="売上に対する純利益の割合（マイナスも含む）"
     )
 
 with col3:
@@ -548,18 +563,17 @@ if st.button("🔍 銘柄を検索", use_container_width=True, type="primary"):
                 if not (roa_range[0] <= roa <= roa_range[1]):
                     continue
                 
-                # PER and PSR - Use PSR for unprofitable stocks
+                # PER and PSR filtering - Now both are filtered separately
                 per = data.get('pe_ratio', 0) or 0
                 psr = data.get('ps_ratio', 0) or 0
                 
-                # For unprofitable stocks (negative or no earnings), use PSR instead of PER
-                if profit_margin <= 0 or per <= 0:
-                    # Use PSR screening for unprofitable high-growth stocks
-                    if psr > 0 and not (1.0 <= psr <= 50.0):  # Reasonable PSR range for growth stocks
-                        continue
-                else:
-                    # Use PER screening for profitable stocks
-                    if per > 0 and not (per_range[0] <= per <= per_range[1]):
+                # PSR filtering for all stocks (including unprofitable ones)
+                if psr > 0 and not (psr_range[0] <= psr <= psr_range[1]):
+                    continue
+                
+                # PER filtering only for profitable stocks (ignore unprofitable ones)
+                if per > 0 and profit_margin > 0:
+                    if not (per_range[0] <= per <= per_range[1]):
                         continue
                 
                 # PBR
