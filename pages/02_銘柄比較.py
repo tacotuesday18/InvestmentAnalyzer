@@ -453,10 +453,15 @@ if 'stored_comparison_methods' not in st.session_state:
     st.session_state.stored_comparison_methods = []
 
 # Check if we need to recompute comparison (only when tickers or methods change)
+# Also clear cache if stored results don't match current tickers
+stored_result_tickers = set(st.session_state.stored_comparison_results.keys()) if st.session_state.stored_comparison_results else set()
+current_tickers_upper = set([t.upper() for t in selected_tickers])
+
 need_recompute = (
     set(selected_tickers) != set(st.session_state.stored_comparison_tickers) or
     set(valuation_methods) != set(st.session_state.stored_comparison_methods) or
-    not st.session_state.stored_comparison_results
+    not st.session_state.stored_comparison_results or
+    stored_result_tickers != current_tickers_upper
 )
 
 # 比較ボタン
@@ -488,11 +493,21 @@ if comparison_button_clicked:
         with st.spinner("Fetching live financial data and comparing stocks..."):
             comparison_results = {}
             
-            for ticker in selected_tickers:
-                auto_data = get_auto_financial_data(ticker)
+            # Create a progress bar and status updates
+            progress_bar = st.progress(0)
+            status_text = st.empty()
+            
+            for i, ticker in enumerate(selected_tickers):
+                # Clear any cached data for this ticker to ensure fresh data
+                ticker_upper = ticker.upper()
+                status_text.text(f"Fetching data for {ticker_upper}...")
+                progress_bar.progress((i + 0.5) / len(selected_tickers))
+                
+                auto_data = get_auto_financial_data(ticker_upper)
                 if auto_data:
-                    # Calculate valuations using live data
+                    # Calculate valuations using live data - ensure ticker matches
                     result = {
+                        "ticker": ticker_upper,  # Store ticker for verification
                         "name": auto_data['name'],
                         "industry": auto_data['industry'],
                         "current_price": auto_data['current_price'],
@@ -565,7 +580,12 @@ if comparison_button_clicked:
                             "current_multiple": current_ps
                         }
                     
-                    comparison_results[ticker] = result
+                    comparison_results[ticker_upper] = result
+                    progress_bar.progress((i + 1) / len(selected_tickers))
+            
+            # Clear progress indicators
+            progress_bar.empty()
+            status_text.empty()
             
             # Store results in session state for future use
             st.session_state.stored_comparison_results = comparison_results
@@ -582,8 +602,10 @@ if comparison_button_clicked:
                 summary_data = []
                 
                 for ticker, result in comparison_results.items():
+                    # Verify we have the right ticker
+                    displayed_ticker = result.get("ticker", ticker)
                     row = {
-                        "ティッカー": ticker,
+                        "ティッカー": displayed_ticker,
                         "企業名": result["name"],
                         "業界": result["industry"],
                         "現在株価": f"${result['current_price']:.2f}"

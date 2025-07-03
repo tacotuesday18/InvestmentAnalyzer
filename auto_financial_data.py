@@ -6,6 +6,10 @@ import pandas as pd
 def get_auto_financial_data(ticker):
     """Automatically fetch all financial data for a company"""
     try:
+        # Ensure ticker is uppercase and clean
+        ticker = ticker.upper().strip()
+        
+        # Create fresh yfinance instance to avoid any caching issues
         stock = yf.Ticker(ticker)
         info = stock.info
         
