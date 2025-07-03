@@ -241,49 +241,118 @@ st.markdown("### 🎯 スクリーニング条件を設定")
 col1, col2 = st.columns([2, 1])
 
 with col1:
-    # Search method selection
+    # Simplified search method selection for beginners
     search_method = st.radio(
         "検索方法を選択",
-        ["投資スタイル別", "業界別"],
+        ["簡単検索（おすすめ）", "詳細検索（上級者向け）"],
         horizontal=True,
-        help="投資スタイル別：成長株、バリュー株、配当株から選択 | 業界別：特定の業界から銘柄を探す"
+        help="簡単検索：投資スタイルを選ぶだけで最適な条件を自動設定 | 詳細検索：すべての条件を手動で調整"
     )
     
-    if search_method == "投資スタイル別":
-        st.markdown("**投資スタイルを選択 (プリセット条件)**")
+    if search_method == "簡単検索（おすすめ）":
+        st.markdown("**🎯 投資スタイルを選択するだけ！**")
         investment_style = st.selectbox(
-            "投資スタイル選択",
-            ["カスタム設定", "成長株投資", "バリュー株投資", "配当株投資", "安定株投資"],
-            label_visibility="collapsed"
+            "あなたにピッタリの投資スタイルは？",
+            [
+                "🚀 成長株投資 - 将来性重視（リスク高・リターン高）",
+                "💰 バリュー株投資 - 割安株狙い（安定重視）", 
+                "💎 配当株投資 - 定期収入重視（配当金狙い）",
+                "🏦 安定株投資 - 大企業中心（低リスク）"
+            ],
+            index=0,
+            label_visibility="collapsed",
+            help="投資スタイルに応じて最適な条件を自動設定します"
         )
+        # Extract the actual style for logic
+        if "成長株投資" in investment_style:
+            actual_style = "成長株投資"
+        elif "バリュー株投資" in investment_style:
+            actual_style = "バリュー株投資"
+        elif "配当株投資" in investment_style:
+            actual_style = "配当株投資"
+        else:
+            actual_style = "安定株投資"
+        
+        # Show explanation for beginners
+        with st.expander("💡 この投資スタイルについて"):
+            if actual_style == "成長株投資":
+                st.markdown("""
+                **🚀 成長株投資とは？**
+                - 売上や利益が急成長している企業への投資
+                - テクノロジー、バイオテック、新興企業が中心
+                - 高いリターンを期待できるが、リスクも高い
+                - PSR（売上倍率）重視 - 赤字でも成長性があれば投資対象
+                """)
+            elif actual_style == "バリュー株投資":
+                st.markdown("""
+                **💰 バリュー株投資とは？**
+                - 市場価値より安く取引されている企業への投資
+                - 伝統的な大企業や製造業が中心
+                - 安定したリターンを期待、リスクは中程度
+                - PER（利益倍率）重視 - 利益に対して割安な株を選択
+                """)
+            elif actual_style == "配当株投資":
+                st.markdown("""
+                **💎 配当株投資とは？**
+                - 定期的に配当金を支払う企業への投資
+                - 公益事業、金融、消費財企業が中心
+                - 安定した配当収入を重視
+                - 配当利回りと企業の安定性を重視
+                """)
+            else:
+                st.markdown("""
+                **🏦 安定株投資とは？**
+                - 大型で安定した企業への投資
+                - S&P500の大企業が中心
+                - 低リスクで安定したリターンを重視
+                - 時価総額と財務の安定性を重視
+                """)
     else:
-        st.markdown("**業界を選択**")
-        industry_options = [
-            "すべての業界",
-            "テクノロジー", 
-            "ヘルスケア・バイオテック",
-            "金融サービス",
-            "消費者向けサービス", 
-            "消費者向け日用品",
-            "エネルギー・石油ガス",
-            "クリーンエネルギー・再生可能エネルギー",
-            "電気自動車・自動車",
-            "不動産・REIT",
-            "産業・製造業", 
-            "素材・鉱業",
-            "通信・メディア",
-            "公益事業",
-            "エンターテイメント・メディア",
-            "ゲーミング・カジノ",
-            "大麻・代替投資",
-            "暗号通貨関連",
-            "小売・Eコマース"
-        ]
-        selected_industry = st.selectbox(
-            "業界選択",
-            industry_options,
-            label_visibility="collapsed"
+        st.markdown("**🔧 詳細検索 - すべての条件を手動調整**")
+        # Keep original detailed options but simplified
+        detail_method = st.radio(
+            "詳細検索方法",
+            ["投資スタイル別", "業界別"],
+            horizontal=True
         )
+        
+        if detail_method == "投資スタイル別":
+            investment_style = st.selectbox(
+                "投資スタイル選択",
+                ["カスタム設定", "成長株投資", "バリュー株投資", "配当株投資", "安定株投資"],
+                label_visibility="collapsed"
+            )
+            actual_style = investment_style
+        else:
+            # Industry search for detailed mode
+            st.markdown("**業界を選択**")
+            industry_options = [
+                "すべての業界",
+                "テクノロジー", 
+                "ヘルスケア・バイオテック",
+                "金融サービス",
+                "消費者向けサービス", 
+                "消費者向け日用品",
+                "エネルギー・石油ガス",
+                "クリーンエネルギー・再生可能エネルギー",
+                "電気自動車・自動車",
+                "不動産・REIT",
+                "産業・製造業", 
+                "素材・鉱業",
+                "通信・メディア",
+                "公益事業",
+                "エンターテイメント・メディア",
+                "ゲーミング・カジノ",
+                "大麻・代替投資",
+                "暗号通貨関連",
+                "小売・Eコマース"
+            ]
+            selected_industry = st.selectbox(
+                "業界選択",
+                industry_options,
+                label_visibility="collapsed"
+            )
+            actual_style = "業界別"
 
 with col2:
     fast_mode = st.checkbox("⚡ 高速モード", value=True, help="500銘柄を約1-2分で検索（推奨）")
@@ -291,8 +360,9 @@ with col2:
         st.rerun()
 
 # Set default values based on search method
-if search_method == "投資スタイル別":
-    if investment_style == "成長株投資":
+# Handle both simple and detailed search modes
+if search_method == "簡単検索（おすすめ）" or (search_method == "詳細検索（上級者向け）" and detail_method == "投資スタイル別"):
+    if actual_style == "成長株投資":
         default_revenue_growth = (15.0, 50.0)
         default_roe = (15.0, 100.0)
         default_per = (0.0, 80.0)  # Allow high PER for growth stocks
@@ -330,125 +400,187 @@ else:  # 業界別検索
     default_psr = (0.0, 30.0)
     default_market_cap = (0.1, 5000.0)
 
-# Screening criteria
-col1, col2, col3 = st.columns(3)
+# Screening criteria - different UI based on search mode
+if search_method == "簡単検索（おすすめ）":
+    st.markdown("### ✨ 自動設定された検索条件")
+    st.info(f"🎯 **{actual_style}** 向けの最適な条件を自動設定しました。「検索開始」ボタンを押すだけでOKです！")
+    
+    # Show the conditions being used but don't allow editing
+    with st.expander("📊 使用されている検索条件を確認"):
+        col1, col2 = st.columns(2)
+        with col1:
+            st.write(f"売上成長率: {default_revenue_growth[0]}% - {default_revenue_growth[1]}%")
+            st.write(f"ROE: {default_roe[0]}% - {default_roe[1]}%")
+            st.write(f"PER: {default_per[0]} - {default_per[1]}")
+        with col2:
+            st.write(f"PSR: {default_psr[0]} - {default_psr[1]}")
+            st.write(f"時価総額: {default_market_cap[0]}億USD - {default_market_cap[1]}億USD")
+            st.write("利益率: -50% - 50%（赤字企業も含む）")
+    
+    # Set default values for filtering - no user interaction needed
+    revenue_growth_range = default_revenue_growth
+    roe_range = default_roe
+    per_range = default_per
+    psr_range = default_psr
+    market_cap_range = default_market_cap
+    profit_margin_range = (-50.0, 50.0)
+    dividend_yield_range = (0.0, 15.0)
+    roa_range = (0.0, 30.0)
+    pbr_range = (0.0, 10.0)
+    debt_ratio_range = (0.0, 2.0)
+    
+    # Add beginner-friendly tips
+    with st.expander("💡 初心者向けヒント"):
+        st.markdown(f"""
+        **{actual_style}** について：
+        
+        📈 **検索時間**: 約1-2分で結果が表示されます
+        
+        📊 **結果の見方**:
+        - 上位に表示される企業ほど条件に合致
+        - 企業名をクリックで詳細分析ページへ移動
+        - PSR/PERで割安度を確認
+        
+        🎯 **次のステップ**:
+        - 気になる企業が見つかったら「ビジネスモデル分析」で詳しく調査
+        - 複数企業の比較は「銘柄比較」ページで実施
+        """)
+    
+else:
+    # Show full filter interface for advanced users
+    st.markdown("### 🎯 検索条件設定")
+    col1, col2, col3 = st.columns(3)
 
-with col1:
-    st.markdown("**財務指標**")
-    
-    revenue_growth_range = st.slider(
-        "売上成長率 (%)",
-        min_value=0.0,
-        max_value=50.0,
-        value=default_revenue_growth,
-        step=0.5,
-        help="過去の年間売上成長率"
-    )
-    
-    roe_range = st.slider(
-        "ROE (%)",
-        min_value=0.0,
-        max_value=100.0,
-        value=default_roe,
-        step=1.0,
-        help="自己資本利益率"
-    )
-    
-    roa_range = st.slider(
-        "ROA (%)",
-        min_value=0.0,
-        max_value=30.0,
-        value=(0.0, 30.0),
-        step=0.5,
-        help="総資産利益率"
-    )
+    with col1:
+        st.markdown("**財務指標**")
+        
+        revenue_growth_range = st.slider(
+            "売上成長率 (%)",
+            min_value=0.0,
+            max_value=50.0,
+            value=default_revenue_growth,
+            step=0.5,
+            help="過去の年間売上成長率"
+        )
+        
+        roe_range = st.slider(
+            "ROE (%)",
+            min_value=0.0,
+            max_value=100.0,
+            value=default_roe,
+            step=1.0,
+            help="自己資本利益率"
+        )
+        
+        roa_range = st.slider(
+            "ROA (%)",
+            min_value=0.0,
+            max_value=30.0,
+            value=(0.0, 30.0),
+            step=0.5,
+            help="総資産利益率"
+        )
 
-with col2:
-    st.markdown("**バリュエーション**")
-    
-    per_range = st.slider(
-        "PER (収益性のある株式のみ)",
-        min_value=0.0,
-        max_value=200.0,  # Increased for high-growth stocks
-        value=(0.0, 100.0),  # More inclusive default
-        step=1.0,
-        help="株価収益率（高成長株は高PERでも対象に含む）"
-    )
-    
-    psr_range = st.slider(
-        "PSR (全ての株式)",
-        min_value=0.0,
-        max_value=50.0,
-        value=default_psr,
-        step=0.5,
-        help="株価売上高倍率（成長株や赤字企業の評価に重要）"
-    )
-    
-    pbr_range = st.slider(
-        "PBR",
-        min_value=0.0,
-        max_value=10.0,
-        value=(0.0, 10.0),
-        step=0.1,
-        help="株価純資産倍率"
-    )
-    
-    profit_margin_range = st.slider(
-        "純利益率 (%)",
-        min_value=-50.0,  # Allow negative margins for unprofitable growth stocks
-        max_value=50.0,
-        value=(-20.0, 50.0),  # More inclusive default
-        step=1.0,
-        help="売上に対する純利益の割合（マイナスも含む）"
-    )
+    with col2:
+        st.markdown("**バリュエーション**")
+        
+        per_range = st.slider(
+            "PER (収益性のある株式のみ)",
+            min_value=0.0,
+            max_value=200.0,  # Increased for high-growth stocks
+            value=default_per,  # Use default value
+            step=1.0,
+            help="株価収益率（高成長株は高PERでも対象に含む）"
+        )
+        
+        psr_range = st.slider(
+            "PSR (全ての株式)",
+            min_value=0.0,
+            max_value=50.0,
+            value=default_psr,
+            step=0.5,
+            help="株価売上高倍率（成長株や赤字企業の評価に重要）"
+        )
+        
+        pbr_range = st.slider(
+            "PBR",
+            min_value=0.0,
+            max_value=10.0,
+            value=(0.0, 10.0),
+            step=0.1,
+            help="株価純資産倍率"
+        )
+        
+        profit_margin_range = st.slider(
+            "純利益率 (%)",
+            min_value=-50.0,  # Allow negative margins for unprofitable growth stocks
+            max_value=50.0,
+            value=(-50.0, 50.0),  # More inclusive default
+            step=1.0,
+            help="売上に対する純利益の割合（マイナスも含む）"
+        )
 
-with col3:
-    st.markdown("**企業規模・安定性**")
-    
-    market_cap_range = st.slider(
-        "時価総額 (億ドル)",
-        min_value=0.1,
-        max_value=5000.0,
-        value=default_market_cap,
-        step=0.1,
-        help="企業の規模"
-    )
-    
-    debt_ratio_range = st.slider(
-        "負債比率",
-        min_value=0.0,
-        max_value=2.0,
-        value=(0.0, 2.0),
-        step=0.1,
-        help="負債÷自己資本"
-    )
-    
-    current_ratio_range = st.slider(
-        "流動比率",
-        min_value=0.0,
-        max_value=5.0,
-        value=(0.0, 5.0),
-        step=0.1,
-        help="流動資産÷流動負債"
-    )
+        st.markdown("**企業規模・安定性**")
+        
+        market_cap_range = st.slider(
+            "時価総額 (億ドル)",
+            min_value=0.1,
+            max_value=5000.0,
+            value=default_market_cap,
+            step=0.1,
+            help="企業の規模"
+        )
+        
+        debt_ratio_range = st.slider(
+            "負債比率",
+            min_value=0.0,
+            max_value=2.0,
+            value=(0.0, 2.0),
+            step=0.1,
+            help="負債÷自己資本"
+        )
+        
+        dividend_yield_range = st.slider(
+            "配当利回り (%)",
+            min_value=0.0,
+            max_value=15.0,
+            value=(0.0, 15.0),
+            step=0.1,
+            help="年間配当利回り"
+        )
+        
+        # Ensure all variables are defined for advanced search
+        debt_ratio_range = (0.0, 2.0)  # Default for now
 
-# Sector filter - use comprehensive market sectors
-sectors = ["All"] + list(get_stock_sector_mapping().keys())
-selected_sectors = st.multiselect(
-    "業界・セクター",
-    sectors,
-    default=["All"],
-    help="特定の業界に絞り込み"
-)
+# Sector filter - show only for detailed search or when relevant
+if search_method == "詳細検索（上級者向け）" and detail_method == "業界別":
+    sectors = ["All"] + list(get_stock_sector_mapping().keys())
+    selected_sectors = st.multiselect(
+        "業界・セクター",
+        sectors,
+        default=["All"],
+        help="特定の業界に絞り込み"
+    )
+else:
+    # For simple search, use all sectors by default
+    selected_sectors = ["All"]
 
 st.markdown('</div>', unsafe_allow_html=True)
 
+# Make search button more prominent for beginners
+if search_method == "簡単検索（おすすめ）":
+    st.markdown("### 🚀 検索開始")
+    st.markdown("**準備完了！** 下のボタンを押すだけで、あなたにピッタリの銘柄を見つけます。")
+    search_button_text = f"🎯 {actual_style}で検索開始！"
+else:
+    search_button_text = "🔍 銘柄を検索"
+
 # Search button
-if st.button("🔍 銘柄を検索", use_container_width=True, type="primary"):
+if st.button(search_button_text, use_container_width=True, type="primary"):
     
     with st.spinner("条件に合う銘柄を検索中..."):
         # Get all market stocks for comprehensive screening
-        if search_method == "業界別":
+        if search_method == "詳細検索（上級者向け）" and detail_method == "業界別":
             # Industry-based filtering
             if selected_industry == "すべての業界":
                 available_tickers = get_all_market_stocks()
