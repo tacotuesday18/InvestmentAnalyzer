@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import yfinance as yf
-from auto_financial_data import get_auto_financial_data
+from yahoo_finance_data import get_yahoo_finance_data
 from format_helpers import format_currency, format_large_number
 from earnings_scraper import get_website_text_content, analyze_earnings_call
 from gemini_historical_metrics import create_historical_metrics_table_with_ai
@@ -269,7 +269,7 @@ with col2:
 if selected_ticker:
     with st.spinner("最新の財務データを取得中..."):
         # Get comprehensive financial data
-        auto_data = get_auto_financial_data(selected_ticker)
+        auto_data = get_yahoo_finance_data(selected_ticker)
         
         if auto_data:
             # Basic company info

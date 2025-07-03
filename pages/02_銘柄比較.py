@@ -19,7 +19,7 @@ from stock_data import update_stock_price, fetch_tradingview_price, refresh_stoc
 from stock_data import load_sample_data, ensure_sample_data_dir, SAMPLE_DATA_DIR
 from comprehensive_stock_data import search_stocks_by_name, get_all_tickers, get_stock_info, get_stocks_by_category, get_all_categories
 from real_time_fetcher import fetch_current_stock_price, fetch_comprehensive_data, show_live_price_indicator, display_market_status
-from auto_financial_data import get_auto_financial_data, calculate_growth_rate
+from yahoo_finance_data import get_yahoo_finance_data, calculate_growth_rate
 from historical_metrics_chart import display_historical_metrics_chart
 from market_comparison import display_stock_market_comparison, create_individual_stock_comparison_chart
 from session_state_manager import init_session_state, reset_comparison_analysis, should_reset_comparison_analysis
@@ -501,7 +501,7 @@ if comparison_button_clicked:
                 status_text.text(f"Fetching data for {ticker_upper}...")
                 progress_bar.progress((i + 0.5) / len(selected_tickers))
                 
-                auto_data = get_auto_financial_data(ticker_upper)
+                auto_data = get_yahoo_finance_data(ticker_upper)
                 if auto_data:
                     # Calculate valuations using live data - ensure ticker matches
                     result = {
