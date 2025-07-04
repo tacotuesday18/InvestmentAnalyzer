@@ -453,13 +453,18 @@ COMPREHENSIVE_STOCKS = {
 
 def search_stocks_by_name(query):
     """Search stocks by company name or ticker including expanded database and discovered stocks"""
-    # First try the enhanced search that includes discovered stocks
+    # Load discovered stocks from pickle file to avoid circular import
     try:
-        from stock_universe_updater import search_all_stocks_including_discovered
-        return search_all_stocks_including_discovered(query)
-    except ImportError:
-        # Fallback to traditional search if updater not available
-        pass
+        import pickle
+        import os
+        discovered_file = 'discovered_stocks_universe.pkl'
+        if os.path.exists(discovered_file):
+            with open(discovered_file, 'rb') as f:
+                discovered_stocks = pickle.load(f)
+        else:
+            discovered_stocks = []
+    except:
+        discovered_stocks = []
     query = query.lower()
     results = []
     
@@ -488,6 +493,36 @@ def search_stocks_by_name(query):
                 'name': info['name'],
                 'category': info['category']
             })
+    
+    # Add discovered stocks to search results (handle both dict and list formats)
+    if isinstance(discovered_stocks, dict):
+        # Handle dictionary format
+        for ticker, stock_info in discovered_stocks.items():
+            if isinstance(stock_info, dict):
+                name = stock_info.get('name', ticker)
+                if (query in ticker.lower() or query in name.lower()):
+                    # Avoid duplicates
+                    if not any(r['ticker'] == ticker for r in results):
+                        results.append({
+                            'ticker': ticker,
+                            'name': name,
+                            'category': stock_info.get('category', 'Discovered')
+                        })
+    elif isinstance(discovered_stocks, list):
+        # Handle list format
+        for stock in discovered_stocks:
+            if isinstance(stock, dict):
+                ticker = stock.get('ticker', '')
+                name = stock.get('name', ticker)
+                
+                if (query in ticker.lower() or query in name.lower()):
+                    # Avoid duplicates
+                    if not any(r['ticker'] == ticker for r in results):
+                        results.append({
+                            'ticker': ticker,
+                            'name': name,
+                            'category': stock.get('category', 'Discovered')
+                        })
     
     return results[:50]  # Limit results
 

@@ -6,8 +6,9 @@ from google.genai import types
 import yfinance as yf
 from twitter_sentiment_analyzer import TwitterDueDiligenceAnalyzer
 
-# Initialize Gemini client
-client = genai.Client(api_key=os.environ.get("GOOGLE_API_KEY"))
+# Initialize Gemini client (prioritize GOOGLE_API_KEY if available)
+api_key = os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY")
+client = genai.Client(api_key=api_key)
 
 def analyze_company_fundamentals(ticker):
     """

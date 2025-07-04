@@ -254,33 +254,17 @@ with col1:
     # Stock universe size selection with time estimates
     st.markdown("#### 📊 検索対象の銘柄数")
     stock_universe_options = [
-        "250銘柄（約30秒）",
-        "500銘柄（約1分）", 
-        "1000銘柄（約2分）",
-        "2000銘柄（約4分）",
-        "5000銘柄（約8分）",
-        "10000銘柄（約15分）"
+        "1000銘柄（約2分）"
     ]
     selected_option = st.selectbox(
         "検索する銘柄数を選択",
         stock_universe_options,
-        index=1,  # Default to 500
-        help="多い銘柄数ほど詳細な検索結果が得られますが、処理時間が長くなります"
+        index=0,  # Only one option (1000 stocks)
+        help="1000銘柄のデータベースから最適な投資先を検索します"
     )
     
-    # Extract the actual number from the selected option
-    if "250" in selected_option:
-        stock_universe_size = 250
-    elif "500" in selected_option:
-        stock_universe_size = 500
-    elif "1000" in selected_option:
-        stock_universe_size = 1000
-    elif "2000" in selected_option:
-        stock_universe_size = 2000
-    elif "5000" in selected_option:
-        stock_universe_size = 5000
-    else:
-        stock_universe_size = 10000
+    # Fixed to 1000 stocks
+    stock_universe_size = 1000
     
     if search_method == "簡単検索（おすすめ）":
         st.markdown("**🎯 投資スタイルを選択するだけ！**")
