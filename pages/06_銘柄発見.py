@@ -849,13 +849,20 @@ if st.button(search_button_text, use_container_width=True, type="primary"):
                             should_include = True
                             
                     elif actual_style == "配当株投資":
-                        # Dividend: Include stocks with dividend yield above 2.5% as requested
-                        if dividend_yield >= 2.5:
+                        # Dividend: Quality dividend stocks with sustainable payments
+                        # Yield 3%+ (attractive income), profitable, reasonable payout ratio
+                        if (dividend_yield >= 3.0 and 
+                            profit_margin > 0 and 
+                            market_cap_billions >= 0.5):  # Exclude penny stocks
                             should_include = True
                         
                     elif actual_style == "安定株投資":
-                        # Stability: Include large profitable companies
-                        if (market_cap_billions >= 1.0 and profit_margin > 0):
+                        # Stability: Large-cap, profitable, financially stable companies  
+                        # Focus on blue-chip characteristics: size, profitability, low debt
+                        if (market_cap_billions >= 5.0 and  # Large cap companies
+                            profit_margin > 5 and  # Consistent profitability
+                            debt_ratio <= 1.0 and  # Reasonable debt levels
+                            roe >= 10):  # Efficient capital use
                             should_include = True
                     
                     if not should_include:
