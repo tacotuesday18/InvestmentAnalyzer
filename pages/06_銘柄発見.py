@@ -798,95 +798,95 @@ if st.button(search_button_text, use_container_width=True, type="primary"):
                     # Quick validation to skip obviously bad data
                     if data.get('current_price', 0) <= 0:
                         continue
-                
-                processed_count += 1
-                
-                # Simplified screening - Extract key metrics
-                revenue_growth = data.get('historical_growth', 0) or 0
-                per = data.get('pe_ratio', 0) or 0
-                psr = data.get('ps_ratio', 0) or 0
-                profit_margin = data.get('profit_margin', 0) or 0
-                market_cap_billions = (data.get('market_cap', 0) or 0) / 1000
-                dividend_yield = data.get('dividend_yield', 0) or 0
-                roe = data.get('roe', 0) or 0
-                pbr = data.get('pb_ratio', 0) or 0
-                debt_ratio = data.get('debt_to_equity', 0) or 0
-                roa = data.get('roa', 0) or 0
-                
-                # Only apply basic filters that are essential for each investment style
-                should_include = False
-                
-                if actual_style == "成長株投資":
-                    # Growth: Focus on stocks with 20%+ revenue growth
-                    if (revenue_growth >= 20 or 
-                        (revenue_growth >= 15 and roe >= 20) or
-                        (market_cap_billions >= 1 and revenue_growth >= 15)):
-                        should_include = True
-                        
-                elif actual_style == "バリュー株投資":
-                    # Value: Include stocks trading cheap based on historical metrics
-                    # Focus on profitable companies with reasonable valuations
-                    historical_pe = data.get('historical_pe_avg', per * 1.2) or per * 1.2  # Use 20% above current as fallback
-                    historical_pb = data.get('historical_pb_avg', pbr * 1.2) or pbr * 1.2
                     
-                    # Value criteria: profitable + trading below historical averages OR low absolute valuations
-                    if (profit_margin > 0 and per > 0 and 
-                        ((per < historical_pe * 0.8 and pbr < historical_pb * 0.8) or  # Trading 20% below historical
-                         (per <= 15 and pbr <= 2.5 and revenue_growth >= 0))):  # Or absolute value criteria
-                        should_include = True
-                        
-                elif actual_style == "配当株投資":
-                    # Dividend: Include stocks with dividend yield above 2.5% as requested
-                    if dividend_yield >= 2.5:
-                        should_include = True
-                        
-                elif actual_style == "安定株投資":
-                    # Stability: Include large profitable companies
-                    if (market_cap_billions >= 1.0 and profit_margin > 0):
-                        should_include = True
-                
-                if not should_include:
-                    continue
-                
-                # Get company description from existing data or fetch if needed
-                try:
-                    # Try to get description from existing data first
-                    description = data.get('business_summary', '')
-                    if not description:
-                        # If not available, fetch from yfinance
-                        stock_info = yf.Ticker(ticker)
-                        business_summary = stock_info.info.get('longBusinessSummary', '')
-                        description = business_summary[:200] + "..." if len(business_summary) > 200 else business_summary
+                    processed_count += 1
                     
-                    # If still no description, provide a fallback
-                    if not description:
+                    # Simplified screening - Extract key metrics
+                    revenue_growth = data.get('historical_growth', 0) or 0
+                    per = data.get('pe_ratio', 0) or 0
+                    psr = data.get('ps_ratio', 0) or 0
+                    profit_margin = data.get('profit_margin', 0) or 0
+                    market_cap_billions = (data.get('market_cap', 0) or 0) / 1000
+                    dividend_yield = data.get('dividend_yield', 0) or 0
+                    roe = data.get('roe', 0) or 0
+                    pbr = data.get('pb_ratio', 0) or 0
+                    debt_ratio = data.get('debt_to_equity', 0) or 0
+                    roa = data.get('roa', 0) or 0
+                    
+                    # Only apply basic filters that are essential for each investment style
+                    should_include = False
+                    
+                    if actual_style == "成長株投資":
+                        # Growth: Focus on stocks with 20%+ revenue growth
+                        if (revenue_growth >= 20 or 
+                            (revenue_growth >= 15 and roe >= 20) or
+                            (market_cap_billions >= 1 and revenue_growth >= 15)):
+                            should_include = True
+                            
+                    elif actual_style == "バリュー株投資":
+                        # Value: Include stocks trading cheap based on historical metrics
+                        # Focus on profitable companies with reasonable valuations
+                        historical_pe = data.get('historical_pe_avg', per * 1.2) or per * 1.2  # Use 20% above current as fallback
+                        historical_pb = data.get('historical_pb_avg', pbr * 1.2) or pbr * 1.2
+                        
+                        # Value criteria: profitable + trading below historical averages OR low absolute valuations
+                        if (profit_margin > 0 and per > 0 and 
+                            ((per < historical_pe * 0.8 and pbr < historical_pb * 0.8) or  # Trading 20% below historical
+                             (per <= 15 and pbr <= 2.5 and revenue_growth >= 0))):  # Or absolute value criteria
+                            should_include = True
+                            
+                    elif actual_style == "配当株投資":
+                        # Dividend: Include stocks with dividend yield above 2.5% as requested
+                        if dividend_yield >= 2.5:
+                            should_include = True
+                        
+                    elif actual_style == "安定株投資":
+                        # Stability: Include large profitable companies
+                        if (market_cap_billions >= 1.0 and profit_margin > 0):
+                            should_include = True
+                    
+                    if not should_include:
+                        continue
+                    
+                    # Get company description from existing data or fetch if needed
+                    try:
+                        # Try to get description from existing data first
+                        description = data.get('business_summary', '')
+                        if not description:
+                            # If not available, fetch from yfinance
+                            stock_info = yf.Ticker(ticker)
+                            business_summary = stock_info.info.get('longBusinessSummary', '')
+                            description = business_summary[:200] + "..." if len(business_summary) > 200 else business_summary
+                        
+                        # If still no description, provide a fallback
+                        if not description:
+                            description = f"{data.get('sector', 'Unknown')}セクターの企業"
+                    except Exception as e:
                         description = f"{data.get('sector', 'Unknown')}セクターの企業"
+                    
+                    # If all criteria pass, add to results
+                    matching_stocks.append({
+                        'ticker': ticker,
+                        'name': data.get('name', ticker),
+                        'sector': data.get('sector', 'Unknown'),
+                        'description': description,
+                        'current_price': data.get('current_price', 0),
+                        'market_cap': data.get('market_cap', 0),
+                        'revenue_growth': revenue_growth,
+                        'roe': roe,
+                        'roa': roa,
+                        'pe_ratio': per,
+                        'ps_ratio': psr,
+                        'pb_ratio': pbr,
+                        'profit_margin': profit_margin,
+                        'debt_ratio': debt_ratio,
+                        'dividend_yield': dividend_yield,
+                        'is_profitable': profit_margin > 0 and per > 0,
+                        'data': data
+                    })
+                    
                 except Exception as e:
-                    description = f"{data.get('sector', 'Unknown')}セクターの企業"
-                
-                # If all criteria pass, add to results
-                matching_stocks.append({
-                    'ticker': ticker,
-                    'name': data.get('name', ticker),
-                    'sector': data.get('sector', 'Unknown'),
-                    'description': description,
-                    'current_price': data.get('current_price', 0),
-                    'market_cap': data.get('market_cap', 0),
-                    'revenue_growth': revenue_growth,
-                    'roe': roe,
-                    'roa': roa,
-                    'pe_ratio': per,
-                    'ps_ratio': psr,
-                    'pb_ratio': pbr,
-                    'profit_margin': profit_margin,
-                    'debt_ratio': debt_ratio,
-                    'dividend_yield': dividend_yield,
-                    'is_profitable': profit_margin > 0 and per > 0,
-                    'data': data
-                })
-                
-            except Exception as e:
-                continue
+                    continue
         
         # Clear progress indicators
         progress_bar.empty()
