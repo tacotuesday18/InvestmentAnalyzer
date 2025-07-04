@@ -16,6 +16,7 @@ from comprehensive_stock_data import get_all_tickers, get_stock_info, get_stocks
 from comprehensive_market_stocks import get_all_market_stocks, get_stock_info_enhanced, search_stocks_comprehensive, get_stock_sector_mapping, get_market_categories
 from format_helpers import format_currency, format_large_number
 from stock_cache_manager import get_cached_financial_data, batch_process_stocks, stock_cache
+from stock_universe_updater import update_stock_universe_with_discoveries
 
 # Modern design CSS
 st.markdown("""
@@ -627,7 +628,19 @@ if search_method == "簡単検索（おすすめ）":
         st.markdown("**準備完了！** 下のボタンを押すだけで、あなたにピッタリの銘柄を見つけます。")
         search_button_text = f"🎯 {actual_style}で検索開始！"
 else:
-    search_button_text = "🔍 銘柄を検索"
+    st.markdown("### 🚀 検索開始")
+    if search_method == "詳細検索（上級者向け）":
+        if detail_method == "投資スタイル別":
+            st.markdown(f"**カスタム設定完了！** {actual_style}向けに設定した条件で検索を開始します。")
+            search_button_text = f"🎯 {actual_style}でカスタム検索開始！"
+        elif detail_method == "業界別":
+            st.markdown(f"**業界別検索準備完了！** {selected_industry}セクターの銘柄を検索します。")
+            search_button_text = f"🏭 {selected_industry}で検索開始！"
+        else:
+            st.markdown("**カスタム検索準備完了！** 設定した条件で銘柄を検索します。")
+            search_button_text = "🔍 カスタム条件で検索開始！"
+    else:
+        search_button_text = "🔍 銘柄を検索"
 
 # Add cache management options for advanced users
 if search_method == "詳細検索（上級者向け）":
@@ -779,13 +792,10 @@ if st.button(search_button_text, use_container_width=True, type="primary"):
             progress_bar.progress(progress)
             status_text.text(f"バッチ {batch_idx + 1}/{total_batches} 処理中... ({len(matching_stocks)} 銘柄見つかりました)")
             
-            # Show preview of found stocks every few batches
+            # Show preview counter only (no table during search)
             if batch_idx % 5 == 0 and matching_stocks:
                 with results_preview:
                     st.info(f"🎯 現在 {len(matching_stocks)} 銘柄が条件に合致")
-                    preview_df = pd.DataFrame(matching_stocks[:3])  # Show top 3
-                    if not preview_df.empty:
-                        st.dataframe(preview_df[['name', 'sector', 'current_price', 'pe_ratio']], use_container_width=True)
             
             # Process batch with error handling
             for i, ticker in enumerate(batch_tickers):
@@ -820,10 +830,22 @@ if st.button(search_button_text, use_container_width=True, type="primary"):
                     debt_ratio = data.get('debt_to_equity', 0) or 0
                     roa = data.get('roa', 0) or 0
                     
-                    # Only apply basic filters that are essential for each investment style
+                    # Apply filtering based on search method
                     should_include = False
                     
-                    if actual_style == "成長株投資":
+                    # For advanced search, use custom parameters if available
+                    if search_method == "詳細検索（上級者向け）" and 'revenue_growth_range' in locals():
+                        # Use detailed custom criteria
+                        if (revenue_growth_range[0] <= revenue_growth <= revenue_growth_range[1] and
+                            roe_range[0] <= roe <= roe_range[1] and
+                            (per <= 0 or per_range[0] <= per <= per_range[1]) and
+                            psr_range[0] <= psr <= psr_range[1] and
+                            profit_margin_range[0] <= profit_margin <= profit_margin_range[1] and
+                            market_cap_range[0] <= market_cap_billions <= market_cap_range[1] and
+                            debt_ratio_range[0] <= debt_ratio <= debt_ratio_range[1] and
+                            dividend_yield_range[0] <= dividend_yield <= dividend_yield_range[1]):
+                            should_include = True
+                    elif actual_style == "成長株投資":
                         # Growth: Focus on stocks with 20%+ revenue growth
                         if (revenue_growth >= 20 or 
                             (revenue_growth >= 15 and roe >= 20) or
@@ -904,6 +926,10 @@ if st.button(search_button_text, use_container_width=True, type="primary"):
         st.session_state['processed_count'] = processed_count
         st.session_state['search_info'] = f"業界: {selected_industry}" if search_method == "業界別" else f"投資スタイル: {investment_style if 'investment_style' in locals() else 'カスタム設定'}"
         
+        # Update stock universe to make all discovered stocks searchable throughout platform
+        if matching_stocks:
+            update_stock_universe_with_discoveries(matching_stocks)
+        
         # Clear searching flag to show results
         st.session_state['is_searching'] = False
 
@@ -935,7 +961,7 @@ if ('search_results' in st.session_state and st.session_state['search_results'] 
     with st.expander("🔧 結果を絞り込み（リアルタイム）", expanded=False):
         st.markdown("**検索結果をリアルタイムで絞り込み：**")
         
-        filter_col1, filter_col2, filter_col3, filter_col4, filter_col5 = st.columns(5)
+        filter_col1, filter_col2, filter_col3, filter_col4, filter_col5, filter_col6 = st.columns(6)
         
         with filter_col1:
             # PER filter
@@ -1005,21 +1031,34 @@ if ('search_results' in st.session_state and st.session_state['search_results'] 
                 cap_filter = None
         
         with filter_col5:
-            # Dividend yield filter - especially important for dividend stocks
+            # Dividend yield filter - optional for all investment styles
             dividend_values = [s['dividend_yield'] for s in matching_stocks if s['dividend_yield'] > 0]
             if dividend_values:
                 min_dividend, max_dividend = min(dividend_values), max(dividend_values)
                 dividend_filter = st.slider(
                     "配当利回り (%)",
-                    min_value=float(min_dividend),
+                    min_value=0.0,
                     max_value=float(max_dividend),
-                    value=(float(min_dividend), float(max_dividend)),
+                    value=(0.0, float(max_dividend)),
                     step=0.1,
-                    help="配当を支払う銘柄のみ",
+                    help="配当支払い銘柄を絞り込み（オプション）",
                     key="dividend_filter"
                 )
             else:
                 dividend_filter = None
+        
+        with filter_col6:
+            # Industry filter
+            all_sectors = sorted(list(set([s['sector'] for s in matching_stocks if s['sector'] != 'Unknown'])))
+            if all_sectors:
+                industry_filter = st.selectbox(
+                    "業界フィルター",
+                    ["全業界"] + all_sectors,
+                    help="特定業界に絞り込み",
+                    key="industry_filter"
+                )
+            else:
+                industry_filter = "全業界"
         
         # Apply filters in real-time without triggering rerun
         filtered_stocks = matching_stocks.copy()
@@ -1041,9 +1080,14 @@ if ('search_results' in st.session_state and st.session_state['search_results'] 
             filtered_stocks = [s for s in filtered_stocks 
                              if cap_filter[0] <= (s['market_cap'] / 1000) <= cap_filter[1]]
         
-        if dividend_filter:
+        if dividend_filter and dividend_filter[0] > 0:
+            # Only filter by dividend if user specifically sets minimum > 0
             filtered_stocks = [s for s in filtered_stocks 
-                             if s['dividend_yield'] > 0 and (dividend_filter[0] <= s['dividend_yield'] <= dividend_filter[1])]
+                             if s['dividend_yield'] >= dividend_filter[0] and s['dividend_yield'] <= dividend_filter[1]]
+        
+        if industry_filter and industry_filter != "全業界":
+            filtered_stocks = [s for s in filtered_stocks 
+                             if s['sector'] == industry_filter]
         
         # Show filter results immediately
         filter_col_result1, filter_col_result2 = st.columns(2)
@@ -1060,8 +1104,8 @@ if ('search_results' in st.session_state and st.session_state['search_results'] 
         
         # Clear filters button
         if st.button("🔄 フィルターをクリア", key="clear_filters"):
-            # Reset all filter keys
-            for key in ["per_filter", "psr_filter", "growth_filter", "cap_filter", "dividend_filter"]:
+            # Reset all filter keys including industry filter
+            for key in ["per_filter", "psr_filter", "growth_filter", "cap_filter", "dividend_filter", "industry_filter"]:
                 if key in st.session_state:
                     del st.session_state[key]
             st.rerun()
@@ -1073,8 +1117,8 @@ if ('search_results' in st.session_state and st.session_state['search_results'] 
         # Sort by market cap descending
         display_stocks.sort(key=lambda x: x['market_cap'], reverse=True)
         
-        # Display results in cards
-        for i, stock in enumerate(display_stocks[:20]):  # Show top 20 results
+        # Display all results in cards (no artificial limit)
+        for i, stock in enumerate(display_stocks):
             st.markdown('<div class="result-card">', unsafe_allow_html=True)
             
             col1, col2, col3 = st.columns([2, 2, 1])

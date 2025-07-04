@@ -452,7 +452,14 @@ COMPREHENSIVE_STOCKS = {
 }
 
 def search_stocks_by_name(query):
-    """Search stocks by company name or ticker including expanded database"""
+    """Search stocks by company name or ticker including expanded database and discovered stocks"""
+    # First try the enhanced search that includes discovered stocks
+    try:
+        from stock_universe_updater import search_all_stocks_including_discovered
+        return search_all_stocks_including_discovered(query)
+    except ImportError:
+        # Fallback to traditional search if updater not available
+        pass
     query = query.lower()
     results = []
     
