@@ -675,6 +675,13 @@ if (document.querySelector('[data-testid="stSpinner"]')) {
 # Search button
 if st.button(search_button_text, use_container_width=True, type="primary"):
     
+    # Clear previous results while searching
+    if 'search_results' in st.session_state:
+        del st.session_state['search_results']
+    
+    # Set searching flag to hide results during search
+    st.session_state['is_searching'] = True
+    
     with st.spinner("条件に合う銘柄を検索中..."):
         # Get comprehensive stock universe based on user selection
         from comprehensive_market_stocks import get_sp500_tickers, get_nasdaq100_tickers, get_russell2000_stocks, get_all_market_stocks
@@ -896,9 +903,17 @@ if st.button(search_button_text, use_container_width=True, type="primary"):
         st.session_state['search_results'] = matching_stocks
         st.session_state['processed_count'] = processed_count
         st.session_state['search_info'] = f"業界: {selected_industry}" if search_method == "業界別" else f"投資スタイル: {investment_style if 'investment_style' in locals() else 'カスタム設定'}"
+        
+        # Clear searching flag to show results
+        st.session_state['is_searching'] = False
 
-# Display results (whether from fresh search or session state)
-if 'search_results' in st.session_state and st.session_state['search_results']:
+# Show message during search to explain why results are hidden
+if st.session_state.get('is_searching', False):
+    st.info("🔍 検索実行中です。結果は検索完了後に表示されます...")
+
+# Display results (whether from fresh search or session state) - only when not searching
+if ('search_results' in st.session_state and st.session_state['search_results'] and 
+    not st.session_state.get('is_searching', False)):
     matching_stocks = st.session_state['search_results']
     processed_count = st.session_state.get('processed_count', len(matching_stocks))
     search_info = st.session_state.get('search_info', 'Unknown')
@@ -911,7 +926,7 @@ if 'search_results' in st.session_state and st.session_state['search_results']:
     with result_col2:
         if st.button("🗑️ 検索結果をクリア", key="clear_results"):
             # Clear all session state related to search
-            for key in ["search_results", "processed_count", "search_info", "per_filter", "psr_filter", "growth_filter", "cap_filter", "dividend_filter"]:
+            for key in ["search_results", "processed_count", "search_info", "per_filter", "psr_filter", "growth_filter", "cap_filter", "dividend_filter", "is_searching"]:
                 if key in st.session_state:
                     del st.session_state[key]
             st.rerun()
