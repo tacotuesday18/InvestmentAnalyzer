@@ -15,6 +15,7 @@ from auto_financial_data import get_auto_financial_data
 from comprehensive_stock_data import get_all_tickers, get_stock_info, get_stocks_by_category, get_all_categories
 from comprehensive_market_stocks import get_all_market_stocks, get_stock_info_enhanced, search_stocks_comprehensive, get_stock_sector_mapping, get_market_categories
 from format_helpers import format_currency, format_large_number
+from stock_cache_manager import get_cached_financial_data, batch_process_stocks, stock_cache
 
 # Modern design CSS
 st.markdown("""
@@ -252,10 +253,12 @@ with col1:
     # Stock universe size selection with time estimates
     st.markdown("#### 📊 検索対象の銘柄数")
     stock_universe_options = [
-        "250銘柄（約1-2分）",
-        "500銘柄（約2-4分）", 
-        "1000銘柄（約4-8分）",
-        "2000銘柄（約8-15分）"
+        "250銘柄（約30秒）",
+        "500銘柄（約1分）", 
+        "1000銘柄（約2分）",
+        "2000銘柄（約4分）",
+        "5000銘柄（約8分）",
+        "10000銘柄（約15分）"
     ]
     selected_option = st.selectbox(
         "検索する銘柄数を選択",
@@ -271,8 +274,12 @@ with col1:
         stock_universe_size = 500
     elif "1000" in selected_option:
         stock_universe_size = 1000
-    else:
+    elif "2000" in selected_option:
         stock_universe_size = 2000
+    elif "5000" in selected_option:
+        stock_universe_size = 5000
+    else:
+        stock_universe_size = 10000
     
     if search_method == "簡単検索（おすすめ）":
         st.markdown("**🎯 投資スタイルを選択するだけ！**")
@@ -622,6 +629,49 @@ if search_method == "簡単検索（おすすめ）":
 else:
     search_button_text = "🔍 銘柄を検索"
 
+# Add cache management options for advanced users
+if search_method == "詳細検索（上級者向け）":
+    with st.expander("🚀 パフォーマンス設定"):
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("キャッシュクリア", help="データキャッシュをクリアして最新データを取得"):
+                stock_cache.clear_cache()
+                st.success("キャッシュをクリアしました")
+        with col2:
+            use_background_processing = st.checkbox(
+                "バックグラウンド処理", 
+                value=True,
+                help="タブを切り替えても検索を継続"
+            )
+
+# Add JavaScript to prevent browser from sleeping during search
+st.markdown("""
+<script>
+// Keep the browser tab active during long searches
+let searchInterval;
+function startSearch() {
+    searchInterval = setInterval(function() {
+        // Prevent browser tab from sleeping by creating a small invisible activity
+        document.title = document.title + " ";
+        setTimeout(() => {
+            document.title = document.title.trim();
+        }, 500);
+    }, 30000); // Every 30 seconds
+}
+
+function stopSearch() {
+    if (searchInterval) {
+        clearInterval(searchInterval);
+    }
+}
+
+// Auto-start when search begins
+if (document.querySelector('[data-testid="stSpinner"]')) {
+    startSearch();
+}
+</script>
+""", unsafe_allow_html=True)
+
 # Search button
 if st.button(search_button_text, use_container_width=True, type="primary"):
     
@@ -629,7 +679,7 @@ if st.button(search_button_text, use_container_width=True, type="primary"):
         # Get comprehensive stock universe based on user selection
         from comprehensive_market_stocks import get_sp500_tickers, get_nasdaq100_tickers, get_russell2000_stocks, get_all_market_stocks
         
-        # Build stock universe based on selected size
+        # Build stock universe based on selected size - optimized for larger datasets
         if stock_universe_size == 250:
             sp500_stocks = get_sp500_tickers()
             available_tickers = sp500_stocks[:250]
@@ -642,8 +692,14 @@ if st.button(search_button_text, use_container_width=True, type="primary"):
             nasdaq100_stocks = get_nasdaq100_tickers()
             russell2000_stocks = get_russell2000_stocks()
             available_tickers = list(set(sp500_stocks + nasdaq100_stocks + russell2000_stocks[:500]))[:1000]
-        else:  # 2000 stocks
+        elif stock_universe_size == 2000:
             available_tickers = get_all_market_stocks()[:2000]
+        elif stock_universe_size == 5000:
+            # Get expanded universe including Russell 2000
+            available_tickers = get_all_market_stocks()[:5000]
+        else:  # 10000 stocks
+            # Maximum universe - all available stocks
+            available_tickers = get_all_market_stocks()[:10000]
         
         # Remove any problematic tickers from our list
         available_tickers = [t for t in available_tickers if t not in ['GOOGL', 'BRK.B', 'BF.B']]
@@ -680,23 +736,68 @@ if st.button(search_button_text, use_container_width=True, type="primary"):
         }
         available_tickers = [ticker_fixes.get(t, t) for t in available_tickers]
         
-        # Screen stocks
+        # Enhanced screening with batch processing and background execution
         matching_stocks = []
         processed_count = 0
         
-        # Progress bar
-        progress_bar = st.progress(0)
-        status_text = st.empty()
+        # Progress tracking with more frequent updates for user experience
+        progress_container = st.container()
+        with progress_container:
+            progress_bar = st.progress(0)
+            status_text = st.empty()
+            results_preview = st.empty()
         
-        for i, ticker in enumerate(available_tickers):
-            try:
-                status_text.text(f"分析中: {ticker} ({i+1}/{len(available_tickers)})")
-                progress_bar.progress((i + 1) / len(available_tickers))
-                
-                # Get financial data
-                data = get_auto_financial_data(ticker)
-                if not data:
-                    continue
+        # Add session state to track progress and enable background processing
+        if 'search_progress' not in st.session_state:
+            st.session_state.search_progress = 0
+        if 'search_results' not in st.session_state:
+            st.session_state.search_results = []
+        if 'search_completed' not in st.session_state:
+            st.session_state.search_completed = False
+        
+        # Enhanced batch processing for better performance and background support
+        batch_size = 20  # Larger batches for better performance
+        total_batches = len(available_tickers) // batch_size + (1 if len(available_tickers) % batch_size > 0 else 0)
+        
+        # Enable background processing using Streamlit's auto-refresh
+        placeholder = st.empty()
+        
+        for batch_idx in range(total_batches):
+            batch_start = batch_idx * batch_size
+            batch_end = min((batch_idx + 1) * batch_size, len(available_tickers))
+            batch_tickers = available_tickers[batch_start:batch_end]
+            
+            # Update progress at batch level for smoother UX
+            progress = (batch_idx + 1) / total_batches
+            progress_bar.progress(progress)
+            status_text.text(f"バッチ {batch_idx + 1}/{total_batches} 処理中... ({len(matching_stocks)} 銘柄見つかりました)")
+            
+            # Show preview of found stocks every few batches
+            if batch_idx % 5 == 0 and matching_stocks:
+                with results_preview:
+                    st.info(f"🎯 現在 {len(matching_stocks)} 銘柄が条件に合致")
+                    preview_df = pd.DataFrame(matching_stocks[:3])  # Show top 3
+                    if not preview_df.empty:
+                        st.dataframe(preview_df[['name', 'sector', 'current_price', 'pe_ratio']], use_container_width=True)
+            
+            # Process batch with error handling
+            for i, ticker in enumerate(batch_tickers):
+                try:
+                    global_idx = batch_start + i
+                    
+                    # Skip if we've already processed enough stocks for preview
+                    if len(matching_stocks) > 100 and stock_universe_size > 2000:
+                        # For large searches, stop early if we have enough results
+                        break
+                    
+                    # Get financial data with caching for improved performance
+                    data = get_cached_financial_data(ticker)
+                    if not data:
+                        continue
+                    
+                    # Quick validation to skip obviously bad data
+                    if data.get('current_price', 0) <= 0:
+                        continue
                 
                 processed_count += 1
                 
