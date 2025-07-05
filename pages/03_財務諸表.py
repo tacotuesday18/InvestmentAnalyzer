@@ -382,30 +382,7 @@ if should_analyze or (st.session_state.financial_analysis_completed and st.sessi
             
             st.markdown("</div>", unsafe_allow_html=True)
             
-            # Add Gemini AI financial insights section
-            st.markdown("<div class='card'>", unsafe_allow_html=True)
-            st.markdown("### 🤖 AI財務分析レポート")
-            
-            with st.spinner("Gemini AIで財務状況を分析中..."):
-                try:
-                    from gemini_analyzer import generate_comprehensive_financial_analysis
-                    
-                    # Generate AI analysis using Gemini
-                    gemini_analysis = generate_comprehensive_financial_analysis(
-                        selected_ticker, 
-                        company_info['name'],
-                        auto_data
-                    )
-                    
-                    if gemini_analysis:
-                        st.markdown(gemini_analysis)
-                    else:
-                        st.info("AI分析は現在利用できません。財務諸表データをご確認ください。")
-                        
-                except Exception as e:
-                    st.info("AI分析機能は現在メンテナンス中です。財務諸表データは正常に表示されています。")
-            
-            st.markdown("</div>", unsafe_allow_html=True)
+
             
             # Get detailed financial statements using yfinance
             try:
