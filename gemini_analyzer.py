@@ -674,3 +674,71 @@ def generate_earnings_summary(ticker, financial_data):
     except Exception as e:
         logging.error(f"Earnings analysis error: {e}")
         return f"分析エラー: {str(e)}"
+
+def generate_comprehensive_financial_analysis(ticker, company_name, financial_data):
+    """
+    Generate comprehensive financial analysis using Gemini AI for financial statements page
+    """
+    try:
+        prompt = f"""
+{company_name} ({ticker})の詳細財務諸表分析を日本語で作成してください。
+
+企業名: {company_name} ({ticker})
+現在株価: ${financial_data.get('current_price', 0):.2f}
+売上高: ${financial_data.get('revenue', 0):,.0f}
+純利益: ${financial_data.get('net_income', 0):,.0f}
+総資産: ${financial_data.get('total_assets', 0):,.0f}
+株主資本: ${financial_data.get('shareholders_equity', 0):,.0f}
+負債比率: {financial_data.get('debt_to_equity', 0):.2f}
+ROE: {financial_data.get('roe', 0):.2%}
+ROA: {financial_data.get('roa', 0):.2%}
+
+以下の観点から財務諸表の詳細分析を提供してください：
+
+## 📊 財務健全性評価
+- 流動性分析（現金及び現金同等物、運転資本の状況）
+- 資本構造（負債比率、資本効率性）
+- 安全性指標の評価
+
+## 💰 収益性分析
+- 売上高成長トレンド
+- 利益率の推移と業界比較
+- 収益の質と持続可能性
+
+## ⚡ 効率性指標
+- 資産回転率
+- 投資収益率（ROE、ROA）
+- 経営効率性の評価
+
+## 💸 キャッシュフロー分析
+- 営業キャッシュフローの質
+- 投資・財務活動の評価
+- フリーキャッシュフローの持続性
+
+## ⚠️ 財務リスク要因
+- 主要な財務リスク
+- 業界特有のリスク
+- 将来の懸念材料
+
+## 🎯 投資判断への示唆
+- 財務面からの投資魅力
+- 注意すべきポイント
+- 今後の注目指標
+
+分析は具体的で実用的な内容とし、投資家が意思決定に活用できる洞察を提供してください。
+数値は適切にフォーマットし、日本の投資家にとって理解しやすい表現を使用してください。
+"""
+
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt
+        )
+        
+        if response and response.text:
+            return response.text
+        else:
+            return None
+            
+    except Exception as e:
+        logging.error(f"Gemini financial analysis error for {ticker}: {e}")
+        return None

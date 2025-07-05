@@ -8,6 +8,7 @@ from gemini_historical_metrics import create_historical_metrics_table_with_ai
 import numpy as np
 import requests
 import trafilatura
+from datetime import datetime
 
 # ページ設定は main app.py で処理済み
 
@@ -187,6 +188,45 @@ st.markdown("""
         margin: 0.25rem;
         display: inline-block;
     }
+    
+    /* Research paper styling */
+    .research-paper {
+        background: white;
+        padding: 3rem 2.5rem;
+        margin: 2rem 0;
+        border-radius: 15px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        font-family: 'Inter', serif;
+    }
+    
+    .paper-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #1a202c;
+        text-align: center;
+        margin-bottom: 0.5rem;
+        line-height: 1.2;
+    }
+    
+    .paper-subtitle {
+        font-size: 1.3rem;
+        color: #4a5568;
+        text-align: center;
+        margin-bottom: 2rem;
+        font-weight: 500;
+    }
+    
+    .author-info {
+        background: #f8fafc;
+        padding: 1.5rem;
+        border-radius: 10px;
+        border-left: 4px solid #667eea;
+        font-size: 1rem;
+        line-height: 1.6;
+        color: #2d3748;
+        margin-bottom: 2rem;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -205,63 +245,128 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Import comprehensive stock database
-from comprehensive_stock_data import search_stocks_by_name, get_all_tickers, get_stock_info, get_stocks_by_category, get_all_categories
-
-# 企業選択（数百銘柄対応）
-available_tickers = get_all_tickers()
-
-# Enhanced stock selection with company name search
+# Enhanced stock selection with company name search similar to business model page
 st.markdown("### 📈 企業選択")
+
+# Initialize session state for financial statements page
+def init_financial_session_state():
+    if 'financial_analysis_completed' not in st.session_state:
+        st.session_state.financial_analysis_completed = False
+    if 'financial_current_ticker' not in st.session_state:
+        st.session_state.financial_current_ticker = None
+    if 'financial_data' not in st.session_state:
+        st.session_state.financial_data = None
+
+def should_reset_financial_analysis(ticker):
+    return (st.session_state.financial_current_ticker != ticker or 
+            not st.session_state.financial_analysis_completed)
+
+def reset_financial_analysis():
+    st.session_state.financial_analysis_completed = False
+    st.session_state.financial_data = None
 
 col1, col2 = st.columns([3, 1])
 
+# Initialize session state
+init_financial_session_state()
 
-
-with col2:
-    categories = ["All"] + get_all_categories()
-    selected_category = st.selectbox("カテゴリー", categories)
-    if selected_category != "All":
-        available_tickers = get_stocks_by_category(selected_category)
-
-
-
-# Create options with company names for better UX
-ticker_options = {}
-for ticker in available_tickers:
-    stock_info = get_stock_info(ticker)
-    ticker_options[ticker] = f"{ticker} - {stock_info['name']}"
-
-selected_ticker = st.selectbox(
-    "企業を選択してください",
-    options=available_tickers,
-    index=0,
-    format_func=lambda x: ticker_options.get(x, x),
-    key="financial_ticker_selection"
-)
+with col1:
+    search_input = st.text_input(
+        "企業名またはティッカーシンボルを入力",
+        placeholder="例: Apple, Microsoft, AAPL, MSFT",
+        help="企業名（日本語・英語）またはティッカーシンボルで検索",
+        value=st.session_state.get('financial_search_input', '')
+    )
+    
+    if search_input:
+        st.session_state.financial_search_input = search_input
+        from comprehensive_stock_data import search_stocks_by_name
+        results = search_stocks_by_name(search_input)
+        if results:
+            selected_ticker = results[0]['ticker']
+        else:
+            selected_ticker = search_input.upper()
+    else:
+        selected_ticker = st.session_state.get('financial_current_ticker', 'AAPL')
 
 with col2:
-    # Removed update data button as requested
-    pass
+    analyze_button = st.button("財務分析", type="primary", use_container_width=True)
 
-if selected_ticker:
-    with st.spinner("最新の財務データを取得中..."):
-        # Get comprehensive financial data
-        auto_data = get_auto_financial_data(selected_ticker)
+# Check if we should run analysis
+should_analyze = analyze_button and selected_ticker
+
+# If ticker changed, reset analysis
+if should_reset_financial_analysis(selected_ticker):
+    reset_financial_analysis()
+    st.session_state.financial_current_ticker = selected_ticker
+
+if should_analyze or (st.session_state.financial_analysis_completed and st.session_state.financial_current_ticker == selected_ticker):
+    # Run analysis if needed
+    if should_analyze and not st.session_state.financial_analysis_completed:
+        with st.spinner(f"{selected_ticker}の財務諸表データを取得・分析中..."):
+            try:
+                # Get comprehensive financial data using yfinance and Gemini
+                stock = yf.Ticker(selected_ticker)
+                info = stock.info
+                
+                company_name = info.get('longName', selected_ticker)
+                sector = info.get('sector', 'Technology')
+                industry = info.get('industry', 'Software')
+                
+                # Get comprehensive financial data
+                auto_data = get_auto_financial_data(selected_ticker)
+                
+                # Store in session state
+                st.session_state.financial_data = {
+                    'auto_data': auto_data,
+                    'company_info': {
+                        'name': company_name,
+                        'sector': sector,
+                        'industry': industry,
+                        'info': info
+                    },
+                    'ticker': selected_ticker
+                }
+                st.session_state.financial_analysis_completed = True
+                
+            except Exception as e:
+                st.error(f"財務データの取得に失敗しました: {str(e)}")
+                st.session_state.financial_analysis_completed = False
+    
+    # Display analysis results if available
+    if st.session_state.financial_analysis_completed and st.session_state.financial_data:
+        financial_data = st.session_state.financial_data
+        auto_data = financial_data['auto_data']
+        company_info = financial_data['company_info']
         
         if auto_data:
-            # Basic company info
+            # Display company header similar to business model page
+            st.markdown(f"""
+            <div class="research-paper">
+                <h1 class="paper-title">{company_info['name']} ({selected_ticker})</h1>
+                <h2 class="paper-subtitle">詳細財務諸表分析</h2>
+                
+                <div class="author-info">
+                    <strong>分析日:</strong> {datetime.now().strftime('%Y年%m月%d日')}<br>
+                    <strong>セクター:</strong> {company_info['sector']} | <strong>業界:</strong> {company_info['industry']}<br>
+                    <strong>データ源:</strong> Yahoo Finance<br>
+                    <strong>現在株価:</strong> ${auto_data['current_price']:.2f}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Basic company metrics
             st.markdown("<div class='card'>", unsafe_allow_html=True)
             col1, col2, col3, col4 = st.columns(4)
             
             with col1:
                 st.markdown("<div class='metric-card'>", unsafe_allow_html=True)
-                st.metric("企業名", auto_data['name'])
+                st.metric("企業名", company_info['name'])
                 st.markdown("</div>", unsafe_allow_html=True)
             
             with col2:
                 st.markdown("<div class='metric-card'>", unsafe_allow_html=True)
-                st.metric("業界", auto_data['industry'])
+                st.metric("業界", company_info['industry'])
                 st.markdown("</div>", unsafe_allow_html=True)
             
             with col3:
@@ -274,6 +379,31 @@ if selected_ticker:
                 market_cap = auto_data['current_price'] * auto_data['shares_outstanding']
                 st.metric("時価総額", format_currency(market_cap, "$"))
                 st.markdown("</div>", unsafe_allow_html=True)
+            
+            st.markdown("</div>", unsafe_allow_html=True)
+            
+            # Add Gemini AI financial insights section
+            st.markdown("<div class='card'>", unsafe_allow_html=True)
+            st.markdown("### 🤖 AI財務分析レポート")
+            
+            with st.spinner("Gemini AIで財務状況を分析中..."):
+                try:
+                    from gemini_analyzer import generate_comprehensive_financial_analysis
+                    
+                    # Generate AI analysis using Gemini
+                    gemini_analysis = generate_comprehensive_financial_analysis(
+                        selected_ticker, 
+                        company_info['name'],
+                        auto_data
+                    )
+                    
+                    if gemini_analysis:
+                        st.markdown(gemini_analysis)
+                    else:
+                        st.info("AI分析は現在利用できません。財務諸表データをご確認ください。")
+                        
+                except Exception as e:
+                    st.info("AI分析機能は現在メンテナンス中です。財務諸表データは正常に表示されています。")
             
             st.markdown("</div>", unsafe_allow_html=True)
             
