@@ -9,8 +9,80 @@ import numpy as np
 import requests
 import trafilatura
 from datetime import datetime
+import plotly.graph_objects as go
+import plotly.express as px
 
 # ページ設定は main app.py で処理済み
+
+def create_trend_chart(data, title, metric_name, is_quarterly=False):
+    """Create simple bar chart showing business trends with YoY growth"""
+    if data.empty:
+        return None
+    
+    # Get the specific metric data
+    if metric_name not in data.index:
+        return None
+    
+    metric_data = data.loc[metric_name]
+    
+    # Prepare data for chart
+    dates = []
+    values = []
+    yoy_growth = []
+    
+    for i, col in enumerate(data.columns[:6]):  # Latest 6 periods
+        if is_quarterly:
+            dates.append(col.strftime('%Y Q%q'))
+        else:
+            dates.append(col.strftime('%Y'))
+        
+        value = metric_data[col] if not pd.isna(metric_data[col]) else 0
+        values.append(value)
+        
+        # Calculate YoY growth
+        if i < len(data.columns) - 1:  # Compare with previous year/quarter
+            current = metric_data[col] if not pd.isna(metric_data[col]) else 0
+            previous = metric_data[data.columns[i + 1]] if not pd.isna(metric_data[data.columns[i + 1]]) else 0
+            if previous != 0:
+                growth = ((current - previous) / abs(previous)) * 100
+                yoy_growth.append(growth)
+            else:
+                yoy_growth.append(0)
+        else:
+            yoy_growth.append(0)
+    
+    # Reverse to show chronological order
+    dates.reverse()
+    values.reverse()
+    yoy_growth.reverse()
+    
+    # Create chart
+    fig = go.Figure()
+    
+    # Add bars with color based on growth
+    colors = ['#2E8B57' if g > 0 else '#DC143C' if g < 0 else '#808080' for g in yoy_growth]
+    
+    fig.add_trace(go.Bar(
+        x=dates,
+        y=values,
+        name=metric_name,
+        marker_color=colors,
+        text=[f"{g:+.1f}%" if g != 0 else "" for g in yoy_growth],
+        textposition='outside',
+        textfont=dict(size=10, color='black')
+    ))
+    
+    fig.update_layout(
+        title=f"{title} - トレンド分析",
+        xaxis_title="期間",
+        yaxis_title="金額 (USD)",
+        height=300,
+        showlegend=False,
+        template="plotly_white",
+        margin=dict(t=50, b=50, l=50, r=50)
+    )
+    
+    return fig
 
 # TravelPerk-style CSS for consistent design
 st.markdown("""
@@ -384,15 +456,48 @@ if should_analyze or (st.session_state.financial_analysis_completed and st.sessi
             
 
             
+            # Add period selection toggle
+            st.markdown("### 📊 財務諸表期間選択")
+            period_col1, period_col2 = st.columns(2)
+            
+            with period_col1:
+                if st.button("📅 四半期データ", key="quarterly_btn", use_container_width=True):
+                    st.session_state.financial_period = "quarterly"
+            
+            with period_col2:
+                if st.button("📆 年次データ", key="yearly_btn", use_container_width=True):
+                    st.session_state.financial_period = "yearly"
+            
+            # Initialize period if not set
+            if 'financial_period' not in st.session_state:
+                st.session_state.financial_period = "yearly"
+            
+            # Display current selection
+            period_display = "四半期" if st.session_state.financial_period == "quarterly" else "年次"
+            st.info(f"現在の表示: {period_display}データ")
+            
             # Get detailed financial statements using yfinance
             try:
                 stock = yf.Ticker(selected_ticker)
                 
+                # Get financial statements based on selected period
+                if st.session_state.financial_period == "quarterly":
+                    income_stmt = stock.quarterly_financials
+                    balance_sheet = stock.quarterly_balance_sheet  
+                    cash_flow = stock.quarterly_cashflow
+                    period_label = "四半期"
+                else:
+                    income_stmt = stock.financials
+                    balance_sheet = stock.balance_sheet
+                    cash_flow = stock.cashflow
+                    period_label = "年次"
+                
                 # 損益計算書 (Income Statement)
                 st.markdown("<div class='card'>", unsafe_allow_html=True)
-                st.markdown("### 📈 損益計算書 (Income Statement)")
+                st.markdown(f"### 📈 損益計算書 (Income Statement) - {period_label}")
                 
-                income_stmt = stock.financials
+                # Use the selected period's income statement
+                # income_stmt is already set above based on period selection
                 if not income_stmt.empty:
                     # Convert to Japanese labels and format
                     income_data = []
@@ -431,6 +536,23 @@ if should_analyze or (st.session_state.financial_analysis_completed and st.sessi
                     if income_data:
                         income_df = pd.DataFrame(income_data)
                         st.dataframe(income_df, use_container_width=True, hide_index=True)
+                        
+                        # Add trend charts for key metrics
+                        st.markdown("#### 📊 主要指標のトレンド分析")
+                        
+                        # Revenue trend chart
+                        if 'Total Revenue' in income_stmt.index:
+                            is_quarterly = (st.session_state.financial_period == "quarterly")
+                            revenue_chart = create_trend_chart(income_stmt, "売上高", 'Total Revenue', is_quarterly)
+                            if revenue_chart:
+                                st.plotly_chart(revenue_chart, use_container_width=True)
+                        
+                        # Net Income trend chart  
+                        if 'Net Income' in income_stmt.index:
+                            is_quarterly = (st.session_state.financial_period == "quarterly")
+                            profit_chart = create_trend_chart(income_stmt, "純利益", 'Net Income', is_quarterly)
+                            if profit_chart:
+                                st.plotly_chart(profit_chart, use_container_width=True)
                     else:
                         st.warning("損益計算書データが利用できません")
                 else:
@@ -440,9 +562,9 @@ if should_analyze or (st.session_state.financial_analysis_completed and st.sessi
                 
                 # 貸借対照表 (Balance Sheet)
                 st.markdown("<div class='card'>", unsafe_allow_html=True)
-                st.markdown("### 🏦 貸借対照表 (Balance Sheet)")
+                st.markdown(f"### 🏦 貸借対照表 (Balance Sheet) - {period_label}")
                 
-                balance_sheet = stock.balance_sheet
+                # Use the period-selected balance sheet data
                 if not balance_sheet.empty:
                     balance_data = []
                     
@@ -478,6 +600,26 @@ if should_analyze or (st.session_state.financial_analysis_completed and st.sessi
                     if balance_data:
                         balance_df = pd.DataFrame(balance_data)
                         st.dataframe(balance_df, use_container_width=True, hide_index=True)
+                        
+                        # Add trend charts for key balance sheet metrics
+                        st.markdown("#### 📊 主要指標のトレンド分析")
+                        
+                        # Total Assets trend chart
+                        if 'Total Assets' in balance_sheet.index:
+                            is_quarterly = (st.session_state.financial_period == "quarterly")
+                            assets_chart = create_trend_chart(balance_sheet, "総資産", 'Total Assets', is_quarterly)
+                            if assets_chart:
+                                st.plotly_chart(assets_chart, use_container_width=True)
+                        
+                        # Total Equity trend chart
+                        equity_keys = ['Total Equity Gross Minority Interest', 'Stockholders Equity', 'Total Stockholders Equity']
+                        for key in equity_keys:
+                            if key in balance_sheet.index:
+                                is_quarterly = (st.session_state.financial_period == "quarterly")
+                                equity_chart = create_trend_chart(balance_sheet, "株主資本", key, is_quarterly)
+                                if equity_chart:
+                                    st.plotly_chart(equity_chart, use_container_width=True)
+                                break
                     else:
                         st.warning("貸借対照表データが利用できません")
                 else:
@@ -487,9 +629,9 @@ if should_analyze or (st.session_state.financial_analysis_completed and st.sessi
                 
                 # キャッシュフロー計算書 (Cash Flow Statement)
                 st.markdown("<div class='card'>", unsafe_allow_html=True)
-                st.markdown("### 💰 キャッシュフロー計算書 (Cash Flow Statement)")
+                st.markdown(f"### 💰 キャッシュフロー計算書 (Cash Flow Statement) - {period_label}")
                 
-                cash_flow = stock.cashflow
+                # Use the period-selected cash flow data
                 if not cash_flow.empty:
                     cf_data = []
                     
@@ -523,6 +665,26 @@ if should_analyze or (st.session_state.financial_analysis_completed and st.sessi
                     if cf_data:
                         cf_df = pd.DataFrame(cf_data)
                         st.dataframe(cf_df, use_container_width=True, hide_index=True)
+                        
+                        # Add trend charts for key cash flow metrics
+                        st.markdown("#### 📊 主要指標のトレンド分析")
+                        
+                        # Operating Cash Flow trend chart
+                        cf_keys = ['Operating Cash Flow', 'Total Cash From Operating Activities']
+                        for key in cf_keys:
+                            if key in cash_flow.index:
+                                is_quarterly = (st.session_state.financial_period == "quarterly")
+                                ocf_chart = create_trend_chart(cash_flow, "営業キャッシュフロー", key, is_quarterly)
+                                if ocf_chart:
+                                    st.plotly_chart(ocf_chart, use_container_width=True)
+                                break
+                        
+                        # Free Cash Flow trend chart
+                        if 'Free Cash Flow' in cash_flow.index:
+                            is_quarterly = (st.session_state.financial_period == "quarterly")
+                            fcf_chart = create_trend_chart(cash_flow, "フリーキャッシュフロー", 'Free Cash Flow', is_quarterly)
+                            if fcf_chart:
+                                st.plotly_chart(fcf_chart, use_container_width=True)
                     else:
                         st.warning("キャッシュフロー計算書データが利用できません")
                 else:
