@@ -14,6 +14,32 @@ import plotly.express as px
 
 # ページ設定は main app.py で処理済み
 
+def format_japanese_number(value):
+    """Format numbers for Japanese users (billions = 億, millions = 百万)"""
+    if abs(value) >= 1000:  # Billions
+        return f"{value/1000:.1f}億"
+    elif abs(value) >= 1:  # Millions  
+        return f"{value:.0f}百万"
+    else:
+        return f"{value:.1f}百万"
+
+def format_market_cap_japanese(market_cap_usd):
+    """Format market cap for Japanese users with proper scale"""
+    if market_cap_usd >= 1_000_000_000_000:  # Trillion USD
+        return f"{market_cap_usd/1_000_000_000_000:.2f}兆ドル"
+    elif market_cap_usd >= 1_000_000_000:  # Billion USD  
+        return f"{market_cap_usd/1_000_000_000:.1f}億ドル"
+    elif market_cap_usd >= 1_000_000:  # Million USD
+        return f"{market_cap_usd/1_000_000:.0f}百万ドル"
+    else:
+        return f"${market_cap_usd:,.0f}"
+
+def calculate_yoy_growth(current_val, previous_val):
+    """Calculate year-over-year growth percentage"""
+    if previous_val == 0 or pd.isna(previous_val) or pd.isna(current_val):
+        return 0
+    return ((current_val - previous_val) / abs(previous_val)) * 100
+
 def create_financial_chart(income_stmt, balance_sheet, cash_flow, chart_type, is_quarterly=False):
     """Create financial charts based on the selected type"""
     fig = go.Figure()
@@ -23,6 +49,8 @@ def create_financial_chart(income_stmt, balance_sheet, cash_flow, chart_type, is
             # Revenue and Net Income chart
             revenue_data = []
             income_data = []
+            revenue_growth = []
+            income_growth = []
             dates = []
             
             # Get revenue data
@@ -40,45 +68,73 @@ def create_financial_chart(income_stmt, balance_sheet, cash_flow, chart_type, is
                     break
             
             if revenue_key and income_key:
-                for col in income_stmt.columns:
+                columns = list(income_stmt.columns)
+                for i, col in enumerate(columns):
                     if is_quarterly:
-                        # Format quarterly dates
+                        # Format quarterly dates in Japanese
                         quarter = (col.month - 1) // 3 + 1
-                        dates.append(f"Q{quarter} {col.year}")
+                        dates.append(f"{col.year}年Q{quarter}")
                     else:
-                        dates.append(str(col.year))
+                        dates.append(f"{col.year}年")
                     
                     revenue_val = income_stmt.loc[revenue_key, col] if not pd.isna(income_stmt.loc[revenue_key, col]) else 0
                     income_val = income_stmt.loc[income_key, col] if not pd.isna(income_stmt.loc[income_key, col]) else 0
                     
                     revenue_data.append(revenue_val / 1e6)  # Convert to millions
                     income_data.append(income_val / 1e6)   # Convert to millions
+                    
+                    # Calculate YoY growth
+                    if is_quarterly and i >= 4:  # Compare with same quarter previous year
+                        prev_revenue = income_stmt.loc[revenue_key, columns[i-4]] if not pd.isna(income_stmt.loc[revenue_key, columns[i-4]]) else 0
+                        prev_income = income_stmt.loc[income_key, columns[i-4]] if not pd.isna(income_stmt.loc[income_key, columns[i-4]]) else 0
+                        revenue_growth.append(calculate_yoy_growth(revenue_val, prev_revenue))
+                        income_growth.append(calculate_yoy_growth(income_val, prev_income))
+                    elif not is_quarterly and i >= 1:  # Compare with previous year
+                        prev_revenue = income_stmt.loc[revenue_key, columns[i-1]] if not pd.isna(income_stmt.loc[revenue_key, columns[i-1]]) else 0
+                        prev_income = income_stmt.loc[income_key, columns[i-1]] if not pd.isna(income_stmt.loc[income_key, columns[i-1]]) else 0
+                        revenue_growth.append(calculate_yoy_growth(revenue_val, prev_revenue))
+                        income_growth.append(calculate_yoy_growth(income_val, prev_income))
+                    else:
+                        revenue_growth.append(0)
+                        income_growth.append(0)
                 
                 # Reverse to show chronological order
                 dates.reverse()
                 revenue_data.reverse()
                 income_data.reverse()
+                revenue_growth.reverse()
+                income_growth.reverse()
+                
+                # Create growth text labels
+                revenue_text = [f"+{g:.1f}%" if g > 0 else f"{g:.1f}%" if g != 0 else "" for g in revenue_growth]
+                income_text = [f"+{g:.1f}%" if g > 0 else f"{g:.1f}%" if g != 0 else "" for g in income_growth]
                 
                 fig.add_trace(go.Bar(
                     x=dates,
                     y=revenue_data,
-                    name='Revenue',
+                    name='売上高',
                     marker_color='orange',
+                    text=revenue_text,
+                    textposition='outside',
+                    textfont=dict(size=10, color='orange'),
                     yaxis='y'
                 ))
                 
                 fig.add_trace(go.Bar(
                     x=dates,
                     y=income_data,
-                    name='Net Income',
+                    name='純利益',
                     marker_color='black',
+                    text=income_text,
+                    textposition='outside',
+                    textfont=dict(size=10, color='black'),
                     yaxis='y'
                 ))
                 
                 fig.update_layout(
                     title="売上高と純利益",
                     xaxis_title="期間",
-                    yaxis_title="金額 (M USD)",
+                    yaxis_title="金額 (百万USD)",
                     height=400,
                     barmode='group'
                 )
@@ -87,63 +143,8 @@ def create_financial_chart(income_stmt, balance_sheet, cash_flow, chart_type, is
             # Assets and Liabilities chart
             assets_data = []
             liabilities_data = []
-            dates = []
-            
-            assets_key = None
-            for key in ['Total Assets', 'Total Assets']:
-                if key in balance_sheet.index:
-                    assets_key = key
-                    break
-                    
-            liabilities_key = None
-            for key in ['Total Liabilities Net Minority Interest', 'Total Liabilities', 'Total Liab']:
-                if key in balance_sheet.index:
-                    liabilities_key = key
-                    break
-            
-            if assets_key and liabilities_key:
-                for col in balance_sheet.columns:
-                    if is_quarterly:
-                        quarter = (col.month - 1) // 3 + 1
-                        dates.append(f"Q{quarter} {col.year}")
-                    else:
-                        dates.append(str(col.year))
-                    
-                    assets_val = balance_sheet.loc[assets_key, col] if not pd.isna(balance_sheet.loc[assets_key, col]) else 0
-                    liabilities_val = balance_sheet.loc[liabilities_key, col] if not pd.isna(balance_sheet.loc[liabilities_key, col]) else 0
-                    
-                    assets_data.append(assets_val / 1e6)
-                    liabilities_data.append(liabilities_val / 1e6)
-                
-                dates.reverse()
-                assets_data.reverse()
-                liabilities_data.reverse()
-                
-                fig.add_trace(go.Bar(
-                    x=dates,
-                    y=assets_data,
-                    name='Total Assets',
-                    marker_color='blue'
-                ))
-                
-                fig.add_trace(go.Bar(
-                    x=dates,
-                    y=liabilities_data,
-                    name='Total Liabilities',
-                    marker_color='red'
-                ))
-                
-                fig.update_layout(
-                    title="総資産と総負債",
-                    xaxis_title="期間",
-                    yaxis_title="金額 (M USD)",
-                    height=400,
-                    barmode='group'
-                )
-        
-        elif chart_type == "debt_to_assets":
-            # Debt to Assets ratio chart
-            debt_ratio_data = []
+            assets_growth = []
+            liabilities_growth = []
             dates = []
             
             assets_key = None
@@ -159,12 +160,99 @@ def create_financial_chart(income_stmt, balance_sheet, cash_flow, chart_type, is
                     break
             
             if assets_key and liabilities_key:
-                for col in balance_sheet.columns:
+                columns = list(balance_sheet.columns)
+                for i, col in enumerate(columns):
                     if is_quarterly:
                         quarter = (col.month - 1) // 3 + 1
-                        dates.append(f"Q{quarter} {col.year}")
+                        dates.append(f"{col.year}年Q{quarter}")
                     else:
-                        dates.append(str(col.year))
+                        dates.append(f"{col.year}年")
+                    
+                    assets_val = balance_sheet.loc[assets_key, col] if not pd.isna(balance_sheet.loc[assets_key, col]) else 0
+                    liabilities_val = balance_sheet.loc[liabilities_key, col] if not pd.isna(balance_sheet.loc[liabilities_key, col]) else 0
+                    
+                    assets_data.append(assets_val / 1e6)
+                    liabilities_data.append(liabilities_val / 1e6)
+                    
+                    # Calculate YoY growth
+                    if is_quarterly and i >= 4:
+                        prev_assets = balance_sheet.loc[assets_key, columns[i-4]] if not pd.isna(balance_sheet.loc[assets_key, columns[i-4]]) else 0
+                        prev_liabilities = balance_sheet.loc[liabilities_key, columns[i-4]] if not pd.isna(balance_sheet.loc[liabilities_key, columns[i-4]]) else 0
+                        assets_growth.append(calculate_yoy_growth(assets_val, prev_assets))
+                        liabilities_growth.append(calculate_yoy_growth(liabilities_val, prev_liabilities))
+                    elif not is_quarterly and i >= 1:
+                        prev_assets = balance_sheet.loc[assets_key, columns[i-1]] if not pd.isna(balance_sheet.loc[assets_key, columns[i-1]]) else 0
+                        prev_liabilities = balance_sheet.loc[liabilities_key, columns[i-1]] if not pd.isna(balance_sheet.loc[liabilities_key, columns[i-1]]) else 0
+                        assets_growth.append(calculate_yoy_growth(assets_val, prev_assets))
+                        liabilities_growth.append(calculate_yoy_growth(liabilities_val, prev_liabilities))
+                    else:
+                        assets_growth.append(0)
+                        liabilities_growth.append(0)
+                
+                dates.reverse()
+                assets_data.reverse()
+                liabilities_data.reverse()
+                assets_growth.reverse()
+                liabilities_growth.reverse()
+                
+                # Create growth text labels
+                assets_text = [f"+{g:.1f}%" if g > 0 else f"{g:.1f}%" if g != 0 else "" for g in assets_growth]
+                liabilities_text = [f"+{g:.1f}%" if g > 0 else f"{g:.1f}%" if g != 0 else "" for g in liabilities_growth]
+                
+                fig.add_trace(go.Bar(
+                    x=dates,
+                    y=assets_data,
+                    name='総資産',
+                    marker_color='blue',
+                    text=assets_text,
+                    textposition='outside',
+                    textfont=dict(size=10, color='blue')
+                ))
+                
+                fig.add_trace(go.Bar(
+                    x=dates,
+                    y=liabilities_data,
+                    name='総負債',
+                    marker_color='red',
+                    text=liabilities_text,
+                    textposition='outside',
+                    textfont=dict(size=10, color='red')
+                ))
+                
+                fig.update_layout(
+                    title="総資産と総負債",
+                    xaxis_title="期間",
+                    yaxis_title="金額 (百万USD)",
+                    height=400,
+                    barmode='group'
+                )
+        
+        elif chart_type == "debt_to_assets":
+            # Debt to Assets ratio chart
+            debt_ratio_data = []
+            ratio_growth = []
+            dates = []
+            
+            assets_key = None
+            for key in ['Total Assets']:
+                if key in balance_sheet.index:
+                    assets_key = key
+                    break
+                    
+            liabilities_key = None
+            for key in ['Total Liabilities Net Minority Interest', 'Total Liabilities', 'Total Liab']:
+                if key in balance_sheet.index:
+                    liabilities_key = key
+                    break
+            
+            if assets_key and liabilities_key:
+                columns = list(balance_sheet.columns)
+                for i, col in enumerate(columns):
+                    if is_quarterly:
+                        quarter = (col.month - 1) // 3 + 1
+                        dates.append(f"{col.year}年Q{quarter}")
+                    else:
+                        dates.append(f"{col.year}年")
                     
                     assets_val = balance_sheet.loc[assets_key, col] if not pd.isna(balance_sheet.loc[assets_key, col]) else 0
                     liabilities_val = balance_sheet.loc[liabilities_key, col] if not pd.isna(balance_sheet.loc[liabilities_key, col]) else 0
@@ -174,15 +262,38 @@ def create_financial_chart(income_stmt, balance_sheet, cash_flow, chart_type, is
                     else:
                         ratio = 0
                     debt_ratio_data.append(ratio)
+                    
+                    # Calculate ratio change
+                    if is_quarterly and i >= 4:
+                        prev_assets = balance_sheet.loc[assets_key, columns[i-4]] if not pd.isna(balance_sheet.loc[assets_key, columns[i-4]]) else 0
+                        prev_liabilities = balance_sheet.loc[liabilities_key, columns[i-4]] if not pd.isna(balance_sheet.loc[liabilities_key, columns[i-4]]) else 0
+                        prev_ratio = (prev_liabilities / prev_assets) * 100 if prev_assets > 0 else 0
+                        ratio_change = ratio - prev_ratio
+                        ratio_growth.append(ratio_change)
+                    elif not is_quarterly and i >= 1:
+                        prev_assets = balance_sheet.loc[assets_key, columns[i-1]] if not pd.isna(balance_sheet.loc[assets_key, columns[i-1]]) else 0
+                        prev_liabilities = balance_sheet.loc[liabilities_key, columns[i-1]] if not pd.isna(balance_sheet.loc[liabilities_key, columns[i-1]]) else 0
+                        prev_ratio = (prev_liabilities / prev_assets) * 100 if prev_assets > 0 else 0
+                        ratio_change = ratio - prev_ratio
+                        ratio_growth.append(ratio_change)
+                    else:
+                        ratio_growth.append(0)
                 
                 dates.reverse()
                 debt_ratio_data.reverse()
+                ratio_growth.reverse()
+                
+                # Create change text labels
+                ratio_text = [f"+{g:.1f}pt" if g > 0 else f"{g:.1f}pt" if g != 0 else "" for g in ratio_growth]
                 
                 fig.add_trace(go.Bar(
                     x=dates,
                     y=debt_ratio_data,
-                    name='Debt to Assets Ratio',
-                    marker_color='purple'
+                    name='負債比率',
+                    marker_color='purple',
+                    text=ratio_text,
+                    textposition='outside',
+                    textfont=dict(size=10, color='purple')
                 ))
                 
                 fig.update_layout(
@@ -197,6 +308,9 @@ def create_financial_chart(income_stmt, balance_sheet, cash_flow, chart_type, is
             ocf_data = []
             icf_data = []
             fcf_data = []
+            ocf_growth = []
+            icf_growth = []
+            fcf_growth = []
             dates = []
             
             # Find operating cash flow
@@ -221,56 +335,104 @@ def create_financial_chart(income_stmt, balance_sheet, cash_flow, chart_type, is
                     break
             
             if ocf_key:
-                for col in cash_flow.columns:
+                columns = list(cash_flow.columns)
+                for i, col in enumerate(columns):
                     if is_quarterly:
                         quarter = (col.month - 1) // 3 + 1
-                        dates.append(f"Q{quarter} {col.year}")
+                        dates.append(f"{col.year}年Q{quarter}")
                     else:
-                        dates.append(str(col.year))
+                        dates.append(f"{col.year}年")
                     
                     ocf_val = cash_flow.loc[ocf_key, col] if not pd.isna(cash_flow.loc[ocf_key, col]) else 0
                     ocf_data.append(ocf_val / 1e6)
                     
+                    # Calculate YoY growth for operating cash flow
+                    if is_quarterly and i >= 4:
+                        prev_ocf = cash_flow.loc[ocf_key, columns[i-4]] if not pd.isna(cash_flow.loc[ocf_key, columns[i-4]]) else 0
+                        ocf_growth.append(calculate_yoy_growth(ocf_val, prev_ocf))
+                    elif not is_quarterly and i >= 1:
+                        prev_ocf = cash_flow.loc[ocf_key, columns[i-1]] if not pd.isna(cash_flow.loc[ocf_key, columns[i-1]]) else 0
+                        ocf_growth.append(calculate_yoy_growth(ocf_val, prev_ocf))
+                    else:
+                        ocf_growth.append(0)
+                    
                     if icf_key:
                         icf_val = cash_flow.loc[icf_key, col] if not pd.isna(cash_flow.loc[icf_key, col]) else 0
                         icf_data.append(icf_val / 1e6)
+                        
+                        # Calculate YoY growth for investing cash flow
+                        if is_quarterly and i >= 4:
+                            prev_icf = cash_flow.loc[icf_key, columns[i-4]] if not pd.isna(cash_flow.loc[icf_key, columns[i-4]]) else 0
+                            icf_growth.append(calculate_yoy_growth(icf_val, prev_icf))
+                        elif not is_quarterly and i >= 1:
+                            prev_icf = cash_flow.loc[icf_key, columns[i-1]] if not pd.isna(cash_flow.loc[icf_key, columns[i-1]]) else 0
+                            icf_growth.append(calculate_yoy_growth(icf_val, prev_icf))
+                        else:
+                            icf_growth.append(0)
                     
                     if fcf_key:
                         fcf_val = cash_flow.loc[fcf_key, col] if not pd.isna(cash_flow.loc[fcf_key, col]) else 0
                         fcf_data.append(fcf_val / 1e6)
+                        
+                        # Calculate YoY growth for free cash flow
+                        if is_quarterly and i >= 4:
+                            prev_fcf = cash_flow.loc[fcf_key, columns[i-4]] if not pd.isna(cash_flow.loc[fcf_key, columns[i-4]]) else 0
+                            fcf_growth.append(calculate_yoy_growth(fcf_val, prev_fcf))
+                        elif not is_quarterly and i >= 1:
+                            prev_fcf = cash_flow.loc[fcf_key, columns[i-1]] if not pd.isna(cash_flow.loc[fcf_key, columns[i-1]]) else 0
+                            fcf_growth.append(calculate_yoy_growth(fcf_val, prev_fcf))
+                        else:
+                            fcf_growth.append(0)
                 
                 dates.reverse()
                 ocf_data.reverse()
+                ocf_growth.reverse()
+                
+                # Create growth text labels
+                ocf_text = [f"+{g:.1f}%" if g > 0 else f"{g:.1f}%" if g != 0 else "" for g in ocf_growth]
                 
                 fig.add_trace(go.Bar(
                     x=dates,
                     y=ocf_data,
-                    name='Operating Cash Flow',
-                    marker_color='green'
+                    name='営業キャッシュフロー',
+                    marker_color='green',
+                    text=ocf_text,
+                    textposition='outside',
+                    textfont=dict(size=10, color='green')
                 ))
                 
                 if icf_data:
                     icf_data.reverse()
+                    icf_growth.reverse()
+                    icf_text = [f"+{g:.1f}%" if g > 0 else f"{g:.1f}%" if g != 0 else "" for g in icf_growth]
                     fig.add_trace(go.Bar(
                         x=dates,
                         y=icf_data,
-                        name='Investing Cash Flow',
-                        marker_color='orange'
+                        name='投資キャッシュフロー',
+                        marker_color='orange',
+                        text=icf_text,
+                        textposition='outside',
+                        textfont=dict(size=10, color='orange')
                     ))
                 
                 if fcf_data:
                     fcf_data.reverse()
+                    fcf_growth.reverse()
+                    fcf_text = [f"+{g:.1f}%" if g > 0 else f"{g:.1f}%" if g != 0 else "" for g in fcf_growth]
                     fig.add_trace(go.Bar(
                         x=dates,
                         y=fcf_data,
-                        name='Free Cash Flow',
-                        marker_color='blue'
+                        name='フリーキャッシュフロー',
+                        marker_color='blue',
+                        text=fcf_text,
+                        textposition='outside',
+                        textfont=dict(size=10, color='blue')
                     ))
                 
                 fig.update_layout(
                     title="キャッシュフロー",
                     xaxis_title="期間",
-                    yaxis_title="金額 (M USD)",
+                    yaxis_title="金額 (百万USD)",
                     height=400,
                     barmode='group'
                 )
@@ -589,12 +751,27 @@ if should_analyze or (st.session_state.financial_analysis_completed and st.sessi
                 sector = info.get('sector', 'Technology')
                 industry = info.get('industry', 'Software')
                 
+                # Get financial statements based on period selection
+                if st.session_state.financial_period == "quarterly":
+                    # Get quarterly financial statements
+                    income_stmt = stock.quarterly_financials
+                    balance_sheet = stock.quarterly_balance_sheet
+                    cash_flow = stock.quarterly_cashflow
+                else:
+                    # Get yearly financial statements
+                    income_stmt = stock.financials
+                    balance_sheet = stock.balance_sheet
+                    cash_flow = stock.cashflow
+                
                 # Get comprehensive financial data
                 auto_data = get_auto_financial_data(selected_ticker)
                 
                 # Store in session state
                 st.session_state.financial_data = {
                     'auto_data': auto_data,
+                    'income_stmt': income_stmt,
+                    'balance_sheet': balance_sheet,
+                    'cash_flow': cash_flow,
                     'company_info': {
                         'name': company_name,
                         'sector': sector,
@@ -653,7 +830,7 @@ if should_analyze or (st.session_state.financial_analysis_completed and st.sessi
             with col4:
                 st.markdown("<div class='metric-card'>", unsafe_allow_html=True)
                 market_cap = auto_data['current_price'] * auto_data['shares_outstanding']
-                st.metric("時価総額", format_currency(market_cap, "$"))
+                st.metric("時価総額", format_market_cap_japanese(market_cap))
                 st.markdown("</div>", unsafe_allow_html=True)
             
             st.markdown("</div>", unsafe_allow_html=True)
@@ -680,21 +857,39 @@ if should_analyze or (st.session_state.financial_analysis_completed and st.sessi
             period_display = "四半期" if st.session_state.financial_period == "quarterly" else "年次"
             st.info(f"現在の表示: {period_display}データ")
             
-            # Get detailed financial statements using yfinance
+            # Get financial statements from session state or fetch if period changed
             try:
-                stock = yf.Ticker(selected_ticker)
+                # Check if period changed - if so, we need to refetch data
+                current_period = st.session_state.financial_period
+                stored_period = st.session_state.get('stored_financial_period', 'yearly')
                 
-                # Get financial statements based on selected period
-                if st.session_state.financial_period == "quarterly":
-                    income_stmt = stock.quarterly_financials
-                    balance_sheet = stock.quarterly_balance_sheet  
-                    cash_flow = stock.quarterly_cashflow
-                    period_label = "四半期"
+                if current_period != stored_period:
+                    # Period changed, fetch new data
+                    stock = yf.Ticker(selected_ticker)
+                    
+                    if current_period == "quarterly":
+                        income_stmt = stock.quarterly_financials
+                        balance_sheet = stock.quarterly_balance_sheet
+                        cash_flow = stock.quarterly_cashflow
+                        period_label = "四半期"
+                    else:
+                        income_stmt = stock.financials
+                        balance_sheet = stock.balance_sheet
+                        cash_flow = stock.cashflow
+                        period_label = "年次"
+                    
+                    # Update stored data and period
+                    st.session_state.financial_data['income_stmt'] = income_stmt
+                    st.session_state.financial_data['balance_sheet'] = balance_sheet
+                    st.session_state.financial_data['cash_flow'] = cash_flow
+                    st.session_state.stored_financial_period = current_period
+                    st.rerun()  # Rerun to update display
                 else:
-                    income_stmt = stock.financials
-                    balance_sheet = stock.balance_sheet
-                    cash_flow = stock.cashflow
-                    period_label = "年次"
+                    # Use stored data
+                    income_stmt = financial_data['income_stmt']
+                    balance_sheet = financial_data['balance_sheet']
+                    cash_flow = financial_data['cash_flow']
+                    period_label = "四半期" if current_period == "quarterly" else "年次"
                 
                 # 損益計算書 (Income Statement)
                 st.markdown("<div class='card'>", unsafe_allow_html=True)
@@ -719,22 +914,28 @@ if should_analyze or (st.session_state.financial_analysis_completed and st.sessi
                     for eng_item, jp_item in income_items.items():
                         if eng_item in income_stmt.index:
                             row_data = {"項目": jp_item}
-                            for col in income_stmt.columns[:4]:  # Latest 4 years
-                                year = col.strftime('%Y年')
+                            for col in income_stmt.columns[:4]:  # Latest 4 periods
+                                # Format date based on period type
+                                if current_period == "quarterly":
+                                    quarter = (col.month - 1) // 3 + 1
+                                    date_label = f"{col.year}年Q{quarter}"
+                                else:
+                                    date_label = col.strftime('%Y年')
+                                
                                 value = income_stmt.loc[eng_item, col]
                                 if not pd.isna(value):
                                     if eng_item == 'Basic EPS':
-                                        row_data[year] = f"${value:.2f}"
+                                        row_data[date_label] = f"${value:.2f}"
                                     else:
-                                        # Format with dollar sign in front
+                                        # Format with Japanese currency style
                                         if abs(value) >= 1_000_000_000:
-                                            row_data[year] = f"${value/1_000_000_000:.2f}B"
+                                            row_data[date_label] = f"${value/1_000_000_000:.2f}億"
                                         elif abs(value) >= 1_000_000:
-                                            row_data[year] = f"${value/1_000_000:.1f}M"
+                                            row_data[date_label] = f"${value/1_000_000:.1f}百万"
                                         else:
-                                            row_data[year] = f"${value:,.0f}"
+                                            row_data[date_label] = f"${value:,.0f}"
                                 else:
-                                    row_data[year] = "N/A"
+                                    row_data[date_label] = "N/A"
                             income_data.append(row_data)
                     
                     if income_data:
@@ -771,19 +972,25 @@ if should_analyze or (st.session_state.financial_analysis_completed and st.sessi
                     for eng_item, jp_item in balance_items.items():
                         if eng_item in balance_sheet.index:
                             row_data = {"項目": jp_item}
-                            for col in balance_sheet.columns[:4]:  # Latest 4 years
-                                year = col.strftime('%Y年')
+                            for col in balance_sheet.columns[:4]:  # Latest 4 periods
+                                # Format date based on period type
+                                if current_period == "quarterly":
+                                    quarter = (col.month - 1) // 3 + 1
+                                    date_label = f"{col.year}年Q{quarter}"
+                                else:
+                                    date_label = col.strftime('%Y年')
+                                
                                 value = balance_sheet.loc[eng_item, col]
                                 if not pd.isna(value):
-                                    # Format with dollar sign in front
+                                    # Format with Japanese currency style
                                     if abs(value) >= 1_000_000_000:
-                                        row_data[year] = f"${value/1_000_000_000:.2f}B"
+                                        row_data[date_label] = f"${value/1_000_000_000:.2f}億"
                                     elif abs(value) >= 1_000_000:
-                                        row_data[year] = f"${value/1_000_000:.1f}M"
+                                        row_data[date_label] = f"${value/1_000_000:.1f}百万"
                                     else:
-                                        row_data[year] = f"${value:,.0f}"
+                                        row_data[date_label] = f"${value:,.0f}"
                                 else:
-                                    row_data[year] = "N/A"
+                                    row_data[date_label] = "N/A"
                             balance_data.append(row_data)
                     
                     if balance_data:
@@ -818,19 +1025,25 @@ if should_analyze or (st.session_state.financial_analysis_completed and st.sessi
                     for eng_item, jp_item in cf_items.items():
                         if eng_item in cash_flow.index:
                             row_data = {"項目": jp_item}
-                            for col in cash_flow.columns[:4]:  # Latest 4 years
-                                year = col.strftime('%Y年')
+                            for col in cash_flow.columns[:4]:  # Latest 4 periods
+                                # Format date based on period type
+                                if current_period == "quarterly":
+                                    quarter = (col.month - 1) // 3 + 1
+                                    date_label = f"{col.year}年Q{quarter}"
+                                else:
+                                    date_label = col.strftime('%Y年')
+                                
                                 value = cash_flow.loc[eng_item, col]
                                 if not pd.isna(value):
-                                    # Format with dollar sign in front
+                                    # Format with Japanese currency style
                                     if abs(value) >= 1_000_000_000:
-                                        row_data[year] = f"${value/1_000_000_000:.2f}B"
+                                        row_data[date_label] = f"${value/1_000_000_000:.2f}億"
                                     elif abs(value) >= 1_000_000:
-                                        row_data[year] = f"${value/1_000_000:.1f}M"
+                                        row_data[date_label] = f"${value/1_000_000:.1f}百万"
                                     else:
-                                        row_data[year] = f"${value:,.0f}"
+                                        row_data[date_label] = f"${value:,.0f}"
                                 else:
-                                    row_data[year] = "N/A"
+                                    row_data[date_label] = "N/A"
                             cf_data.append(row_data)
                     
                     if cf_data:
