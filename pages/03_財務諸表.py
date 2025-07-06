@@ -105,9 +105,25 @@ def create_financial_chart(income_stmt, balance_sheet, cash_flow, chart_type, is
                 revenue_growth.reverse()
                 income_growth.reverse()
                 
-                # Create growth text labels
-                revenue_text = [f"+{g:.1f}%" if g > 0 else f"{g:.1f}%" if g != 0 else "" for g in revenue_growth]
-                income_text = [f"+{g:.1f}%" if g > 0 else f"{g:.1f}%" if g != 0 else "" for g in income_growth]
+                # Create growth text labels in Japanese format
+                revenue_text = []
+                income_text = []
+                
+                for g in revenue_growth:
+                    if g > 0:
+                        revenue_text.append(f"前年同期比+{g:.1f}%")
+                    elif g < 0:
+                        revenue_text.append(f"前年同期比{g:.1f}%")
+                    else:
+                        revenue_text.append("")
+                
+                for g in income_growth:
+                    if g > 0:
+                        income_text.append(f"前年同期比+{g:.1f}%")
+                    elif g < 0:
+                        income_text.append(f"前年同期比{g:.1f}%")
+                    else:
+                        income_text.append("")
                 
                 fig.add_trace(go.Bar(
                     x=dates,
@@ -136,7 +152,11 @@ def create_financial_chart(income_stmt, balance_sheet, cash_flow, chart_type, is
                     xaxis_title="期間",
                     yaxis_title="金額 (百万USD)",
                     height=400,
-                    barmode='group'
+                    barmode='group',
+                    yaxis=dict(
+                        tickformat=".0f",
+                        ticksuffix="百万"
+                    )
                 )
         
         elif chart_type == "assets_liabilities":
@@ -195,9 +215,25 @@ def create_financial_chart(income_stmt, balance_sheet, cash_flow, chart_type, is
                 assets_growth.reverse()
                 liabilities_growth.reverse()
                 
-                # Create growth text labels
-                assets_text = [f"+{g:.1f}%" if g > 0 else f"{g:.1f}%" if g != 0 else "" for g in assets_growth]
-                liabilities_text = [f"+{g:.1f}%" if g > 0 else f"{g:.1f}%" if g != 0 else "" for g in liabilities_growth]
+                # Create growth text labels in Japanese format
+                assets_text = []
+                liabilities_text = []
+                
+                for g in assets_growth:
+                    if g > 0:
+                        assets_text.append(f"前年同期比+{g:.1f}%")
+                    elif g < 0:
+                        assets_text.append(f"前年同期比{g:.1f}%")
+                    else:
+                        assets_text.append("")
+                
+                for g in liabilities_growth:
+                    if g > 0:
+                        liabilities_text.append(f"前年同期比+{g:.1f}%")
+                    elif g < 0:
+                        liabilities_text.append(f"前年同期比{g:.1f}%")
+                    else:
+                        liabilities_text.append("")
                 
                 fig.add_trace(go.Bar(
                     x=dates,
@@ -224,7 +260,11 @@ def create_financial_chart(income_stmt, balance_sheet, cash_flow, chart_type, is
                     xaxis_title="期間",
                     yaxis_title="金額 (百万USD)",
                     height=400,
-                    barmode='group'
+                    barmode='group',
+                    yaxis=dict(
+                        tickformat=".0f",
+                        ticksuffix="百万"
+                    )
                 )
         
         elif chart_type == "debt_to_assets":
@@ -283,8 +323,15 @@ def create_financial_chart(income_stmt, balance_sheet, cash_flow, chart_type, is
                 debt_ratio_data.reverse()
                 ratio_growth.reverse()
                 
-                # Create change text labels
-                ratio_text = [f"+{g:.1f}pt" if g > 0 else f"{g:.1f}pt" if g != 0 else "" for g in ratio_growth]
+                # Create change text labels in Japanese format
+                ratio_text = []
+                for g in ratio_growth:
+                    if g > 0:
+                        ratio_text.append(f"前年同期比+{g:.1f}ポイント")
+                    elif g < 0:
+                        ratio_text.append(f"前年同期比{g:.1f}ポイント")
+                    else:
+                        ratio_text.append("")
                 
                 fig.add_trace(go.Bar(
                     x=dates,
@@ -388,8 +435,15 @@ def create_financial_chart(income_stmt, balance_sheet, cash_flow, chart_type, is
                 ocf_data.reverse()
                 ocf_growth.reverse()
                 
-                # Create growth text labels
-                ocf_text = [f"+{g:.1f}%" if g > 0 else f"{g:.1f}%" if g != 0 else "" for g in ocf_growth]
+                # Create growth text labels in Japanese format
+                ocf_text = []
+                for g in ocf_growth:
+                    if g > 0:
+                        ocf_text.append(f"前年同期比+{g:.1f}%")
+                    elif g < 0:
+                        ocf_text.append(f"前年同期比{g:.1f}%")
+                    else:
+                        ocf_text.append("")
                 
                 fig.add_trace(go.Bar(
                     x=dates,
@@ -404,7 +458,15 @@ def create_financial_chart(income_stmt, balance_sheet, cash_flow, chart_type, is
                 if icf_data:
                     icf_data.reverse()
                     icf_growth.reverse()
-                    icf_text = [f"+{g:.1f}%" if g > 0 else f"{g:.1f}%" if g != 0 else "" for g in icf_growth]
+                    icf_text = []
+                    for g in icf_growth:
+                        if g > 0:
+                            icf_text.append(f"前年同期比+{g:.1f}%")
+                        elif g < 0:
+                            icf_text.append(f"前年同期比{g:.1f}%")
+                        else:
+                            icf_text.append("")
+                    
                     fig.add_trace(go.Bar(
                         x=dates,
                         y=icf_data,
@@ -418,7 +480,15 @@ def create_financial_chart(income_stmt, balance_sheet, cash_flow, chart_type, is
                 if fcf_data:
                     fcf_data.reverse()
                     fcf_growth.reverse()
-                    fcf_text = [f"+{g:.1f}%" if g > 0 else f"{g:.1f}%" if g != 0 else "" for g in fcf_growth]
+                    fcf_text = []
+                    for g in fcf_growth:
+                        if g > 0:
+                            fcf_text.append(f"前年同期比+{g:.1f}%")
+                        elif g < 0:
+                            fcf_text.append(f"前年同期比{g:.1f}%")
+                        else:
+                            fcf_text.append("")
+                    
                     fig.add_trace(go.Bar(
                         x=dates,
                         y=fcf_data,
@@ -434,7 +504,11 @@ def create_financial_chart(income_stmt, balance_sheet, cash_flow, chart_type, is
                     xaxis_title="期間",
                     yaxis_title="金額 (百万USD)",
                     height=400,
-                    barmode='group'
+                    barmode='group',
+                    yaxis=dict(
+                        tickformat=".0f",
+                        ticksuffix="百万"
+                    )
                 )
         
         fig.update_layout(
