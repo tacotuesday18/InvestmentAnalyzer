@@ -694,6 +694,10 @@ def init_financial_session_state():
         st.session_state.financial_current_ticker = None
     if 'financial_data' not in st.session_state:
         st.session_state.financial_data = None
+    if 'financial_period' not in st.session_state:
+        st.session_state.financial_period = "yearly"
+    if 'stored_financial_period' not in st.session_state:
+        st.session_state.stored_financial_period = "yearly"
 
 def should_reset_financial_analysis(ticker):
     return (st.session_state.financial_current_ticker != ticker or 
@@ -780,6 +784,7 @@ if should_analyze or (st.session_state.financial_analysis_completed and st.sessi
                     },
                     'ticker': selected_ticker
                 }
+                st.session_state.stored_financial_period = st.session_state.financial_period
                 st.session_state.financial_analysis_completed = True
                 
             except Exception as e:
@@ -849,9 +854,7 @@ if should_analyze or (st.session_state.financial_analysis_completed and st.sessi
                 if st.button("📆 年次データ", key="yearly_btn", use_container_width=True):
                     st.session_state.financial_period = "yearly"
             
-            # Initialize period if not set
-            if 'financial_period' not in st.session_state:
-                st.session_state.financial_period = "yearly"
+
             
             # Display current selection
             period_display = "四半期" if st.session_state.financial_period == "quarterly" else "年次"
