@@ -160,28 +160,9 @@ def create_financial_chart(income_stmt, balance_sheet, cash_flow, chart_type, is
                 income_growth.reverse()
                 
                 # Create growth text labels in Japanese format
-                revenue_text = []
-                income_text = []
-                
-                for i, g in enumerate(revenue_growth):
-                    if g > 0:
-                        revenue_text.append(f"前年同期比+{g:.1f}%")
-                    elif g < 0:
-                        revenue_text.append(f"前年同期比{g:.1f}%")
-                    elif i == len(revenue_growth) - 1:  # First/oldest period
-                        revenue_text.append("基準期間")
-                    else:
-                        revenue_text.append("N/A")
-                
-                for i, g in enumerate(income_growth):
-                    if g > 0:
-                        income_text.append(f"前年同期比+{g:.1f}%")
-                    elif g < 0:
-                        income_text.append(f"前年同期比{g:.1f}%")
-                    elif i == len(income_growth) - 1:  # First/oldest period
-                        income_text.append("基準期間")
-                    else:
-                        income_text.append("N/A")
+                # Remove all year-over-year growth text labels
+                revenue_text = [""] * len(revenue_data)
+                income_text = [""] * len(income_data)
                 
                 fig.add_trace(go.Bar(
                     x=dates,
@@ -274,28 +255,9 @@ def create_financial_chart(income_stmt, balance_sheet, cash_flow, chart_type, is
                 liabilities_growth.reverse()
                 
                 # Create growth text labels in Japanese format
-                assets_text = []
-                liabilities_text = []
-                
-                for i, g in enumerate(assets_growth):
-                    if g > 0:
-                        assets_text.append(f"前年同期比+{g:.1f}%")
-                    elif g < 0:
-                        assets_text.append(f"前年同期比{g:.1f}%")
-                    elif i == len(assets_growth) - 1:  # First/oldest period
-                        assets_text.append("基準期間")
-                    else:
-                        assets_text.append("N/A")
-                
-                for i, g in enumerate(liabilities_growth):
-                    if g > 0:
-                        liabilities_text.append(f"前年同期比+{g:.1f}%")
-                    elif g < 0:
-                        liabilities_text.append(f"前年同期比{g:.1f}%")
-                    elif i == len(liabilities_growth) - 1:  # First/oldest period
-                        liabilities_text.append("基準期間")
-                    else:
-                        liabilities_text.append("N/A")
+                # Remove all year-over-year growth text labels
+                assets_text = [""] * len(assets_data)
+                liabilities_text = [""] * len(liabilities_data)
                 
                 fig.add_trace(go.Bar(
                     x=dates,
@@ -385,17 +347,8 @@ def create_financial_chart(income_stmt, balance_sheet, cash_flow, chart_type, is
                 debt_ratio_data.reverse()
                 ratio_growth.reverse()
                 
-                # Create change text labels in Japanese format
-                ratio_text = []
-                for i, g in enumerate(ratio_growth):
-                    if g > 0:
-                        ratio_text.append(f"前年同期比+{g:.1f}ポイント")
-                    elif g < 0:
-                        ratio_text.append(f"前年同期比{g:.1f}ポイント")
-                    elif i == len(ratio_growth) - 1:  # First/oldest period
-                        ratio_text.append("基準期間")
-                    else:
-                        ratio_text.append("N/A")
+                # Remove all year-over-year growth text labels
+                ratio_text = [""] * len(debt_ratio_data)
                 
                 fig.add_trace(go.Bar(
                     x=dates,
@@ -500,16 +453,8 @@ def create_financial_chart(income_stmt, balance_sheet, cash_flow, chart_type, is
                 ocf_growth.reverse()
                 
                 # Create growth text labels in Japanese format
-                ocf_text = []
-                for i, g in enumerate(ocf_growth):
-                    if g > 0:
-                        ocf_text.append(f"前年同期比+{g:.1f}%")
-                    elif g < 0:
-                        ocf_text.append(f"前年同期比{g:.1f}%")
-                    elif i == len(ocf_growth) - 1:  # First/oldest period
-                        ocf_text.append("基準期間")
-                    else:
-                        ocf_text.append("N/A")
+                # Remove all year-over-year growth text labels
+                ocf_text = [""] * len(ocf_data)
                 
                 fig.add_trace(go.Bar(
                     x=dates,
@@ -524,16 +469,8 @@ def create_financial_chart(income_stmt, balance_sheet, cash_flow, chart_type, is
                 if icf_data:
                     icf_data.reverse()
                     icf_growth.reverse()
-                    icf_text = []
-                    for i, g in enumerate(icf_growth):
-                        if g > 0:
-                            icf_text.append(f"前年同期比+{g:.1f}%")
-                        elif g < 0:
-                            icf_text.append(f"前年同期比{g:.1f}%")
-                        elif i == len(icf_growth) - 1:  # First/oldest period
-                            icf_text.append("基準期間")
-                        else:
-                            icf_text.append("N/A")
+                    # Remove all year-over-year growth text labels
+                    icf_text = [""] * len(icf_data)
                     
                     fig.add_trace(go.Bar(
                         x=dates,
@@ -548,16 +485,8 @@ def create_financial_chart(income_stmt, balance_sheet, cash_flow, chart_type, is
                 if fcf_data:
                     fcf_data.reverse()
                     fcf_growth.reverse()
-                    fcf_text = []
-                    for i, g in enumerate(fcf_growth):
-                        if g > 0:
-                            fcf_text.append(f"前年同期比+{g:.1f}%")
-                        elif g < 0:
-                            fcf_text.append(f"前年同期比{g:.1f}%")
-                        elif i == len(fcf_growth) - 1:  # First/oldest period
-                            fcf_text.append("基準期間")
-                        else:
-                            fcf_text.append("N/A")
+                    # Remove all year-over-year growth text labels
+                    fcf_text = [""] * len(fcf_data)
                     
                     fig.add_trace(go.Bar(
                         x=dates,
