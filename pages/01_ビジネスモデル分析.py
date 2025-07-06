@@ -14,6 +14,7 @@ from gemini_analyzer import analyze_company_fundamentals
 from market_comparison import display_stock_market_comparison
 from session_state_manager import init_session_state, reset_fundamental_analysis, should_reset_fundamental_analysis
 from gemini_historical_metrics import create_historical_metrics_table_with_ai
+from logo_utils import display_logo_header, display_company_logo
 
 # Modern design CSS
 st.markdown("""
@@ -227,17 +228,20 @@ if should_analyze or (st.session_state.fundamental_analysis_completed and st.ses
     if st.session_state.fundamental_analysis_completed and st.session_state.fundamental_company_info:
         company_info = st.session_state.fundamental_company_info
         
+        # Display company logo header
+        display_logo_header(
+            selected_ticker, 
+            company_info['name'], 
+            f"長期投資家向け企業デューデリジェンス調査 - {company_info['sector']}"
+        )
+        
+        # Company analysis info section
         st.markdown(f"""
-        <div class="research-paper">
-            <h1 class="paper-title">{company_info['name']} ({selected_ticker})</h1>
-            <h2 class="paper-subtitle">長期投資家向け企業デューデリジェンス調査</h2>
-            
-            <div class="author-info">
-                <strong>分析日:</strong> {datetime.now().strftime('%Y年%m月%d日')}<br>
-                <strong>セクター:</strong> {company_info['sector']} | <strong>業界:</strong> {company_info['industry']}<br>
-                <strong>分析方針:</strong> 財務比率を使わない質的競争力評価<br>
-                <strong>データ源:</strong> Yahoo Finance
-            </div>
+        <div class="author-info">
+            <strong>分析日:</strong> {datetime.now().strftime('%Y年%m月%d日')}<br>
+            <strong>セクター:</strong> {company_info['sector']} | <strong>業界:</strong> {company_info['industry']}<br>
+            <strong>分析方針:</strong> 財務比率を使わない質的競争力評価<br>
+            <strong>データ源:</strong> Yahoo Finance
         </div>
         """, unsafe_allow_html=True)
         

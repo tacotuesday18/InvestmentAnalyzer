@@ -17,6 +17,7 @@ from comprehensive_market_stocks import get_all_market_stocks, get_stock_info_en
 from format_helpers import format_currency, format_large_number
 from stock_cache_manager import get_cached_financial_data, batch_process_stocks, stock_cache
 from stock_universe_updater import update_stock_universe_with_discoveries
+from logo_utils import display_logo_header, display_company_logo
 
 # Modern design CSS
 st.markdown("""
@@ -1115,7 +1116,8 @@ if ('search_results' in st.session_state and st.session_state['search_results'] 
             col1, col2, col3 = st.columns([2, 2, 1])
             
             with col1:
-                st.markdown(f"**{stock['ticker']} - {stock['name']}**")
+                # Display company logo with info
+                display_company_logo(stock['ticker'], stock['name'], size="medium")
                 st.markdown(f"セクター: {stock['sector']}")
                 st.markdown(f"現在株価: ${stock['current_price']:.2f}")
                 # Add company description

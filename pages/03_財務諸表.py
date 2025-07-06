@@ -11,6 +11,7 @@ import trafilatura
 from datetime import datetime
 import plotly.graph_objects as go
 import plotly.express as px
+from logo_utils import display_logo_header, display_company_logo
 
 # ページ設定は main app.py で処理済み
 
@@ -22,6 +23,59 @@ def format_japanese_number(value):
         return f"{value:.0f}百万"
     else:
         return f"{value:.1f}百万"
+
+def filter_completed_years_only(df):
+    """
+    Filter dataframe to only include completed years
+    Removes any year that hasn't finished yet (current year if not December)
+    """
+    if df is None or df.empty:
+        return df
+    
+    current_date = datetime.now()
+    current_year = current_date.year
+    
+    # If it's not December yet, exclude the current year
+    if current_date.month < 12:
+        cutoff_year = current_year - 1
+    else:
+        cutoff_year = current_year
+    
+    # Filter to only include completed years
+    if hasattr(df.index, 'year'):
+        return df[df.index.year <= cutoff_year]
+    elif hasattr(df.columns, 'year'):
+        valid_columns = [col for col in df.columns if hasattr(col, 'year') and col.year <= cutoff_year]
+        return df[valid_columns]
+    else:
+        # Try to parse year from string columns/index
+        try:
+            if df.index.dtype == 'object':
+                # Index contains year strings
+                valid_indices = []
+                for idx in df.index:
+                    try:
+                        year = int(str(idx)[:4])  # Extract first 4 digits as year
+                        if year <= cutoff_year:
+                            valid_indices.append(idx)
+                    except:
+                        continue
+                return df.loc[valid_indices]
+            elif df.columns.dtype == 'object':
+                # Columns contain year strings
+                valid_columns = []
+                for col in df.columns:
+                    try:
+                        year = int(str(col)[:4])  # Extract first 4 digits as year
+                        if year <= cutoff_year:
+                            valid_columns.append(col)
+                    except:
+                        continue
+                return df[valid_columns]
+        except:
+            pass
+    
+    return df
 
 def format_market_cap_japanese(market_cap_usd):
     """Format market cap for Japanese users with proper scale"""
@@ -866,14 +920,10 @@ if should_analyze or (st.session_state.financial_analysis_completed and st.sessi
                     balance_sheet = stock.balance_sheet
                     cash_flow = stock.cashflow
                     
-                    # Filter to only past years (not future estimates)
-                    current_year = datetime.now().year
-                    if not income_stmt.empty:
-                        income_stmt = income_stmt.loc[:, income_stmt.columns.year <= current_year]
-                    if not balance_sheet.empty:
-                        balance_sheet = balance_sheet.loc[:, balance_sheet.columns.year <= current_year]
-                    if not cash_flow.empty:
-                        cash_flow = cash_flow.loc[:, cash_flow.columns.year <= current_year]
+                    # Filter to only completed years (exclude current year if not December)
+                    income_stmt = filter_completed_years_only(income_stmt)
+                    balance_sheet = filter_completed_years_only(balance_sheet)
+                    cash_flow = filter_completed_years_only(cash_flow)
                 
                 # Get comprehensive financial data
                 auto_data = get_auto_financial_data(selected_ticker)
@@ -906,18 +956,20 @@ if should_analyze or (st.session_state.financial_analysis_completed and st.sessi
         company_info = financial_data['company_info']
         
         if auto_data:
-            # Display company header similar to business model page
+            # Display company logo header
+            display_logo_header(
+                selected_ticker, 
+                company_info['name'], 
+                f"詳細財務諸表分析 - {company_info['sector']}"
+            )
+            
+            # Company info section
             st.markdown(f"""
-            <div class="research-paper">
-                <h1 class="paper-title">{company_info['name']} ({selected_ticker})</h1>
-                <h2 class="paper-subtitle">詳細財務諸表分析</h2>
-                
-                <div class="author-info">
-                    <strong>分析日:</strong> {datetime.now().strftime('%Y年%m月%d日')}<br>
-                    <strong>セクター:</strong> {company_info['sector']} | <strong>業界:</strong> {company_info['industry']}<br>
-                    <strong>データ源:</strong> Yahoo Finance<br>
-                    <strong>現在株価:</strong> ${auto_data['current_price']:.2f}
-                </div>
+            <div class="author-info">
+                <strong>分析日:</strong> {datetime.now().strftime('%Y年%m月%d日')}<br>
+                <strong>セクター:</strong> {company_info['sector']} | <strong>業界:</strong> {company_info['industry']}<br>
+                <strong>データ源:</strong> Yahoo Finance<br>
+                <strong>現在株価:</strong> ${auto_data['current_price']:.2f}
             </div>
             """, unsafe_allow_html=True)
             
