@@ -835,11 +835,29 @@ if should_analyze or (st.session_state.financial_analysis_completed and st.sessi
                     income_stmt = stock.quarterly_financials
                     balance_sheet = stock.quarterly_balance_sheet
                     cash_flow = stock.quarterly_cashflow
+                    
+                    # Filter to only past quarters (not future estimates)
+                    current_date = datetime.now()
+                    if not income_stmt.empty:
+                        income_stmt = income_stmt.loc[:, income_stmt.columns <= current_date]
+                    if not balance_sheet.empty:
+                        balance_sheet = balance_sheet.loc[:, balance_sheet.columns <= current_date]
+                    if not cash_flow.empty:
+                        cash_flow = cash_flow.loc[:, cash_flow.columns <= current_date]
                 else:
                     # Get yearly financial statements
                     income_stmt = stock.financials
                     balance_sheet = stock.balance_sheet
                     cash_flow = stock.cashflow
+                    
+                    # Filter to only past years (not future estimates)
+                    current_year = datetime.now().year
+                    if not income_stmt.empty:
+                        income_stmt = income_stmt.loc[:, income_stmt.columns.year <= current_year]
+                    if not balance_sheet.empty:
+                        balance_sheet = balance_sheet.loc[:, balance_sheet.columns.year <= current_year]
+                    if not cash_flow.empty:
+                        cash_flow = cash_flow.loc[:, cash_flow.columns.year <= current_year]
                 
                 # Get comprehensive financial data
                 auto_data = get_auto_financial_data(selected_ticker)
@@ -949,11 +967,29 @@ if should_analyze or (st.session_state.financial_analysis_completed and st.sessi
                         balance_sheet = stock.quarterly_balance_sheet
                         cash_flow = stock.quarterly_cashflow
                         period_label = "四半期"
+                        
+                        # Filter to only past quarters (not future estimates)
+                        current_date = datetime.now()
+                        if not income_stmt.empty:
+                            income_stmt = income_stmt.loc[:, income_stmt.columns <= current_date]
+                        if not balance_sheet.empty:
+                            balance_sheet = balance_sheet.loc[:, balance_sheet.columns <= current_date]
+                        if not cash_flow.empty:
+                            cash_flow = cash_flow.loc[:, cash_flow.columns <= current_date]
                     else:
                         income_stmt = stock.financials
                         balance_sheet = stock.balance_sheet
                         cash_flow = stock.cashflow
                         period_label = "年次"
+                        
+                        # Filter to only past years (not future estimates)
+                        current_year = datetime.now().year
+                        if not income_stmt.empty:
+                            income_stmt = income_stmt.loc[:, income_stmt.columns.year <= current_year]
+                        if not balance_sheet.empty:
+                            balance_sheet = balance_sheet.loc[:, balance_sheet.columns.year <= current_year]
+                        if not cash_flow.empty:
+                            cash_flow = cash_flow.loc[:, cash_flow.columns.year <= current_year]
                     
                     # Update stored data and period
                     st.session_state.financial_data['income_stmt'] = income_stmt
@@ -991,7 +1027,9 @@ if should_analyze or (st.session_state.financial_analysis_completed and st.sessi
                     for eng_item, jp_item in income_items.items():
                         if eng_item in income_stmt.index:
                             row_data = {"項目": jp_item}
-                            for col in income_stmt.columns[:4]:  # Latest 4 periods
+                            # Get only actual historical periods (max 4 most recent)
+                            valid_columns = [col for col in income_stmt.columns if col <= datetime.now()][:4]
+                            for col in valid_columns:
                                 # Format date based on period type
                                 if current_period == "quarterly":
                                     quarter = (col.month - 1) // 3 + 1
@@ -1049,7 +1087,9 @@ if should_analyze or (st.session_state.financial_analysis_completed and st.sessi
                     for eng_item, jp_item in balance_items.items():
                         if eng_item in balance_sheet.index:
                             row_data = {"項目": jp_item}
-                            for col in balance_sheet.columns[:4]:  # Latest 4 periods
+                            # Get only actual historical periods (max 4 most recent)
+                            valid_columns = [col for col in balance_sheet.columns if col <= datetime.now()][:4]
+                            for col in valid_columns:
                                 # Format date based on period type
                                 if current_period == "quarterly":
                                     quarter = (col.month - 1) // 3 + 1
@@ -1102,7 +1142,9 @@ if should_analyze or (st.session_state.financial_analysis_completed and st.sessi
                     for eng_item, jp_item in cf_items.items():
                         if eng_item in cash_flow.index:
                             row_data = {"項目": jp_item}
-                            for col in cash_flow.columns[:4]:  # Latest 4 periods
+                            # Get only actual historical periods (max 4 most recent)
+                            valid_columns = [col for col in cash_flow.columns if col <= datetime.now()][:4]
+                            for col in valid_columns:
                                 # Format date based on period type
                                 if current_period == "quarterly":
                                     quarter = (col.month - 1) // 3 + 1
