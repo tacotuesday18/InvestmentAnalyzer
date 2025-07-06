@@ -14,75 +14,279 @@ import plotly.express as px
 
 # ページ設定は main app.py で処理済み
 
-def create_trend_chart(data, title, metric_name, is_quarterly=False):
-    """Create simple bar chart showing business trends with YoY growth"""
-    if data.empty:
-        return None
-    
-    # Get the specific metric data
-    if metric_name not in data.index:
-        return None
-    
-    metric_data = data.loc[metric_name]
-    
-    # Prepare data for chart
-    dates = []
-    values = []
-    yoy_growth = []
-    
-    for i, col in enumerate(data.columns[:6]):  # Latest 6 periods
-        if is_quarterly:
-            dates.append(col.strftime('%Y Q%q'))
-        else:
-            dates.append(col.strftime('%Y'))
-        
-        value = metric_data[col] if not pd.isna(metric_data[col]) else 0
-        values.append(value)
-        
-        # Calculate YoY growth
-        if i < len(data.columns) - 1:  # Compare with previous year/quarter
-            current = metric_data[col] if not pd.isna(metric_data[col]) else 0
-            previous = metric_data[data.columns[i + 1]] if not pd.isna(metric_data[data.columns[i + 1]]) else 0
-            if previous != 0:
-                growth = ((current - previous) / abs(previous)) * 100
-                yoy_growth.append(growth)
-            else:
-                yoy_growth.append(0)
-        else:
-            yoy_growth.append(0)
-    
-    # Reverse to show chronological order
-    dates.reverse()
-    values.reverse()
-    yoy_growth.reverse()
-    
-    # Create chart
+def create_financial_chart(income_stmt, balance_sheet, cash_flow, chart_type, is_quarterly=False):
+    """Create financial charts based on the selected type"""
     fig = go.Figure()
     
-    # Add bars with color based on growth
-    colors = ['#2E8B57' if g > 0 else '#DC143C' if g < 0 else '#808080' for g in yoy_growth]
-    
-    fig.add_trace(go.Bar(
-        x=dates,
-        y=values,
-        name=metric_name,
-        marker_color=colors,
-        text=[f"{g:+.1f}%" if g != 0 else "" for g in yoy_growth],
-        textposition='outside',
-        textfont=dict(size=10, color='black')
-    ))
-    
-    fig.update_layout(
-        title=f"{title} - トレンド分析",
-        xaxis_title="期間",
-        yaxis_title="金額 (USD)",
-        height=300,
-        showlegend=False,
-        template="plotly_white",
-        margin=dict(t=50, b=50, l=50, r=50)
-    )
-    
-    return fig
+    try:
+        if chart_type == "revenue_income":
+            # Revenue and Net Income chart
+            revenue_data = []
+            income_data = []
+            dates = []
+            
+            # Get revenue data
+            revenue_key = None
+            for key in ['Total Revenue', 'Revenue']:
+                if key in income_stmt.index:
+                    revenue_key = key
+                    break
+            
+            # Get net income data
+            income_key = None
+            for key in ['Net Income', 'Net Income Common Stockholders']:
+                if key in income_stmt.index:
+                    income_key = key
+                    break
+            
+            if revenue_key and income_key:
+                for col in income_stmt.columns:
+                    if is_quarterly:
+                        # Format quarterly dates
+                        quarter = (col.month - 1) // 3 + 1
+                        dates.append(f"Q{quarter} {col.year}")
+                    else:
+                        dates.append(str(col.year))
+                    
+                    revenue_val = income_stmt.loc[revenue_key, col] if not pd.isna(income_stmt.loc[revenue_key, col]) else 0
+                    income_val = income_stmt.loc[income_key, col] if not pd.isna(income_stmt.loc[income_key, col]) else 0
+                    
+                    revenue_data.append(revenue_val / 1e6)  # Convert to millions
+                    income_data.append(income_val / 1e6)   # Convert to millions
+                
+                # Reverse to show chronological order
+                dates.reverse()
+                revenue_data.reverse()
+                income_data.reverse()
+                
+                fig.add_trace(go.Bar(
+                    x=dates,
+                    y=revenue_data,
+                    name='Revenue',
+                    marker_color='orange',
+                    yaxis='y'
+                ))
+                
+                fig.add_trace(go.Bar(
+                    x=dates,
+                    y=income_data,
+                    name='Net Income',
+                    marker_color='black',
+                    yaxis='y'
+                ))
+                
+                fig.update_layout(
+                    title="売上高と純利益",
+                    xaxis_title="期間",
+                    yaxis_title="金額 (M USD)",
+                    height=400,
+                    barmode='group'
+                )
+        
+        elif chart_type == "assets_liabilities":
+            # Assets and Liabilities chart
+            assets_data = []
+            liabilities_data = []
+            dates = []
+            
+            assets_key = None
+            for key in ['Total Assets', 'Total Assets']:
+                if key in balance_sheet.index:
+                    assets_key = key
+                    break
+                    
+            liabilities_key = None
+            for key in ['Total Liabilities Net Minority Interest', 'Total Liabilities', 'Total Liab']:
+                if key in balance_sheet.index:
+                    liabilities_key = key
+                    break
+            
+            if assets_key and liabilities_key:
+                for col in balance_sheet.columns:
+                    if is_quarterly:
+                        quarter = (col.month - 1) // 3 + 1
+                        dates.append(f"Q{quarter} {col.year}")
+                    else:
+                        dates.append(str(col.year))
+                    
+                    assets_val = balance_sheet.loc[assets_key, col] if not pd.isna(balance_sheet.loc[assets_key, col]) else 0
+                    liabilities_val = balance_sheet.loc[liabilities_key, col] if not pd.isna(balance_sheet.loc[liabilities_key, col]) else 0
+                    
+                    assets_data.append(assets_val / 1e6)
+                    liabilities_data.append(liabilities_val / 1e6)
+                
+                dates.reverse()
+                assets_data.reverse()
+                liabilities_data.reverse()
+                
+                fig.add_trace(go.Bar(
+                    x=dates,
+                    y=assets_data,
+                    name='Total Assets',
+                    marker_color='blue'
+                ))
+                
+                fig.add_trace(go.Bar(
+                    x=dates,
+                    y=liabilities_data,
+                    name='Total Liabilities',
+                    marker_color='red'
+                ))
+                
+                fig.update_layout(
+                    title="総資産と総負債",
+                    xaxis_title="期間",
+                    yaxis_title="金額 (M USD)",
+                    height=400,
+                    barmode='group'
+                )
+        
+        elif chart_type == "debt_to_assets":
+            # Debt to Assets ratio chart
+            debt_ratio_data = []
+            dates = []
+            
+            assets_key = None
+            for key in ['Total Assets']:
+                if key in balance_sheet.index:
+                    assets_key = key
+                    break
+                    
+            liabilities_key = None
+            for key in ['Total Liabilities Net Minority Interest', 'Total Liabilities', 'Total Liab']:
+                if key in balance_sheet.index:
+                    liabilities_key = key
+                    break
+            
+            if assets_key and liabilities_key:
+                for col in balance_sheet.columns:
+                    if is_quarterly:
+                        quarter = (col.month - 1) // 3 + 1
+                        dates.append(f"Q{quarter} {col.year}")
+                    else:
+                        dates.append(str(col.year))
+                    
+                    assets_val = balance_sheet.loc[assets_key, col] if not pd.isna(balance_sheet.loc[assets_key, col]) else 0
+                    liabilities_val = balance_sheet.loc[liabilities_key, col] if not pd.isna(balance_sheet.loc[liabilities_key, col]) else 0
+                    
+                    if assets_val > 0:
+                        ratio = (liabilities_val / assets_val) * 100
+                    else:
+                        ratio = 0
+                    debt_ratio_data.append(ratio)
+                
+                dates.reverse()
+                debt_ratio_data.reverse()
+                
+                fig.add_trace(go.Bar(
+                    x=dates,
+                    y=debt_ratio_data,
+                    name='Debt to Assets Ratio',
+                    marker_color='purple'
+                ))
+                
+                fig.update_layout(
+                    title="負債比率",
+                    xaxis_title="期間",
+                    yaxis_title="比率 (%)",
+                    height=400
+                )
+        
+        elif chart_type == "cash_flow":
+            # Cash Flow chart
+            ocf_data = []
+            icf_data = []
+            fcf_data = []
+            dates = []
+            
+            # Find operating cash flow
+            ocf_key = None
+            for key in ['Operating Cash Flow', 'Total Cash From Operating Activities', 'Cash Flow From Operating Activities']:
+                if key in cash_flow.index:
+                    ocf_key = key
+                    break
+            
+            # Find investing cash flow
+            icf_key = None
+            for key in ['Investing Cash Flow', 'Total Cash From Investing Activities', 'Cash Flow From Investing Activities']:
+                if key in cash_flow.index:
+                    icf_key = key
+                    break
+            
+            # Find free cash flow
+            fcf_key = None
+            for key in ['Free Cash Flow']:
+                if key in cash_flow.index:
+                    fcf_key = key
+                    break
+            
+            if ocf_key:
+                for col in cash_flow.columns:
+                    if is_quarterly:
+                        quarter = (col.month - 1) // 3 + 1
+                        dates.append(f"Q{quarter} {col.year}")
+                    else:
+                        dates.append(str(col.year))
+                    
+                    ocf_val = cash_flow.loc[ocf_key, col] if not pd.isna(cash_flow.loc[ocf_key, col]) else 0
+                    ocf_data.append(ocf_val / 1e6)
+                    
+                    if icf_key:
+                        icf_val = cash_flow.loc[icf_key, col] if not pd.isna(cash_flow.loc[icf_key, col]) else 0
+                        icf_data.append(icf_val / 1e6)
+                    
+                    if fcf_key:
+                        fcf_val = cash_flow.loc[fcf_key, col] if not pd.isna(cash_flow.loc[fcf_key, col]) else 0
+                        fcf_data.append(fcf_val / 1e6)
+                
+                dates.reverse()
+                ocf_data.reverse()
+                
+                fig.add_trace(go.Bar(
+                    x=dates,
+                    y=ocf_data,
+                    name='Operating Cash Flow',
+                    marker_color='green'
+                ))
+                
+                if icf_data:
+                    icf_data.reverse()
+                    fig.add_trace(go.Bar(
+                        x=dates,
+                        y=icf_data,
+                        name='Investing Cash Flow',
+                        marker_color='orange'
+                    ))
+                
+                if fcf_data:
+                    fcf_data.reverse()
+                    fig.add_trace(go.Bar(
+                        x=dates,
+                        y=fcf_data,
+                        name='Free Cash Flow',
+                        marker_color='blue'
+                    ))
+                
+                fig.update_layout(
+                    title="キャッシュフロー",
+                    xaxis_title="期間",
+                    yaxis_title="金額 (M USD)",
+                    height=400,
+                    barmode='group'
+                )
+        
+        fig.update_layout(
+            template="plotly_white",
+            margin=dict(t=50, b=50, l=50, r=50),
+            showlegend=True,
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+        )
+        
+        return fig
+        
+    except Exception as e:
+        st.error(f"チャート作成エラー: {str(e)}")
+        return None
 
 # TravelPerk-style CSS for consistent design
 st.markdown("""
@@ -537,22 +741,7 @@ if should_analyze or (st.session_state.financial_analysis_completed and st.sessi
                         income_df = pd.DataFrame(income_data)
                         st.dataframe(income_df, use_container_width=True, hide_index=True)
                         
-                        # Add trend charts for key metrics
-                        st.markdown("#### 📊 主要指標のトレンド分析")
-                        
-                        # Revenue trend chart
-                        if 'Total Revenue' in income_stmt.index:
-                            is_quarterly = (st.session_state.financial_period == "quarterly")
-                            revenue_chart = create_trend_chart(income_stmt, "売上高", 'Total Revenue', is_quarterly)
-                            if revenue_chart:
-                                st.plotly_chart(revenue_chart, use_container_width=True)
-                        
-                        # Net Income trend chart  
-                        if 'Net Income' in income_stmt.index:
-                            is_quarterly = (st.session_state.financial_period == "quarterly")
-                            profit_chart = create_trend_chart(income_stmt, "純利益", 'Net Income', is_quarterly)
-                            if profit_chart:
-                                st.plotly_chart(profit_chart, use_container_width=True)
+
                     else:
                         st.warning("損益計算書データが利用できません")
                 else:
@@ -601,25 +790,7 @@ if should_analyze or (st.session_state.financial_analysis_completed and st.sessi
                         balance_df = pd.DataFrame(balance_data)
                         st.dataframe(balance_df, use_container_width=True, hide_index=True)
                         
-                        # Add trend charts for key balance sheet metrics
-                        st.markdown("#### 📊 主要指標のトレンド分析")
-                        
-                        # Total Assets trend chart
-                        if 'Total Assets' in balance_sheet.index:
-                            is_quarterly = (st.session_state.financial_period == "quarterly")
-                            assets_chart = create_trend_chart(balance_sheet, "総資産", 'Total Assets', is_quarterly)
-                            if assets_chart:
-                                st.plotly_chart(assets_chart, use_container_width=True)
-                        
-                        # Total Equity trend chart
-                        equity_keys = ['Total Equity Gross Minority Interest', 'Stockholders Equity', 'Total Stockholders Equity']
-                        for key in equity_keys:
-                            if key in balance_sheet.index:
-                                is_quarterly = (st.session_state.financial_period == "quarterly")
-                                equity_chart = create_trend_chart(balance_sheet, "株主資本", key, is_quarterly)
-                                if equity_chart:
-                                    st.plotly_chart(equity_chart, use_container_width=True)
-                                break
+
                     else:
                         st.warning("貸借対照表データが利用できません")
                 else:
@@ -666,29 +837,54 @@ if should_analyze or (st.session_state.financial_analysis_completed and st.sessi
                         cf_df = pd.DataFrame(cf_data)
                         st.dataframe(cf_df, use_container_width=True, hide_index=True)
                         
-                        # Add trend charts for key cash flow metrics
-                        st.markdown("#### 📊 主要指標のトレンド分析")
-                        
-                        # Operating Cash Flow trend chart
-                        cf_keys = ['Operating Cash Flow', 'Total Cash From Operating Activities']
-                        for key in cf_keys:
-                            if key in cash_flow.index:
-                                is_quarterly = (st.session_state.financial_period == "quarterly")
-                                ocf_chart = create_trend_chart(cash_flow, "営業キャッシュフロー", key, is_quarterly)
-                                if ocf_chart:
-                                    st.plotly_chart(ocf_chart, use_container_width=True)
-                                break
-                        
-                        # Free Cash Flow trend chart
-                        if 'Free Cash Flow' in cash_flow.index:
-                            is_quarterly = (st.session_state.financial_period == "quarterly")
-                            fcf_chart = create_trend_chart(cash_flow, "フリーキャッシュフロー", 'Free Cash Flow', is_quarterly)
-                            if fcf_chart:
-                                st.plotly_chart(fcf_chart, use_container_width=True)
+
                     else:
                         st.warning("キャッシュフロー計算書データが利用できません")
                 else:
                     st.warning("キャッシュフロー計算書データを取得できませんでした")
+                
+                st.markdown("</div>", unsafe_allow_html=True)
+                
+                # Consolidated Chart Section
+                st.markdown("<div class='card'>", unsafe_allow_html=True)
+                st.markdown("### 📊 財務トレンドチャート")
+                
+                # Chart type selector
+                chart_tabs = st.tabs(["売上高・純利益", "資産・負債", "負債比率", "キャッシュフロー"])
+                
+                is_quarterly = (st.session_state.financial_period == "quarterly")
+                
+                with chart_tabs[0]:
+                    # Revenue and Net Income Chart
+                    chart = create_financial_chart(income_stmt, balance_sheet, cash_flow, "revenue_income", is_quarterly)
+                    if chart:
+                        st.plotly_chart(chart, use_container_width=True)
+                    else:
+                        st.info("売上高・純利益データが不足しています")
+                
+                with chart_tabs[1]:
+                    # Assets and Liabilities Chart
+                    chart = create_financial_chart(income_stmt, balance_sheet, cash_flow, "assets_liabilities", is_quarterly)
+                    if chart:
+                        st.plotly_chart(chart, use_container_width=True)
+                    else:
+                        st.info("資産・負債データが不足しています")
+                
+                with chart_tabs[2]:
+                    # Debt to Assets Ratio Chart
+                    chart = create_financial_chart(income_stmt, balance_sheet, cash_flow, "debt_to_assets", is_quarterly)
+                    if chart:
+                        st.plotly_chart(chart, use_container_width=True)
+                    else:
+                        st.info("負債比率データが不足しています")
+                
+                with chart_tabs[3]:
+                    # Cash Flow Chart
+                    chart = create_financial_chart(income_stmt, balance_sheet, cash_flow, "cash_flow", is_quarterly)
+                    if chart:
+                        st.plotly_chart(chart, use_container_width=True)
+                    else:
+                        st.info("キャッシュフローデータが不足しています")
                 
                 st.markdown("</div>", unsafe_allow_html=True)
                 
