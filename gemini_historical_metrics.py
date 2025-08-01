@@ -14,8 +14,21 @@ from google.genai import types
 
 # Initialize Gemini client (prioritize GOOGLE_API_KEY if available)
 api_key = os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY")
-client = genai.Client(api_key=api_key) if api_key else None
+client = None
+if api_key:
+    try:
+        client = genai.Client(api_key=api_key)
+    except Exception as e:
+        print(f"Failed to initialize Gemini client: {e}")
+        client = None
 
+
+def _check_client():
+    """Check if Gemini client is properly initialized"""
+    global client
+    if client is None:
+        raise Exception("Gemini API client is not initialized. Please check your API key configuration.")
+    return client
 
 def generate_historical_metrics_with_ai(ticker, current_pe=None, current_pb=None, current_ps=None):
     """
@@ -23,6 +36,7 @@ def generate_historical_metrics_with_ai(ticker, current_pe=None, current_pb=None
     Returns realistic historical data for 1, 3, 5, and 10 year periods
     """
     try:
+        gemini_client = _check_client()
         # Prepare current metrics context
         current_context = ""
         if current_pe:
@@ -58,7 +72,7 @@ Return ONLY valid JSON with these exact keys (all values must be positive number
 
 Generate realistic values appropriate for {ticker}'s sector and market cap. The market_context must be written in Japanese and provide professional analysis of the historical valuation trends. Ensure ALL numeric values are positive."""
 
-        response = client.models.generate_content(
+        response = gemini_client.models.generate_content(
             model="gemini-2.5-flash",
             contents=prompt,
             config=types.GenerateContentConfig(
@@ -286,6 +300,7 @@ def extract_quarterly_business_developments_with_ai(ticker, quarter_info="latest
     Extract specific quarterly business developments using Gemini API
     """
     try:
+        gemini_client = _check_client()
         prompt = f"""Generate realistic quarterly business developments for {ticker} in Japanese language based on typical tech company quarterly updates.
 
 Return JSON with specific business developments in Japanese:
@@ -303,7 +318,7 @@ Return JSON with specific business developments in Japanese:
 
 Generate realistic content in Japanese appropriate for {ticker}'s industry sector. All content must be in Japanese."""
 
-        response = client.models.generate_content(
+        response = gemini_client.models.generate_content(
             model="gemini-2.5-flash",
             contents=prompt,
             config=types.GenerateContentConfig(
@@ -350,6 +365,7 @@ def generate_qa_section_analysis_with_ai(ticker):
     Generate detailed Q&A section analysis using Gemini API
     """
     try:
+        gemini_client = _check_client()
         system_prompt = "You are an expert in earnings call analysis, specializing in Q&A section insights."
         
         prompt = f"""Analyze the most recent earnings call Q&A section for {ticker} and provide insights in Japanese language:
@@ -374,7 +390,7 @@ def generate_qa_section_analysis_with_ai(ticker):
 Q&Aの対話的性質と提起された具体的な懸念に焦点を当ててください。
 JSON形式のみで回答してください。すべて日本語で記述してください。"""
 
-        response = client.models.generate_content(
+        response = gemini_client.models.generate_content(
             model="gemini-2.5-flash",
             contents=[
                 types.Content(role="user", parts=[types.Part(text=prompt)])

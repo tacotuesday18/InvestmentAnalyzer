@@ -648,7 +648,7 @@ elif st.session_state.current_page == "analysis":
     st.markdown("### 企業の本質的価値を分析し、投資判断をサポート")
     
     # Execute the analysis page functionality
-    exec(open("pages/01_企業分析.py").read())
+    exec(open("pages/01_ビジネスモデル分析.py").read())
         
 elif st.session_state.current_page == "compare":
     # 銘柄比較ページ  

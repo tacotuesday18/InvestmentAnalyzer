@@ -8,13 +8,27 @@ from twitter_sentiment_analyzer import TwitterDueDiligenceAnalyzer
 
 # Initialize Gemini client (prioritize GOOGLE_API_KEY if available)
 api_key = os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY")
-client = genai.Client(api_key=api_key)
+client = None
+if api_key:
+    try:
+        client = genai.Client(api_key=api_key)
+    except Exception as e:
+        print(f"Failed to initialize Gemini client: {e}")
+        client = None
+
+def _check_client():
+    """Check if Gemini client is properly initialized"""
+    global client
+    if client is None:
+        raise Exception("Gemini API client is not initialized. Please check your API key configuration.")
+    return client
 
 def analyze_company_fundamentals(ticker):
     """
     Generate comprehensive fundamental analysis report using Gemini AI
     """
     try:
+        gemini_client = _check_client()
         # Get company data
         stock = yf.Ticker(ticker)
         info = stock.info
@@ -166,7 +180,7 @@ def analyze_company_fundamentals(ticker):
 特に、この企業の独自のビジネスモデルがなぜ持続可能な競争優位性を生み出すのかを詳細に説明してください。
 """
 
-        response = client.models.generate_content(
+        response = gemini_client.models.generate_content(
             model="gemini-2.0-flash-exp",
             contents=prompt
         )
@@ -182,6 +196,7 @@ def translate_earnings_transcript(transcript_text):
     Translate and analyze earnings call transcript using Gemini
     """
     try:
+        gemini_client = _check_client()
         if not transcript_text or len(transcript_text.strip()) < 100:
             return "翻訳対象のテキストが不十分です。"
         
@@ -206,7 +221,7 @@ def translate_earnings_transcript(transcript_text):
 翻訳は自然な日本語で、投資判断に役立つ情報を重視してください。
 """
 
-        response = client.models.generate_content(
+        response = gemini_client.models.generate_content(
             model="gemini-2.0-flash-exp",
             contents=prompt
         )
@@ -504,6 +519,7 @@ def generate_business_insights(ticker):
     Generate comprehensive business insights and financial analysis
     """
     try:
+        gemini_client = _check_client()
         # Get real financial data from Yahoo Finance
         stock = yf.Ticker(ticker)
         info = stock.info
@@ -583,7 +599,7 @@ def generate_business_insights(ticker):
 各セクションで具体的な数値を使用し、日本の個人投資家にとって実用的で理解しやすい分析を提供してください。この企業への投資を検討する際の重要な要因を明確に説明してください。
 """
 
-        response = client.models.generate_content(
+        response = gemini_client.models.generate_content(
             model="gemini-2.0-flash-exp",
             contents=prompt
         )
@@ -599,6 +615,7 @@ def analyze_historical_metrics_insight(ticker, metrics_data):
     Provide AI insights on historical metrics trends
     """
     try:
+        gemini_client = _check_client()
         if not metrics_data or len(metrics_data) == 0:
             return "分析対象のデータがありません。"
         
@@ -626,7 +643,7 @@ def analyze_historical_metrics_insight(ticker, metrics_data):
 簡潔で実用的な分析を提供してください。
 """
 
-        response = client.models.generate_content(
+        response = gemini_client.models.generate_content(
             model="gemini-2.0-flash-exp", 
             contents=prompt
         )
@@ -642,6 +659,7 @@ def generate_earnings_summary(ticker, financial_data):
     Generate earnings analysis summary using Gemini
     """
     try:
+        gemini_client = _check_client()
         prompt = f"""
 {ticker}の最新決算データに基づいて、包括的な決算分析レポートを作成してください：
 
@@ -664,7 +682,7 @@ def generate_earnings_summary(ticker, financial_data):
 実用的で分かりやすい分析を提供してください。
 """
 
-        response = client.models.generate_content(
+        response = gemini_client.models.generate_content(
             model="gemini-2.0-flash-exp",
             contents=prompt
         )
@@ -680,6 +698,7 @@ def generate_comprehensive_financial_analysis(ticker, company_name, financial_da
     Generate comprehensive financial analysis using Gemini AI for financial statements page
     """
     try:
+        gemini_client = _check_client()
         prompt = f"""
 {company_name} ({ticker})の詳細財務諸表分析を日本語で作成してください。
 
@@ -729,7 +748,7 @@ ROA: {financial_data.get('roa', 0):.2%}
 数値は適切にフォーマットし、日本の投資家にとって理解しやすい表現を使用してください。
 """
 
-        response = client.models.generate_content(
+        response = gemini_client.models.generate_content(
             model="gemini-2.5-flash",
             contents=prompt
         )

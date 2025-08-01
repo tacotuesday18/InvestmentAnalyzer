@@ -10,7 +10,13 @@ from twitter_sentiment_analyzer import TwitterDueDiligenceAnalyzer
 
 # Initialize OpenAI client
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-openai_client = OpenAI(api_key=OPENAI_API_KEY)
+openai_client = None
+if OPENAI_API_KEY:
+    try:
+        openai_client = OpenAI(api_key=OPENAI_API_KEY)
+    except Exception as e:
+        print(f"Failed to initialize OpenAI client: {e}")
+        openai_client = None
 
 
 def safe_json_parse(response):

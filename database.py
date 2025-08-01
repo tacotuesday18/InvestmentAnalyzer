@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker, relationship
 import datetime
 
 # データベース接続
-DATABASE_URL = os.environ["DATABASE_URL"]
+DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./investment_analyzer.db")
 engine = create_engine(DATABASE_URL)
 Base = declarative_base()
 Session = sessionmaker(bind=engine)
