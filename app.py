@@ -2,8 +2,22 @@ import streamlit as st
 import datetime
 import os
 import json
-from auth import authenticate_user, create_user
-from payment import PaymentProcessor
+
+# Try to import auth functions, use dummy functions if not available
+try:
+    from auth import authenticate_user, create_user
+except ImportError:
+    st.warning("認証モジュールが見つかりません。デモモードで実行中...")
+    def authenticate_user(username, password):
+        return {"success": False, "message": "認証機能は現在利用できません"}
+    def create_user(username, email, password):
+        return {"success": False, "message": "登録機能は現在利用できません"}
+
+# Try to import payment processor
+try:
+    from payment import PaymentProcessor
+except ImportError:
+    PaymentProcessor = None
 
 # ページ設定
 st.set_page_config(
@@ -250,6 +264,55 @@ st.markdown("""
 </script>
 """, unsafe_allow_html=True)
 
+# Initialize session state for auth
+if 'authenticated' not in st.session_state:
+    st.session_state.authenticated = False
+if 'user' not in st.session_state:
+    st.session_state.user = None
+if 'show_auth_modal' not in st.session_state:
+    st.session_state.show_auth_modal = False
+
+# Top right auth button
+st.markdown("""
+<style>
+    .auth-button {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        background: white;
+        color: #667eea;
+        padding: 12px 24px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 14px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid #667eea;
+    }
+    .auth-button:hover {
+        background: #667eea;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(102, 126, 234, 0.3);
+    }
+    .user-badge {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 14px;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+</style>
+""", unsafe_allow_html=True)
+
 # Add navigation in sidebar
 with st.sidebar:
     st.markdown("""
@@ -263,11 +326,118 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
     
+    # Show user info if authenticated
+    if st.session_state.authenticated and st.session_state.user:
+        st.markdown(f"""
+        <div style="background: rgba(255,255,255,0.2); padding: 1rem; border-radius: 10px; margin-bottom: 1rem;">
+            <div style="color: white; font-size: 14px; font-weight: 600; margin-bottom: 0.5rem;">
+                ログイン中: {st.session_state.user.get('username', 'ユーザー')}
+            </div>
+            <div style="color: rgba(255,255,255,0.8); font-size: 12px;">
+                プラン: {st.session_state.user.get('subscription_plan', 'free').upper()}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        if st.button("ログアウト", key="sidebar_logout", use_container_width=True):
+            st.session_state.authenticated = False
+            st.session_state.user = None
+            st.rerun()
+    
     st.markdown("""
     <div style="color: white; padding: 0 0.5rem; font-size: 13px; line-height: 1.5; margin-bottom: 1rem;">
         左のメニューから各ツールにアクセスできます
     </div>
     """, unsafe_allow_html=True)
+
+# Top auth button section
+col1, col2, col3 = st.columns([1, 6, 1])
+with col3:
+    if st.session_state.authenticated:
+        st.markdown(f"""
+        <div class="user-badge">
+            👤 {st.session_state.user.get('username', 'ユーザー')}
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        if st.button("ログイン / 登録", key="top_auth_button", use_container_width=True):
+            st.session_state.show_auth_modal = True
+
+# Auth modal
+if st.session_state.show_auth_modal and not st.session_state.authenticated:
+    with st.container():
+        st.markdown("""
+        <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center;">
+        </div>
+        """, unsafe_allow_html=True)
+        
+        modal_col1, modal_col2, modal_col3 = st.columns([1, 2, 1])
+        with modal_col2:
+            st.markdown("""
+            <div style="background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); position: relative; z-index: 10001;">
+            """, unsafe_allow_html=True)
+            
+            st.markdown("### 🔐 ログイン / 新規登録")
+            
+            tab1, tab2 = st.tabs(["ログイン", "新規登録"])
+            
+            with tab1:
+                with st.form("login_form"):
+                    username = st.text_input("ユーザー名またはメール", key="login_username")
+                    password = st.text_input("パスワード", type="password", key="login_password")
+                    
+                    col_a, col_b = st.columns(2)
+                    with col_a:
+                        if st.form_submit_button("ログイン", use_container_width=True):
+                            if username and password:
+                                result = authenticate_user(username, password)
+                                if result['success']:
+                                    st.session_state.authenticated = True
+                                    st.session_state.user = result['user']
+                                    st.session_state.show_auth_modal = False
+                                    st.success("ログインに成功しました！")
+                                    st.rerun()
+                                else:
+                                    st.error(result['message'])
+                            else:
+                                st.error("全ての項目を入力してください")
+                    
+                    with col_b:
+                        if st.form_submit_button("キャンセル", use_container_width=True):
+                            st.session_state.show_auth_modal = False
+                            st.rerun()
+            
+            with tab2:
+                with st.form("signup_form"):
+                    new_username = st.text_input("ユーザー名", key="signup_username")
+                    new_email = st.text_input("メールアドレス", key="signup_email")
+                    new_password = st.text_input("パスワード", type="password", key="signup_password")
+                    new_password_confirm = st.text_input("パスワード（確認）", type="password", key="signup_password_confirm")
+                    
+                    col_c, col_d = st.columns(2)
+                    with col_c:
+                        if st.form_submit_button("登録", use_container_width=True):
+                            if new_username and new_email and new_password and new_password_confirm:
+                                if new_password != new_password_confirm:
+                                    st.error("パスワードが一致しません")
+                                elif len(new_password) < 6:
+                                    st.error("パスワードは6文字以上にしてください")
+                                else:
+                                    result = create_user(new_username, new_email, new_password)
+                                    if result['success']:
+                                        st.success("アカウントが作成されました！ログインしてください。")
+                                        st.balloons()
+                                    else:
+                                        st.error(result['message'])
+                            else:
+                                st.error("全ての項目を入力してください")
+                    
+                    with col_d:
+                        if st.form_submit_button("キャンセル", use_container_width=True):
+                            st.session_state.show_auth_modal = False
+                            st.rerun()
+            
+            st.markdown("</div>", unsafe_allow_html=True)
 
 # Clean, centered hero section
 st.markdown("""
