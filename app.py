@@ -3,6 +3,16 @@ import datetime
 import os
 import json
 
+# Initialize database first
+try:
+    from database import setup_database, get_session
+    # Setup database tables on first run
+    setup_database()
+except ImportError:
+    st.error("データベースモジュールが見つかりません")
+except Exception as e:
+    st.warning(f"データベース初期化エラー: {str(e)}")
+
 # Try to import auth functions, use dummy functions if not available
 try:
     from auth import authenticate_user, create_user
@@ -12,11 +22,21 @@ except ImportError:
         return {"success": False, "message": "認証機能は現在利用できません"}
     def create_user(username, email, password):
         return {"success": False, "message": "登録機能は現在利用できません"}
+except Exception as e:
+    st.error(f"認証モジュールエラー: {str(e)}")
+    def authenticate_user(username, password):
+        return {"success": False, "message": "認証機能でエラーが発生しました"}
+    def create_user(username, email, password):
+        return {"success": False, "message": "登録機能でエラーが発生しました"}
 
 # Try to import payment processor
 try:
     from payment import PaymentProcessor
 except ImportError:
+    st.warning("決済モジュールが見つかりません")
+    PaymentProcessor = None
+except Exception as e:
+    st.error(f"決済モジュールエラー: {str(e)}")
     PaymentProcessor = None
 
 # ページ設定
