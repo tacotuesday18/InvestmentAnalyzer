@@ -1,160 +1,125 @@
+import streamlit as st
 import datetime
-import hashlib
-import os
-import uuid
-from database import get_session, User
 
 class PaymentProcessor:
-    """決済処理を管理するクラス"""
+    """
+    決済処理クラス
+    """
     
-    @staticmethod
-    def generate_payment_id():
-        """一意の決済IDを生成する"""
-        return f"pay_{uuid.uuid4().hex[:16]}"
-    
-    @staticmethod
-    def get_plan_details(plan_name):
-        """
-        プラン名に基づいて料金と機能を取得する
-        
-        Parameters:
-        -----------
-        plan_name : str
-            プラン名（free, basic, premium）
-            
-        Returns:
-        --------
-        dict
-            プランの詳細情報
-        """
-        plans = {
+    def __init__(self):
+        self.plans = {
             "free": {
                 "name": "無料プラン",
                 "price": 0,
-                "currency": "JPY",
-                "period": "月額",
-                "analysis_limit": 3,
+                "analysis_limit": 5,
                 "features": [
-                    "基本的な企業分析",
-                    "DCF法による株価評価",
-                    "シンプルなSWOT分析",
+                    "月5回まで分析可能",
+                    "基本的な財務分析",
+                    "DCF計算機能"
                 ]
             },
             "basic": {
                 "name": "ベーシックプラン",
-                "price": 2500,
-                "currency": "JPY",
-                "period": "月額",
-                "analysis_limit": 20,
+                "price": 980,
+                "analysis_limit": 50,
                 "features": [
-                    "基本的な企業分析",
-                    "DCF法による株価評価",
-                    "詳細なSWOT分析",
-                    "決算情報の詳細分析",
-                    "財務指標の詳細比較"
+                    "月50回まで分析可能",
+                    "詳細な財務分析",
+                    "DCF計算機能",
+                    "企業比較機能",
+                    "感度分析"
                 ]
             },
             "premium": {
                 "name": "プレミアムプラン",
-                "price": 4900,
-                "currency": "JPY",
-                "period": "月額",
-                "analysis_limit": 999999,  # 実質無制限
+                "price": 2980,
+                "analysis_limit": -1,  # 無制限
                 "features": [
-                    "基本的な企業分析",
-                    "DCF法による株価評価",
-                    "詳細なSWOT分析",
-                    "決算情報の詳細分析",
-                    "財務指標の詳細比較",
-                    "業界詳細レポート",
-                    "感度分析",
-                    "DCF価値の感度分析",
-                    "優先カスタマーサポート",
-                    "分析結果のエクスポート機能"
+                    "無制限の分析",
+                    "全機能利用可能",
+                    "優先サポート",
+                    "API アクセス",
+                    "カスタムレポート"
                 ]
             }
         }
-        
-        return plans.get(plan_name, plans["free"])
     
-    @staticmethod
-    def process_payment(user_id, plan_name, payment_method, payment_details):
+    def get_plan_info(self, plan_name):
         """
-        支払いを処理する
+        プラン情報を取得
+        """
+        return self.plans.get(plan_name, self.plans["free"])
+    
+    def check_analysis_limit(self, user, analysis_count):
+        """
+        ユーザーの分析回数制限をチェック
+        
+        Parameters:
+        -----------
+        user : dict
+            ユーザー情報
+        analysis_count : int
+            現在の分析回数
+            
+        Returns:
+        --------
+        bool
+            制限内ならTrue、超過ならFalse
+        """
+        if not user:
+            return False
+        
+        plan = user.get('subscription_plan', 'free')
+        plan_info = self.get_plan_info(plan)
+        limit = plan_info['analysis_limit']
+        
+        # 無制限の場合
+        if limit == -1:
+            return True
+        
+        return analysis_count < limit
+    
+    def process_payment(self, user_id, plan_name, payment_method="credit_card"):
+        """
+        決済処理（デモ版）
+        
+        実際の実装では、Stripe、PayPalなどの決済APIを使用します
         
         Parameters:
         -----------
         user_id : int
             ユーザーID
         plan_name : str
-            プラン名（basic, premium）
+            プラン名
         payment_method : str
-            支払い方法（credit_card, bank_transfer, convenience_store）
-        payment_details : dict
-            支払い詳細情報
+            決済方法
             
         Returns:
         --------
         dict
-            処理結果
+            決済結果
         """
-        try:
-            # 実際の実装ではここで決済プロバイダのAPIを呼び出す
-            # このサンプルでは成功したと仮定
-            
-            session = get_session()
-            
-            # ユーザーを検索
-            user = session.query(User).filter(User.id == user_id).first()
-            
-            if not user:
-                session.close()
-                return {
-                    "success": False,
-                    "message": "ユーザーが見つかりません。"
-                }
-            
-            # プラン詳細を取得
-            plan_details = PaymentProcessor.get_plan_details(plan_name)
-            
-            # サブスクリプション期間を設定（1ヶ月）
-            current_date = datetime.datetime.utcnow()
-            end_date = current_date + datetime.timedelta(days=30)
-            
-            # ユーザー情報を更新
-            user.subscription_plan = plan_name
-            user.subscription_end_date = end_date
-            user.payment_status = "active"
-            
-            session.commit()
-            
-            # 処理結果を返す
-            result = {
-                "success": True,
-                "message": f"{plan_details['name']}へのアップグレードが完了しました。",
-                "payment_id": PaymentProcessor.generate_payment_id(),
-                "plan": plan_name,
-                "amount": plan_details["price"],
-                "currency": plan_details["currency"],
-                "subscription_end_date": end_date.strftime("%Y-%m-%d")
-            }
-            
-            session.close()
-            return result
-            
-        except Exception as e:
-            if 'session' in locals():
-                session.rollback()
-                session.close()
+        plan = self.get_plan_info(plan_name)
+        
+        if plan_name == "free":
             return {
-                "success": False,
-                "message": f"決済処理中にエラーが発生しました: {str(e)}"
+                "success": True,
+                "message": "無料プランを選択しました。",
+                "plan": plan_name
             }
+        
+        # デモ版のため、常に成功を返す
+        return {
+            "success": True,
+            "message": f"{plan['name']}の決済が完了しました。",
+            "plan": plan_name,
+            "amount": plan['price'],
+            "transaction_id": f"DEMO_{user_id}_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
+        }
     
-    @staticmethod
-    def cancel_subscription(user_id):
+    def cancel_subscription(self, user_id):
         """
-        サブスクリプションをキャンセルする
+        サブスクリプションキャンセル
         
         Parameters:
         -----------
@@ -164,115 +129,63 @@ class PaymentProcessor:
         Returns:
         --------
         dict
-            処理結果
+            キャンセル結果
         """
-        try:
-            session = get_session()
-            
-            # ユーザーを検索
-            user = session.query(User).filter(User.id == user_id).first()
-            
-            if not user:
-                session.close()
-                return {
-                    "success": False,
-                    "message": "ユーザーが見つかりません。"
-                }
-            
-            # サブスクリプションをキャンセル
-            user.payment_status = "cancelled"
-            
-            # 無料プランに戻す（現在の期間が終了したら）
-            # 実際のアプリケーションでは、サブスクリプション終了日まで
-            # 有料機能を使用できるようにするロジックを追加する
-            
-            session.commit()
-            
-            session.close()
-            
-            return {
-                "success": True,
-                "message": "サブスクリプションが正常にキャンセルされました。現在の期間が終了するまで引き続き機能をご利用いただけます。"
-            }
-            
-        except Exception as e:
-            if 'session' in locals():
-                session.rollback()
-                session.close()
-            return {
-                "success": False,
-                "message": f"サブスクリプションのキャンセル中にエラーが発生しました: {str(e)}"
-            }
+        return {
+            "success": True,
+            "message": "サブスクリプションがキャンセルされました。"
+        }
     
-    @staticmethod
-    def check_subscription_status(user_id):
+    def display_pricing_table(self):
         """
-        ユーザーのサブスクリプション状態を確認する
+        料金プランテーブルを表示
+        """
+        st.markdown("### 💳 料金プラン")
         
-        Parameters:
-        -----------
-        user_id : int
-            ユーザーID
-            
-        Returns:
-        --------
-        dict
-            サブスクリプション情報
-        """
-        try:
-            session = get_session()
-            
-            # ユーザーを検索
-            user = session.query(User).filter(User.id == user_id).first()
-            
-            if not user:
-                session.close()
-                return {
-                    "success": False,
-                    "message": "ユーザーが見つかりません。"
-                }
-            
-            # プラン詳細を取得
-            plan_details = PaymentProcessor.get_plan_details(user.subscription_plan)
-            
-            # サブスクリプションが有効かチェック
-            is_active = True
-            status_message = "有効"
-            
-            # 終了日が設定されている場合、現在日付と比較
-            if user.subscription_end_date:
-                if user.subscription_end_date < datetime.datetime.utcnow():
-                    # 無料プラン以外で期限切れの場合
-                    if user.subscription_plan != "free":
-                        is_active = False
-                        status_message = "期限切れ"
-            
-            # サブスクリプション情報を返す
-            subscription_info = {
-                "success": True,
-                "user_id": user.id,
-                "plan": user.subscription_plan,
-                "plan_name": plan_details["name"],
-                "is_active": is_active,
-                "status": status_message,
-                "payment_status": user.payment_status,
-                "features": plan_details["features"],
-                "analysis_limit": plan_details["analysis_limit"],
-                "analysis_count": user.analysis_count
-            }
-            
-            # 有料プランの場合、終了日も返す
-            if user.subscription_plan != "free" and user.subscription_end_date:
-                subscription_info["end_date"] = user.subscription_end_date.strftime("%Y-%m-%d")
-            
-            session.close()
-            
-            return subscription_info
-            
-        except Exception as e:
-            if 'session' in locals():
-                session.close()
-            return {
-                "success": False,
-                "message": f"サブスクリプション状態の確認中にエラーが発生しました: {str(e)}"
-            }
+        cols = st.columns(3)
+        
+        for idx, (plan_key, plan_info) in enumerate(self.plans.items()):
+            with cols[idx]:
+                # プランカード
+                if plan_key == "premium":
+                    st.markdown(f"""
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                                padding: 2rem; border-radius: 15px; color: white; text-align: center;
+                                box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);">
+                        <div style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem;">おすすめ</div>
+                        <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">{plan_info['name']}</h3>
+                        <div style="font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem;">¥{plan_info['price']:,}</div>
+                        <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 1.5rem;">/月</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                else:
+                    st.markdown(f"""
+                    <div style="background: white; padding: 2rem; border-radius: 15px; 
+                                border: 2px solid #e2e8f0; text-align: center;">
+                        <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #1a202c;">{plan_info['name']}</h3>
+                        <div style="font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; color: #667eea;">¥{plan_info['price']:,}</div>
+                        <div style="font-size: 0.9rem; color: #6b7280; margin-bottom: 1.5rem;">/月</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                st.markdown("**機能:**")
+                for feature in plan_info['features']:
+                    st.markdown(f"✓ {feature}")
+                
+                if st.button(f"{plan_info['name']}を選択", key=f"select_{plan_key}", use_container_width=True):
+                    st.success(f"{plan_info['name']}を選択しました！")
+                
+                st.markdown("---")
+
+
+# 使用例
+if __name__ == "__main__":
+    processor = PaymentProcessor()
+    
+    # プラン情報取得
+    premium_plan = processor.get_plan_info("premium")
+    print(f"Premium Plan: {premium_plan}")
+    
+    # 決済処理（デモ）
+    result = processor.process_payment(user_id=1, plan_name="basic")
+    print(f"Payment Result: {result}")
