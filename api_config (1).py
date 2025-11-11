@@ -9,8 +9,8 @@ class APIConfig:
     """
     
     def __init__(self):
-        self.gemini_api_key = None
-        self.openai_api_key = None
+        self.gemini_api_key = AIzaSyCWg0M_B-bvcte_gYboDzvhWWCe7pfc_VA
+        self.openai_api_key = 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
         self.load_api_keys()
     
     def load_api_keys(self):
